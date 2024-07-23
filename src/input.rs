@@ -8,7 +8,6 @@ pub struct Input {
     pub wheel: i8,
     pub cursor: Vec2,
     pub stick: Vec2,
-    pub stick_pressed: bool,
     pub left: bool,
     pub right: bool,
     pub escape: bool,
@@ -45,10 +44,6 @@ fn update_input(
     if keyboard.pressed(KeyCode::KeyA) {
         input.stick.x -= 1.0;
     }
-    input.stick_pressed = input.stick.length_squared() > 0.0;
-    // if input.stick_pressed {
-    //     input.stick = input.stick.normalize();
-    // }
     input.wheel = 0;
     for wheel in wheels.read() {
         input.wheel += match wheel.unit {

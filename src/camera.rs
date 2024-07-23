@@ -5,7 +5,7 @@ fn spawn_camera(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
 
-fn update_camera(
+fn update_translation(
     mut cameras: Query<&mut Transform, With<Camera>>,
     players: Query<&Transform, (With<Player>, Without<Camera>)>
 ) {
@@ -20,6 +20,6 @@ pub struct CameraPlugin;
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_camera);
-        app.add_systems(Update, update_camera);
+        app.add_systems(Update, update_translation);
     }
 }

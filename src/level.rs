@@ -28,6 +28,7 @@ fn spawn_blocks(mut commands: Commands) {
                 RigidBody::Static,
                 Collider::rectangle(128.0, 128.0),
                 Block,
+                // FIXME overlapping
             ));
         }
     }
