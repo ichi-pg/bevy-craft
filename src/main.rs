@@ -2,8 +2,11 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 mod camera;
 mod player;
+mod avian_player;
 mod input;
 mod level;
+mod avian_level;
+mod collision;
 
 fn main() {
     App::new()
@@ -18,9 +21,10 @@ fn main() {
             }),
             PhysicsPlugins::default(),
             input::InputPlugin,
+            collision::CollisionPlugin,
             player::PlayerPlugin,
             camera::CameraPlugin,
-            level::LevelPlugin
+            level::LevelPlugin,
         ))
         .run();
 }

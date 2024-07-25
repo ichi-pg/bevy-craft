@@ -7,14 +7,14 @@ use bevy::{
 pub struct Input {
     pub wheel: i8,
     pub cursor: Vec2,
-    pub stick: Vec2,
-    pub left: bool,
-    pub right: bool,
+    pub left_stick: Vec2,
+    pub left_click: bool,
+    pub right_click: bool,
     pub escape: bool,
     pub tab: bool,
     pub shift_pressed: bool,
     pub ctrl: bool,
-    pub space: bool,
+    pub space_pressed: bool,
     pub q: bool,
     pub e: bool,
     pub r: bool,
@@ -24,47 +24,28 @@ pub struct Input {
     pub num: [bool; 10],
 }
 
-fn update_input(
+fn update_keyboard(
     mut input: ResMut<Input>,
     keyboard: Res<ButtonInput<KeyCode>>,
-    mouse: Res<ButtonInput<MouseButton>>,
-    mut wheels: EventReader<MouseWheel>,
-    mut cursors: EventReader<CursorMoved>,
 ) {
-    input.stick = Vec2::ZERO;
+    input.left_stick = Vec2::ZERO;
     if keyboard.pressed(KeyCode::KeyW) {
-        input.stick.y += 1.0;
+        input.left_stick.y += 1.0;
     }
     if keyboard.pressed(KeyCode::KeyS) {
-        input.stick.y -= 1.0;
+        input.left_stick.y -= 1.0;
     }
     if keyboard.pressed(KeyCode::KeyD) {
-        input.stick.x += 1.0;
+        input.left_stick.x += 1.0;
     }
     if keyboard.pressed(KeyCode::KeyA) {
-        input.stick.x -= 1.0;
+        input.left_stick.x -= 1.0;
     }
-    input.wheel = 0;
-    for wheel in wheels.read() {
-        input.wheel += match wheel.unit {
-            MouseScrollUnit::Line => {
-                wheel.y as i8
-            }
-            MouseScrollUnit::Pixel => {
-                wheel.y as i8
-            }
-        };
-    }
-    for cursor in cursors.read() {
-        input.cursor = cursor.position;
-    }
-    input.left = mouse.just_released(MouseButton::Left);
-    input.right = mouse.just_pressed(MouseButton::Right);
     input.escape = keyboard.just_pressed(KeyCode::Escape);
     input.tab = keyboard.just_pressed(KeyCode::Tab);
     input.shift_pressed = keyboard.pressed(KeyCode::ShiftLeft);
     input.ctrl = keyboard.just_pressed(KeyCode::ControlLeft);
-    input.space = keyboard.just_pressed(KeyCode::Space);
+    input.space_pressed = keyboard.pressed(KeyCode::Space);
     input.q = keyboard.just_pressed(KeyCode::KeyQ);
     input.e = keyboard.just_pressed(KeyCode::KeyE);
     input.r = keyboard.just_pressed(KeyCode::KeyR);
@@ -83,6 +64,40 @@ fn update_input(
     input.num[9] = keyboard.just_pressed(KeyCode::Digit9);
 }
 
+fn update_mouse(
+    mut input: ResMut<Input>,
+    mouse: Res<ButtonInput<MouseButton>>,
+) {
+    input.left_click = mouse.just_released(MouseButton::Left);
+    input.right_click = mouse.just_pressed(MouseButton::Right);
+}
+
+fn update_wheel(
+    mut input: ResMut<Input>,
+    mut wheels: EventReader<MouseWheel>,
+) {
+    input.wheel = 0;
+    for wheel in wheels.read() {
+        input.wheel += match wheel.unit {
+            MouseScrollUnit::Line => {
+                wheel.y as i8
+            }
+            MouseScrollUnit::Pixel => {
+                wheel.y as i8
+            }
+        };
+    }
+}
+
+fn update_cursor(
+    mut input: ResMut<Input>,
+    mut cursors: EventReader<CursorMoved>,
+) {
+    for cursor in cursors.read() {
+        input.cursor = cursor.position;
+    }
+}
+
 pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
@@ -90,6 +105,11 @@ impl Plugin for InputPlugin {
         app.insert_resource(Input {
             ..default()
         });
-        app.add_systems(Update, update_input);
+        app.add_systems(Update, (
+            update_keyboard,
+            update_mouse,
+            update_wheel,
+            update_cursor,
+        ));
     }
 }

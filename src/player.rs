@@ -1,15 +1,15 @@
-use avian2d::{
-    math::*,
-    prelude::*
-};
 use bevy::prelude::*;
 use crate::input::*;
+use crate::collision::*;
 
 #[derive(Component)]
 pub struct Player;
 
-#[derive(Component, Default)]
-pub struct Grounded(bool);
+#[derive(Component)]
+pub struct Controllable;
+
+#[derive(Component, Deref, DerefMut, Default)]
+pub struct Velocity(Vec3);
 
 fn spawn_player(mut commands: Commands) {
     commands.spawn((
@@ -21,55 +21,51 @@ fn spawn_player(mut commands: Commands) {
             },
             ..default()
         },
-        RigidBody::Dynamic,
-        Collider::circle(64.0),
-        ShapeCaster::new(
-            Collider::circle(64.0),
-            Vector::ZERO,
-            0.0,
-            Dir2::NEG_Y)
-            .with_max_time_of_impact(10.0),
-        LockedAxes::ROTATION_LOCKED,
-        Friction::ZERO.with_combine_rule(CoefficientCombine::Min),
-        Restitution::ZERO.with_combine_rule(CoefficientCombine::Min),
-        ColliderDensity::default(),
-        GravityScale(128.0),
-        LinearVelocity::default(),
-        Grounded::default(),
         Player,
-        // FIXME bounding
-        // FIXME vibrating
+        Controllable,
+        Velocity::default(),
+        Positioned::default(),
+        Hits::default(),
     ));
 }
 
-fn update_grounded(
-    mut players: Query<(&mut Grounded, &ShapeHits), With<Player>>,
-) {
-    for (mut grounded, hits) in &mut players {
-        grounded.0 = !hits.is_empty();
-    }
-}
-
-fn update_velocity(
-    mut players: Query<(&mut LinearVelocity, &Grounded), With<Player>>,
+fn move_player(
+    mut players: Query<&mut Transform, With<Controllable>>,
     input: Res<Input>,
-    time: Res<Time>
+    time: Res<Time>,
 ) {
-    let (mut velocity, grounded) = players.single_mut();
-    if input.stick.x == 0.0 {
-        return;
+    for mut transform in &mut players {
+        if input.left_stick.x == 0.0 {
+            continue
+        }
+        transform.translation.x += input.left_stick.x * 512.0 * time.delta_seconds();
     }
-    if !grounded.0 {
-        return;
-    }
-    velocity.x += input.stick.x * 2048.0 * time.delta_seconds();
+    // TODO velocity
 }
 
-fn update_damping(
-    mut players: Query<&mut LinearVelocity, With<Player>>,
+fn jump_player(
+    mut players: Query<(Entity, &mut Transform), (With<Controllable>, With<Grounded>)>,
+    input: Res<Input>,
+    mut commands: Commands,
 ) {
-    let mut velocity = players.single_mut();
-    velocity.x *= 0.98;
+    for (entity, mut transform) in &mut players {
+        if !input.space_pressed {
+            continue
+        }
+        transform.translation.y += 256.0;
+        commands.entity(entity).remove::<Grounded>();
+    }
+    // TODO velocity
+}
+
+fn fall_player(
+    mut players: Query<&mut Transform, (With<Player>, Without<Grounded>)>,
+    time: Res<Time>,
+) {
+    for mut transform in &mut players {
+        transform.translation.y -= 128.0 * time.delta_seconds();
+    }
+    // TODO velocity
 }
 
 pub struct PlayerPlugin;
@@ -77,10 +73,10 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_player);
-        app.add_systems(FixedUpdate, (
-            update_grounded,
-            update_velocity,
-            update_damping,
+        app.add_systems(Update, (
+            move_player,
+            jump_player,
+            fall_player,
         ));
     }
 }
