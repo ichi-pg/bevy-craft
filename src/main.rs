@@ -1,5 +1,6 @@
-use avian2d::prelude::*;
+// use avian2d::prelude::*;
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::*;
 mod camera;
 mod player;
 mod avian_player;
@@ -7,6 +8,8 @@ mod input;
 mod level;
 mod avian_level;
 mod collision;
+mod rapier_player;
+mod rapier_level;
 
 fn main() {
     App::new()
@@ -19,12 +22,14 @@ fn main() {
                 }),
                 ..default()
             }),
-            PhysicsPlugins::default(),
+            // PhysicsPlugins::default(),
+            RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
+            RapierDebugRenderPlugin::default(),
             input::InputPlugin,
             collision::CollisionPlugin,
-            player::PlayerPlugin,
+            rapier_player::PlayerPlugin,
             camera::CameraPlugin,
-            level::LevelPlugin,
+            rapier_level::LevelPlugin,
         ))
         .run();
 }

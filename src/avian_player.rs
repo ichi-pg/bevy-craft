@@ -43,10 +43,10 @@ fn update_velocity(
     input: Res<Input>,
     time: Res<Time>,
 ) {
+    if input.left_stick.x == 0.0 {
+        return;
+    }
     for mut velocity in &mut players {
-        if input.left_stick.x == 0.0 {
-            continue
-        }
         velocity.x += input.left_stick.x * 2048.0 * time.delta_seconds();
     }
 }

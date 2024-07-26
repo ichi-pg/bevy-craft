@@ -9,7 +9,7 @@ pub struct Player;
 pub struct Controllable;
 
 #[derive(Component, Deref, DerefMut, Default)]
-pub struct Velocity(Vec3);
+pub struct Velocity3(Vec3);
 
 fn spawn_player(mut commands: Commands) {
     commands.spawn((
@@ -23,7 +23,7 @@ fn spawn_player(mut commands: Commands) {
         },
         Player,
         Controllable,
-        Velocity::default(),
+        Velocity3::default(),
         Positioned::default(),
         Hits::default(),
     ));
@@ -34,10 +34,10 @@ fn move_player(
     input: Res<Input>,
     time: Res<Time>,
 ) {
+    if input.left_stick.x == 0.0 {
+        return;
+    }
     for mut transform in &mut players {
-        if input.left_stick.x == 0.0 {
-            continue
-        }
         transform.translation.x += input.left_stick.x * 512.0 * time.delta_seconds();
     }
     // TODO velocity
@@ -48,10 +48,10 @@ fn jump_player(
     input: Res<Input>,
     mut commands: Commands,
 ) {
+    if !input.space_pressed {
+        return;
+    }
     for (entity, mut transform) in &mut players {
-        if !input.space_pressed {
-            continue
-        }
         transform.translation.y += 256.0;
         commands.entity(entity).remove::<Grounded>();
     }
