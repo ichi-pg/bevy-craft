@@ -5,7 +5,9 @@ use avian2d::{
 use bevy::prelude::*;
 use crate::input::*;
 use crate::player::*;
-use crate::collision::*;
+
+#[derive(Component)]
+struct Grounded;
 
 fn spawn_player(mut commands: Commands) {
     commands.spawn((
@@ -31,7 +33,6 @@ fn spawn_player(mut commands: Commands) {
         ColliderDensity::default(),
         GravityScale(128.0),
         LinearVelocity::default(),
-        Player,
         Controllable,
         // FIXME bounding
         // FIXME vibrating
@@ -52,7 +53,7 @@ fn update_velocity(
 }
 
 fn update_grounded(
-    mut players: Query<(Entity, &ShapeHits), With<Player>>,
+    mut players: Query<(Entity, &ShapeHits)>,
     mut commands: Commands,
 ) {
     for (entity, hits) in &mut players {
@@ -65,7 +66,7 @@ fn update_grounded(
 }
 
 fn update_damping(
-    mut players: Query<&mut LinearVelocity, With<Player>>,
+    mut players: Query<&mut LinearVelocity>,
 ) {
     for mut velocity in &mut players {
         velocity.x *= 0.98;

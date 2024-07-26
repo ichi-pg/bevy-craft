@@ -1,7 +1,5 @@
 use bevy::prelude::*;
-
-#[derive(Component)]
-pub struct Block;
+use crate::collision::*;
 
 fn spawn_blocks(mut commands: Commands) {
     for x in -10..10 {
@@ -24,7 +22,7 @@ fn spawn_blocks(mut commands: Commands) {
                     ),
                     ..default()
                 },
-                Block,
+                Hittable,
             ));
         }
     }

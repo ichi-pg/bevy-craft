@@ -3,9 +3,6 @@ use crate::input::*;
 use crate::collision::*;
 
 #[derive(Component)]
-pub struct Player;
-
-#[derive(Component)]
 pub struct Controllable;
 
 #[derive(Component, Deref, DerefMut, Default)]
@@ -21,7 +18,6 @@ fn spawn_player(mut commands: Commands) {
             },
             ..default()
         },
-        Player,
         Controllable,
         Velocity3::default(),
         Positioned::default(),
@@ -29,43 +25,49 @@ fn spawn_player(mut commands: Commands) {
     ));
 }
 
-fn move_player(
-    mut players: Query<&mut Transform, With<Controllable>>,
-    input: Res<Input>,
+fn add_velocity(
+    mut players: Query<(&mut Transform, &Velocity3)>,
     time: Res<Time>,
 ) {
-    if input.left_stick.x == 0.0 {
-        return;
+    for (mut transform, velocity) in &mut players {
+        transform.translation.x += velocity.x * time.delta_seconds();
+        transform.translation.y += velocity.y * time.delta_seconds();
     }
-    for mut transform in &mut players {
-        transform.translation.x += input.left_stick.x * 512.0 * time.delta_seconds();
-    }
-    // TODO velocity
 }
 
-fn jump_player(
-    mut players: Query<(Entity, &mut Transform), (With<Controllable>, With<Grounded>)>,
+fn add_move(
+    mut players: Query<&mut Velocity3, With<Controllable>>,
     input: Res<Input>,
-    mut commands: Commands,
 ) {
-    if !input.space_pressed {
-        return;
+    for mut velocity in &mut players {
+        if input.left_stick.x == 0.0 {
+            velocity.x = 0.0;
+        } else {
+            velocity.x = input.left_stick.x * 400.0;
+        }
     }
-    for (entity, mut transform) in &mut players {
-        transform.translation.y += 256.0;
-        commands.entity(entity).remove::<Grounded>();
-    }
-    // TODO velocity
 }
 
-fn fall_player(
-    mut players: Query<&mut Transform, (With<Player>, Without<Grounded>)>,
+fn add_jump(
+    mut players: Query<&mut Velocity3, (With<Controllable>, With<Grounded>)>,
+    input: Res<Input>,
+) {
+    for mut velocity in &mut players {
+        if input.space_pressed {
+            velocity.y = 1500.0;
+        } else {
+            velocity.y = 0.0;
+        }
+    }
+}
+
+fn add_gravity(
+    mut players: Query<&mut Velocity3, Without<Grounded>>,
     time: Res<Time>,
 ) {
-    for mut transform in &mut players {
-        transform.translation.y -= 128.0 * time.delta_seconds();
+    for mut velocity in &mut players {
+        velocity.y = (velocity.y - 4000.0 * time.delta_seconds()).max(-2048.0);
     }
-    // TODO velocity
 }
 
 pub struct PlayerPlugin;
@@ -74,9 +76,10 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_player);
         app.add_systems(Update, (
-            move_player,
-            jump_player,
-            fall_player,
+            add_move,
+            add_jump,
+            add_gravity,
+            add_velocity,
         ));
     }
 }

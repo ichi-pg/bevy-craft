@@ -10,7 +10,6 @@ fn spawn_player(mut commands: Commands) {
         TransformBundle::default(),
         RigidBody::KinematicPositionBased,
         Velocity3::default(),
-        Player,
         Controllable,
         // FIXME wall grounded
     ));

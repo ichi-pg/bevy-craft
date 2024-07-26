@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use crate::level::*;
 
 fn spawn_blocks(mut commands: Commands) {
     for x in -10..10 {
@@ -13,7 +12,6 @@ fn spawn_blocks(mut commands: Commands) {
                     0.0
                 )),
                 RigidBody::Fixed,
-                Block,
             ));
         }
     }

@@ -1,9 +1,10 @@
 use bevy::prelude::*;
-use crate::player::*;
-use crate::level::*;
 
 #[derive(Component)]
 pub struct Grounded;
+
+#[derive(Component)]
+pub struct Hittable;
 
 #[derive(Component, Deref, DerefMut, Default)]
 pub struct Positioned(Vec3);
@@ -12,8 +13,8 @@ pub struct Positioned(Vec3);
 pub struct Hits(Vec<Vec3>);
 
 fn hit_test(
-    mut players: Query<(&Transform, &mut Positioned, &mut Hits), With<Player>>,
-    blocks: Query<&Transform, (With<Block>, Without<Player>)>,
+    mut players: Query<(&Transform, &mut Positioned, &mut Hits)>,
+    blocks: Query<&Transform, (With<Hittable>, Without<Hits>)>,
 ) {
     for (player, mut positioned, mut hits) in &mut players {
         hits.clear();
@@ -42,13 +43,13 @@ fn hit_test(
     // TODO chunk
 }
 
-fn slide_player(
-    mut players: Query<(Entity, &mut Transform, &Hits), With<Player>>,
+fn slide_on_ground(
+    mut players: Query<(Entity, &mut Transform, &Hits)>,
     mut commands: Commands,
 ) {
-    for (entity, mut player, hits) in &mut players {
+    for (entity, mut transform, hits) in &mut players {
         for hit in hits.iter() {
-            player.translation.y = hit.y + 128.0;
+            transform.translation.y = hit.y + 128.0;
         }
         if hits.is_empty() {
             commands.entity(entity).remove::<Grounded>();
@@ -66,7 +67,7 @@ impl Plugin for CollisionPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, (
             hit_test,
-            slide_player,
+            slide_on_ground,
         ));
     }
 }

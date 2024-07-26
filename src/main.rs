@@ -27,9 +27,9 @@ fn main() {
             RapierDebugRenderPlugin::default(),
             input::InputPlugin,
             collision::CollisionPlugin,
-            rapier_player::PlayerPlugin,
+            player::PlayerPlugin,
             camera::CameraPlugin,
-            rapier_level::LevelPlugin,
+            level::LevelPlugin,
         ))
         .run();
 }

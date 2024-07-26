@@ -24,7 +24,7 @@ pub struct Input {
     pub num: [bool; 10],
 }
 
-fn update_keyboard(
+fn read_keyboard(
     mut input: ResMut<Input>,
     keyboard: Res<ButtonInput<KeyCode>>,
 ) {
@@ -64,7 +64,7 @@ fn update_keyboard(
     input.num[9] = keyboard.just_pressed(KeyCode::Digit9);
 }
 
-fn update_mouse(
+fn read_mouse(
     mut input: ResMut<Input>,
     mouse: Res<ButtonInput<MouseButton>>,
 ) {
@@ -72,7 +72,7 @@ fn update_mouse(
     input.right_click = mouse.just_pressed(MouseButton::Right);
 }
 
-fn update_wheel(
+fn read_wheel(
     mut input: ResMut<Input>,
     mut wheels: EventReader<MouseWheel>,
 ) {
@@ -89,7 +89,7 @@ fn update_wheel(
     }
 }
 
-fn update_cursor(
+fn read_cursor(
     mut input: ResMut<Input>,
     mut cursors: EventReader<CursorMoved>,
 ) {
@@ -106,10 +106,10 @@ impl Plugin for InputPlugin {
             ..default()
         });
         app.add_systems(Update, (
-            update_keyboard,
-            update_mouse,
-            update_wheel,
-            update_cursor,
+            read_keyboard,
+            read_mouse,
+            read_wheel,
+            read_cursor,
         ));
     }
 }

@@ -1,6 +1,5 @@
 use avian2d::prelude::*;
 use bevy::prelude::*;
-use crate::level::*;
 
 fn spawn_blocks(mut commands: Commands) {
     for x in -10..10 {
@@ -25,7 +24,6 @@ fn spawn_blocks(mut commands: Commands) {
                 },
                 RigidBody::Static,
                 Collider::rectangle(128.0, 128.0),
-                Block,
                 // FIXME overlapping
             ));
         }
