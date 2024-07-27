@@ -22,7 +22,7 @@ fn spawn_blocks(mut commands: Commands) {
                     ),
                     ..default()
                 },
-                Hittable,
+                Collider::rect(64.0, 64.0),
             ));
         }
     }

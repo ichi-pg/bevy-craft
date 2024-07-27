@@ -21,7 +21,9 @@ fn spawn_player(mut commands: Commands) {
         Controllable,
         Velocity3::default(),
         Positioned::default(),
-        Hits::default(),
+        BroadHits::default(),
+        NarrowHits::default(),
+        Collider::circle(64.0),
     ));
 }
 
