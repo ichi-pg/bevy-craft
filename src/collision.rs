@@ -222,7 +222,7 @@ fn slide_on_ground(
     mut commands: Commands,
 ) {
     for (entity, mut transform, collider, narrow_hits) in &mut players {
-        let before_y = transform.translation.y;
+        let mut pushed = Vec2::ZERO;
         for hit in narrow_hits.iter() {
             let push = shape_and_shape(
                 transform.translation.xy(),
@@ -234,14 +234,14 @@ fn slide_on_ground(
             );
             transform.translation.x += push.x;
             transform.translation.y += push.y;
+            pushed += push;
         }
-        if transform.translation.y > before_y {
+        if pushed.y > pushed.x.abs() {
             commands.entity(entity).insert(Grounded);
         } else {
             commands.entity(entity).remove::<Grounded>();
         }
     }
-    // TODO grounded angle
 }
 
 pub struct CollisionPlugin;
