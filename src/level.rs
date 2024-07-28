@@ -3,10 +3,11 @@ use crate::collision::*;
 
 fn spawn_blocks(mut commands: Commands) {
     for x in -10..10 {
-        for y in -11..-1 {
+        for y in -10..-1 {
             if x * 2 < y {
                 continue;
             }
+            let size = 128.0;
             commands.spawn((
                 SpriteBundle {
                     sprite: Sprite {
@@ -15,17 +16,17 @@ fn spawn_blocks(mut commands: Commands) {
                         } else {
                             Color::srgb(0.4, 0.4, 0.4)
                         },
-                        custom_size: Some(Vec2::new(128.0, 128.0)),
+                        custom_size: Some(Vec2::new(size, size)),
                         ..default()
                     },
                     transform: Transform::from_xyz(
-                        (x * 128) as f32,
-                        (y * 128) as f32,
+                        x as f32 * size,
+                        y as f32 * size,
                         -1.0
                     ),
                     ..default()
                 },
-                Collider::rect(64.0, 64.0),
+                Collider::rect(size * 0.5, size * 0.5),
             ));
         }
     }

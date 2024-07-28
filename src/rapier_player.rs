@@ -9,14 +9,14 @@ fn spawn_player(mut commands: Commands) {
         Collider::ball(64.0),
         TransformBundle::default(),
         RigidBody::KinematicPositionBased,
-        Velocity3::default(),
+        Velocity2::default(),
         Controllable,
         // FIXME wall grounded
     ));
 }
 
 fn add_velocity(
-    mut players: Query<(&mut KinematicCharacterController, &Velocity3)>,
+    mut players: Query<(&mut KinematicCharacterController, &Velocity2)>,
     time: Res<Time>,
 ) {
     for (mut controller, velocity) in &mut players {
@@ -30,7 +30,7 @@ fn add_velocity(
 }
 
 fn add_move(
-    mut players: Query<&mut Velocity3, With<Controllable>>,
+    mut players: Query<&mut Velocity2, With<Controllable>>,
     input: Res<Input>,
 ) {
     for mut velocity in &mut players {
@@ -43,7 +43,7 @@ fn add_move(
 }
 
 fn add_jump(
-    mut players: Query<(&mut Velocity3, &KinematicCharacterControllerOutput), With<Controllable>>,
+    mut players: Query<(&mut Velocity2, &KinematicCharacterControllerOutput), With<Controllable>>,
     input: Res<Input>,
 ) {
     for (mut velocity, output) in &mut players {
@@ -59,7 +59,7 @@ fn add_jump(
 }
 
 fn add_gravity(
-    mut players: Query<(&mut Velocity3, &KinematicCharacterControllerOutput)>,
+    mut players: Query<(&mut Velocity2, &KinematicCharacterControllerOutput)>,
     time: Res<Time>,
 ) {
     for (mut velocity, output) in &mut players {

@@ -186,7 +186,7 @@ fn circle_and_rect(pos1: Vec2, radius: f32, pos2: Vec2, scale2: Vec2) -> Vec2 {
     let x2 = pos2.x + scale2.x;
     let y1 = pos2.y - scale2.y;
     let y2 = pos2.y + scale2.y;
-    let rr = radius.sqrt();
+    let rr = radius * radius;
     let a = Vec2::new(x - x1, y - y1);
     let b = Vec2::new(x - x2, y - y1);
     let c = Vec2::new(x - x1, y - y2);
@@ -215,7 +215,6 @@ fn circle_and_rect(pos1: Vec2, radius: f32, pos2: Vec2, scale2: Vec2) -> Vec2 {
         Vec2::ZERO
     }
     // TODO dived center
-    // TODO natural corner
 }
 
 fn slide_on_ground(
@@ -242,6 +241,7 @@ fn slide_on_ground(
             commands.entity(entity).remove::<Grounded>();
         }
     }
+    // TODO grounded angle
 }
 
 pub struct CollisionPlugin;
