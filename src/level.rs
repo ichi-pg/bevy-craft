@@ -3,7 +3,10 @@ use crate::collision::*;
 
 fn spawn_blocks(mut commands: Commands) {
     for x in -10..10 {
-        for y in -10..0 {
+        for y in -11..-1 {
+            if x * 2 < y {
+                continue;
+            }
             commands.spawn((
                 SpriteBundle {
                     sprite: Sprite {
