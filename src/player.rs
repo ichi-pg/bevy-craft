@@ -35,7 +35,6 @@ fn spawn_player(
         },
         Controllable,
         Velocity2::default(),
-        Positioned::default(),
         BroadHits::default(),
         NarrowHits::default(),
         Collider::circle(size * 0.5),
@@ -43,10 +42,17 @@ fn spawn_player(
 }
 
 fn add_velocity(
-    mut players: Query<(&mut Transform, &Velocity2)>,
+    mut players: Query<(Entity, &mut Transform, &Velocity2)>,
     time: Res<Time>,
+    mut commands: Commands,
 ) {
-    for (mut transform, velocity) in &mut players {
+    for (entity, mut transform, velocity) in &mut players {
+        if velocity.0 == Vec2::ZERO {
+            continue;
+        }
+        if velocity.y >= 0.0 {
+            commands.entity(entity).remove::<Grounded>();
+        }
         transform.translation.x += velocity.x * time.delta_seconds();
         transform.translation.y += velocity.y * time.delta_seconds();
     }

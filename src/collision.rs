@@ -4,9 +4,6 @@ use arrayvec::ArrayVec;
 #[derive(Component)]
 pub struct Grounded;
 
-#[derive(Component, Deref, DerefMut, Default)]
-pub struct Positioned(Vec3);
-
 #[derive(Clone, Copy)]
 enum Shape {
     Circle,
@@ -54,14 +51,11 @@ pub struct BroadHits(ArrayVec::<BroadHit, 10>);
 pub struct NarrowHits(ArrayVec::<NarrowHit, 10>);
 
 fn broad_test(
-    mut players: Query<(&Transform, &mut Positioned, &mut BroadHits, &Collider)>,
+    mut players: Query<(&Transform, &mut BroadHits, &Collider)>,
     blocks: Query<(&Transform, &Collider), Without<BroadHits>>,
 ) {
-    for (player, mut positioned, mut hits, circle) in &mut players {
+    for (player, mut hits, circle) in &mut players {
         hits.clear();
-        if player.translation.x == positioned.x && player.translation.y == positioned.y {
-            continue;
-        }
         for (block, rect) in &blocks {
             let w = circle.scale.x + rect.scale.x;
             if player.translation.x < block.translation.x - w {
@@ -82,8 +76,6 @@ fn broad_test(
                 collider: rect.clone(),
             });
         }
-        positioned.x = player.translation.x;
-        positioned.y = player.translation.y;
     }
     // TODO chunk
 }
@@ -172,7 +164,8 @@ fn rect_and_rect(pos1: Vec2, scale1: Vec2, pos2: Vec2, scale2: Vec2) -> Vec2 {
 }
 
 fn circle_and_circle(pos1: Vec2, radius1: f32, pos2: Vec2, radius2: f32) -> Vec2 {
-    if (pos1).distance_squared(pos2) < (radius1 + radius2).sqrt() {
+    let radius = radius1 + radius2;
+    if (pos1).distance_squared(pos2) < radius * radius {
         pos2 - pos1
     } else {
         Vec2::ZERO
@@ -238,11 +231,8 @@ fn slide_on_ground(
         }
         if pushed.y > pushed.x.abs() {
             commands.entity(entity).insert(Grounded);
-        } else {
-            commands.entity(entity).remove::<Grounded>();
         }
     }
-    // TODO keep grounded
 }
 
 pub struct CollisionPlugin;
