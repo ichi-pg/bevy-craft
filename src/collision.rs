@@ -242,6 +242,7 @@ fn slide_on_ground(
             commands.entity(entity).remove::<Grounded>();
         }
     }
+    // TODO keep grounded
 }
 
 pub struct CollisionPlugin;

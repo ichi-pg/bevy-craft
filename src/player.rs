@@ -94,7 +94,6 @@ fn add_gravity(
     for mut velocity in &mut players {
         velocity.y = (velocity.y - 4000.0 * time.delta_seconds()).max(-2048.0);
     }
-    // TODO only moved
 }
 
 pub struct PlayerPlugin;
