@@ -13,7 +13,7 @@ enum Shape {
 #[derive(Component, Clone, Copy)]
 pub struct Collider {
     shape: Shape,
-    scale: Vec2,
+    pub scale: Vec2,
 }
 
 impl Collider {

@@ -1,6 +1,10 @@
 use bevy::{
-    input::mouse::*,
+    input::mouse::{
+        MouseWheel,
+        MouseScrollUnit,
+    },
     prelude::*,
+    window::PrimaryWindow,
 };
 
 #[derive(Resource, Default)]
@@ -91,10 +95,16 @@ fn read_wheel(
 
 fn read_cursor(
     mut input: ResMut<Input>,
-    mut cursors: EventReader<CursorMoved>,
+    q_window: Query<&Window, With<PrimaryWindow>>,
+    q_camera: Query<(&Camera, &GlobalTransform)>,
 ) {
-    for cursor in cursors.read() {
-        input.cursor = cursor.position;
+    let (camera, camera_transform) = q_camera.single();
+    let window = q_window.single();
+    if let Some(world_position) = window.cursor_position()
+        .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
+        .map(|ray| ray.origin.truncate())
+    {
+        input.cursor = world_position;
     }
 }
 
