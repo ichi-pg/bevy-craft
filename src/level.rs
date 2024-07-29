@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use crate::collision::*;
 use crate::input::*;
+use crate::item::*;
+use crate::hit_test::*;
 
 #[derive(Component)]
 pub struct Block;
@@ -26,7 +28,7 @@ fn spawn_blocks(mut commands: Commands) {
                     transform: Transform::from_xyz(
                         x as f32 * size,
                         y as f32 * size,
-                        -1.0
+                        0.0
                     ),
                     ..default()
                 },
@@ -46,21 +48,25 @@ fn destroy_block(
         return;
     }
     for (entity, transform, collider) in &mut blocks {
-        if input.cursor.x < transform.translation.x - collider.scale.x {
-            continue;
+        if point_and_rect(input.cursor, transform.translation, collider.scale) {
+            commands.entity(entity).despawn();
+            commands.spawn((
+                SpriteBundle {
+                    sprite: Sprite {
+                        color: Color::srgb(0.6, 0.6, 0.6),
+                        custom_size: Some(Vec2::new(64.0, 64.0)),
+                        ..default()
+                    },
+                    transform: transform.clone(),
+                    ..default()
+                },
+                Collider::circle(32.0),
+                ItemID(1),
+                ItemAmount(1),
+            ));
         }
-        if input.cursor.x > transform.translation.x + collider.scale.x {
-            continue;
-        }
-        if input.cursor.y < transform.translation.y - collider.scale.y {
-            continue;
-        }
-        if input.cursor.y > transform.translation.y + collider.scale.y {
-            continue;
-        }
-        commands.entity(entity).despawn();
     }
-    // TODO drop item
+    // TODO item collision
     // TODO chunk
     // TODO event
 }

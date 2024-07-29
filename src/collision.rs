@@ -1,14 +1,9 @@
 use bevy::prelude::*;
 use arrayvec::ArrayVec;
+use crate::hit_test::*;
 
 #[derive(Component)]
 pub struct Grounded;
-
-#[derive(Clone, Copy)]
-enum Shape {
-    Circle,
-    Rect,
-}
 
 #[derive(Component, Clone, Copy)]
 pub struct Collider {
@@ -41,7 +36,7 @@ pub struct BroadHit {
 pub struct NarrowHit {
     pub pos: Vec2,
     pub collider: Collider,
-    pub push_squared: f32,
+    pub order: f32,
 }
 
 #[derive(Component, Deref, DerefMut, Default)]
@@ -50,40 +45,39 @@ pub struct BroadHits(ArrayVec::<BroadHit, 10>);
 #[derive(Component, Deref, DerefMut, Default)]
 pub struct NarrowHits(ArrayVec::<NarrowHit, 10>);
 
-fn broad_test(
+fn broad_phase(
     mut players: Query<(&Transform, &mut BroadHits, &Collider)>,
     blocks: Query<(&Transform, &Collider), Without<BroadHits>>,
 ) {
     for (player, mut hits, circle) in &mut players {
         hits.clear();
         for (block, rect) in &blocks {
-            let w = circle.scale.x + rect.scale.x;
-            if player.translation.x < block.translation.x - w {
-                continue;
+            if aabb(
+                player.translation,
+                circle.scale,
+                block.translation,
+                rect.scale,
+            ) {
+                hits.push(BroadHit {
+                    pos: block.translation.xy(),
+                    collider: rect.clone(),
+                });
             }
-            if player.translation.x > block.translation.x + w {
-                continue;
-            }
-            let h = circle.scale.y + rect.scale.y;
-            if player.translation.y < block.translation.y - h {
-                continue;
-            }
-            if player.translation.y > block.translation.y + h {
-                continue;
-            }
-            hits.push(BroadHit {
-                pos: block.translation.xy(),
-                collider: rect.clone(),
-            });
         }
     }
-    // TODO chunk
+    // TODO chunk or sweep or tree
+    // TODO sleeping
 }
 
-fn narrow_test(
+fn narrow_phase(
     mut players: Query<(&Transform, &Collider, &BroadHits, &mut NarrowHits)>,
 ) {
-    for (transform, collider, broad_hits, mut narrow_hits) in &mut players {
+    for (
+        transform,
+        collider,
+        broad_hits,
+        mut narrow_hits,
+    ) in &mut players {
         narrow_hits.clear();
         for hit in broad_hits.iter() {
             let push = shape_and_shape(
@@ -100,121 +94,26 @@ fn narrow_test(
             narrow_hits.push(NarrowHit {
                 pos: hit.pos,
                 collider: hit.collider,
-                push_squared: push.length_squared(),
+                order: push.length_squared(),
             });
         }
         narrow_hits.sort_by(
             |a, b|
-            a.push_squared.partial_cmp(&b.push_squared).unwrap()
+            a.order.partial_cmp(&b.order).unwrap()
         );
     }
+    // TODO when any hits
 }
 
-fn shape_and_shape(
-    pos1: Vec2, shape1: Shape, scale1: Vec2,
-    pos2: Vec2, shape2: Shape, scale2: Vec2
-) -> Vec2 {
-    match shape1 {
-        Shape::Circle => {
-            match shape2 {
-                Shape::Circle => {
-                    circle_and_circle(
-                        pos1, scale1.x, pos2, scale2.x
-                    )
-                }
-                Shape::Rect => {
-                    circle_and_rect(
-                        pos1, scale1.x, pos2, scale2
-                    )
-                }
-            }
-        }
-        Shape::Rect => {
-            match shape2 {
-                Shape::Circle => {
-                    circle_and_rect(
-                        pos2, scale2.x, pos1, scale1
-                    )
-                }
-                Shape::Rect => {
-                    rect_and_rect(
-                        pos1, scale1, pos2, scale2
-                    )
-                }
-            }
-        }
-    }
-}
-
-fn rect_and_rect(pos1: Vec2, scale1: Vec2, pos2: Vec2, scale2: Vec2) -> Vec2 {
-    let w = scale1.x + scale2.x;
-    let h = scale1.y + scale2.y;
-    if pos1.x < pos2.x - w {
-        Vec2::ZERO
-    } else if pos1.x > pos2.x + w {
-        Vec2::ZERO
-    } else if pos1.y < pos2.y - h {
-        Vec2::ZERO
-    } else if pos1.y > pos2.y + h {
-        Vec2::ZERO
-    } else {
-        Vec2::ZERO
-    }
-    // TODO
-}
-
-fn circle_and_circle(pos1: Vec2, radius1: f32, pos2: Vec2, radius2: f32) -> Vec2 {
-    let radius = radius1 + radius2;
-    if (pos1).distance_squared(pos2) < radius * radius {
-        pos2 - pos1
-    } else {
-        Vec2::ZERO
-    }
-}
-
-fn circle_and_rect(pos1: Vec2, radius: f32, pos2: Vec2, scale2: Vec2) -> Vec2 {
-    let x = pos1.x;
-    let y = pos1.y;
-    let x1 = pos2.x - scale2.x;
-    let x2 = pos2.x + scale2.x;
-    let y1 = pos2.y - scale2.y;
-    let y2 = pos2.y + scale2.y;
-    let rr = radius * radius;
-    let a = Vec2::new(x - x1, y - y1);
-    let b = Vec2::new(x - x2, y - y1);
-    let c = Vec2::new(x - x1, y - y2);
-    let d = Vec2::new(x - x2, y - y2);
-    if x1 < x && x < x2 && y1 - radius < y && y < y2 + radius {
-        if pos1.y > pos2.y {
-            Vec2::new(0.0, y2 - y + radius)
-        } else {
-            Vec2::new(0.0, y1 - y - radius)
-        }
-    } else if y1 < y && y < y2 && x1 - radius < x && x < x2 + radius {
-        if pos1.x > pos2.x {
-            Vec2::new(x2 - x + radius, 0.0)
-        } else {
-            Vec2::new(x1 - x - radius, 0.0)
-        }
-    } else if a.length_squared() < rr {
-        a.normalize() * (radius - a.length())
-    } else if b.length_squared() < rr {
-        b.normalize() * (radius - b.length())
-    } else if c.length_squared() < rr {
-        c.normalize() * (radius - c.length())
-    } else if d.length_squared() < rr {
-        d.normalize() * (radius - d.length())
-    } else {
-        Vec2::ZERO
-    }
-    // TODO dived center
-}
-
-fn slide_on_ground(
+fn dynamics_phase(
     mut players: Query<(Entity, &mut Transform, &Collider, &NarrowHits)>,
     mut commands: Commands,
 ) {
-    for (entity, mut transform, collider, narrow_hits) in &mut players {
+    for (entity,
+        mut transform,
+        collider,
+        narrow_hits,
+    ) in &mut players {
         let mut pushed = Vec2::ZERO;
         for hit in narrow_hits.iter() {
             let push = shape_and_shape(
@@ -233,6 +132,8 @@ fn slide_on_ground(
             commands.entity(entity).insert(Grounded);
         }
     }
+    // TODO when any hits
+    // TODO can replace entities?
 }
 
 pub struct CollisionPlugin;
@@ -240,9 +141,9 @@ pub struct CollisionPlugin;
 impl Plugin for CollisionPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, (
-            broad_test,
-            narrow_test,
-            slide_on_ground,
+            broad_phase,
+            narrow_phase,
+            dynamics_phase,
         ));
     }
 }

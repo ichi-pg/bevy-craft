@@ -101,7 +101,10 @@ fn read_cursor(
     let (camera, camera_transform) = q_camera.single();
     let window = q_window.single();
     if let Some(world_position) = window.cursor_position()
-        .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
+        .and_then(
+            |cursor|
+            camera.viewport_to_world(camera_transform, cursor)
+        )
         .map(|ray| ray.origin.truncate())
     {
         input.cursor = world_position;
