@@ -9,19 +9,25 @@ pub struct Grounded;
 pub struct Collider {
     shape: Shape,
     pub scale: Vec2,
+    layer: u8,
+    mask: u8,
 }
 
 impl Collider {
-    pub fn circle(radius: f32) -> Self {
+    pub fn circle(radius: f32, layer: u8, mask: u8) -> Self {
         Collider {
             shape: Shape::Circle,
             scale: Vec2::new(radius, radius),
+            layer,
+            mask,
         }
     }
-    pub fn rect(half_width: f32, half_height: f32) -> Self {
+    pub fn rect(half_width: f32, half_height: f32, layer: u8, mask: u8) -> Self {
         Collider {
             shape: Shape::Rect,
             scale: Vec2::new(half_width, half_height),
+            layer,
+            mask,
         }
     }
 }
@@ -44,6 +50,9 @@ pub struct BroadHits(ArrayVec<BroadHit, 10>);
 
 #[derive(Component, Deref, DerefMut, Default)]
 pub struct NarrowHits(ArrayVec<NarrowHit, 10>);
+
+#[derive(Event)]
+pub struct Collided {}
 
 fn broad_phase(
     mut players: Query<(&Transform, &mut BroadHits, &Collider)>,
@@ -69,7 +78,10 @@ fn broad_phase(
     // TODO sleeping
 }
 
-fn narrow_phase(mut players: Query<(&Transform, &Collider, &BroadHits, &mut NarrowHits)>) {
+fn narrow_phase(
+    mut players: Query<(&Transform, &Collider, &BroadHits, &mut NarrowHits)>,
+    mut collided: EventWriter<Collided>,
+) {
     for (transform, collider, broad_hits, mut narrow_hits) in &mut players {
         narrow_hits.clear();
         for hit in broad_hits.iter() {
@@ -84,11 +96,14 @@ fn narrow_phase(mut players: Query<(&Transform, &Collider, &BroadHits, &mut Narr
             if push == Vec2::ZERO {
                 continue;
             }
-            narrow_hits.push(NarrowHit {
-                pos: hit.pos,
-                collider: hit.collider,
-                order: push.length_squared(),
-            });
+            if collider.mask & hit.collider.layer > 0 {
+                narrow_hits.push(NarrowHit {
+                    pos: hit.pos,
+                    collider: hit.collider,
+                    order: push.length_squared(),
+                });
+            }
+            collided.send(Collided {});
         }
         narrow_hits.sort_by(|a, b| a.order.partial_cmp(&b.order).unwrap());
     }
@@ -126,6 +141,7 @@ pub struct CollisionPlugin;
 
 impl Plugin for CollisionPlugin {
     fn build(&self, app: &mut App) {
+        app.add_event::<Collided>();
         app.add_systems(Update, (broad_phase, narrow_phase, dynamics_phase));
     }
 }

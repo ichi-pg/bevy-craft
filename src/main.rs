@@ -8,6 +8,7 @@ mod collision;
 mod hit_test;
 mod input;
 mod item;
+mod layer;
 mod level;
 mod player;
 mod rapier_level;

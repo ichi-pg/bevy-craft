@@ -2,6 +2,7 @@ use crate::collision::*;
 use crate::hit_test::*;
 use crate::input::*;
 use crate::item::*;
+use crate::layer::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -28,7 +29,7 @@ fn spawn_blocks(mut commands: Commands) {
                     transform: Transform::from_xyz(x as f32 * size, y as f32 * size, 0.0),
                     ..default()
                 },
-                Collider::rect(size * 0.5, size * 0.5),
+                Collider::rect(size * 0.5, size * 0.5, BLOCK, NONE),
                 Block,
             ));
         }
@@ -56,7 +57,7 @@ fn destroy_block(
                     transform: transform.clone(),
                     ..default()
                 },
-                Collider::circle(32.0),
+                Collider::circle(32.0, ITEM, BLOCK),
                 ItemID(1),
                 ItemAmount(1),
             ));

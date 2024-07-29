@@ -1,5 +1,6 @@
 use crate::collision::*;
 use crate::input::*;
+use crate::layer::*;
 use bevy::{
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
@@ -35,7 +36,7 @@ fn spawn_player(
         Velocity2::default(),
         BroadHits::default(),
         NarrowHits::default(),
-        Collider::circle(size * 0.5),
+        Collider::circle(size * 0.5, PLAYER, BLOCK),
     ));
 }
 
