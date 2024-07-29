@@ -34,4 +34,24 @@ fn main() {
             level::LevelPlugin,
         ))
         .run();
+
+    // TODO gimmicks
+    // gear, water, wind, spike, fall floor, moving floor, seesaw, spring, tarzan, warp,
+    // switch, door, ladder, rope, bomb, barrel, raft, magnetic, torch, ...
+
+    // TODO tame, mount
+    // TODO weapon, tools, potion
+    // TODO hotbar, inventory, chest
+    // TODO craft, enchant, skill
+    // TODO level generate
+    // TODO farmming, industry
+    // TODO rogue dungeon
+    
+    // TODO master data
+    // TODO save and load
+    // TODO multiplayer
+    // TODO sound
+
+    // TODO visual making
+    // water, lighting, post effect, background layers, ...
 }
