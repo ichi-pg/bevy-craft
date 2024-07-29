@@ -15,11 +15,7 @@ fn spawn_blocks(mut commands: Commands) {
                         custom_size: Some(Vec2::new(128.0, 128.0)),
                         ..default()
                     },
-                    transform: Transform::from_xyz(
-                        (x * 128) as f32,
-                        (y * 128) as f32,
-                        -1.0
-                    ),
+                    transform: Transform::from_xyz((x * 128) as f32, (y * 128) as f32, -1.0),
                     ..default()
                 },
                 RigidBody::Static,

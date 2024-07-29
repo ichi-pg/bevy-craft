@@ -1,11 +1,9 @@
-use bevy:: {
-    prelude::*,
-    sprite:: {
-        MaterialMesh2dBundle, Mesh2dHandle
-    }
-};
-use crate::input::*;
 use crate::collision::*;
+use crate::input::*;
+use bevy::{
+    prelude::*,
+    sprite::{MaterialMesh2dBundle, Mesh2dHandle},
+};
 
 #[derive(Component)]
 pub struct Controllable;
@@ -58,10 +56,7 @@ fn add_velocity(
     }
 }
 
-fn add_move_x(
-    mut players: Query<&mut Velocity2, With<Controllable>>,
-    input: Res<Input>,
-) {
+fn add_move_x(mut players: Query<&mut Velocity2, With<Controllable>>, input: Res<Input>) {
     for mut velocity in &mut players {
         velocity.x = input.left_stick.x * 400.0;
     }
@@ -93,10 +88,7 @@ fn add_jump(
     }
 }
 
-fn add_gravity(
-    mut players: Query<&mut Velocity2, Without<Grounded>>,
-    time: Res<Time>,
-) {
+fn add_gravity(mut players: Query<&mut Velocity2, Without<Grounded>>, time: Res<Time>) {
     for mut velocity in &mut players {
         velocity.y = (velocity.y - 4000.0 * time.delta_seconds()).max(-2048.0);
     }
@@ -107,12 +99,15 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_player);
-        app.add_systems(Update, (
-            // add_move_xy,
-            add_move_x,
-            add_jump,
-            add_gravity,
-            add_velocity,
-        ));
+        app.add_systems(
+            Update,
+            (
+                // add_move_xy,
+                add_move_x,
+                add_jump,
+                add_gravity,
+                add_velocity,
+            ),
+        );
     }
 }

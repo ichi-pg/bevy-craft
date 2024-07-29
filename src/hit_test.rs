@@ -41,38 +41,22 @@ pub fn point_and_rect(pos1: Vec2, pos2: Vec3, scale2: Vec2) -> bool {
 }
 
 pub fn shape_and_shape(
-    pos1: Vec2, shape1: Shape, scale1: Vec2,
-    pos2: Vec2, shape2: Shape, scale2: Vec2
+    pos1: Vec2,
+    shape1: Shape,
+    scale1: Vec2,
+    pos2: Vec2,
+    shape2: Shape,
+    scale2: Vec2,
 ) -> Vec2 {
     match shape1 {
-        Shape::Circle => {
-            match shape2 {
-                Shape::Circle => {
-                    circle_and_circle(
-                        pos1, scale1.x, pos2, scale2.x
-                    )
-                }
-                Shape::Rect => {
-                    circle_and_rect(
-                        pos1, scale1.x, pos2, scale2
-                    )
-                }
-            }
-        }
-        Shape::Rect => {
-            match shape2 {
-                Shape::Circle => {
-                    circle_and_rect(
-                        pos2, scale2.x, pos1, scale1
-                    )
-                }
-                Shape::Rect => {
-                    rect_and_rect(
-                        pos1, scale1, pos2, scale2
-                    )
-                }
-            }
-        }
+        Shape::Circle => match shape2 {
+            Shape::Circle => circle_and_circle(pos1, scale1.x, pos2, scale2.x),
+            Shape::Rect => circle_and_rect(pos1, scale1.x, pos2, scale2),
+        },
+        Shape::Rect => match shape2 {
+            Shape::Circle => circle_and_rect(pos2, scale2.x, pos1, scale1),
+            Shape::Rect => rect_and_rect(pos1, scale1, pos2, scale2),
+        },
     }
 }
 
@@ -99,11 +83,6 @@ pub fn circle_and_rect(pos1: Vec2, radius: f32, pos2: Vec2, scale2: Vec2) -> Vec
     let x2 = pos2.x + scale2.x;
     let y1 = pos2.y - scale2.y;
     let y2 = pos2.y + scale2.y;
-    let rr = radius * radius;
-    let a = Vec2::new(x - x1, y - y1);
-    let b = Vec2::new(x - x2, y - y1);
-    let c = Vec2::new(x - x1, y - y2);
-    let d = Vec2::new(x - x2, y - y2);
     if x1 < x && x < x2 && y1 - radius < y && y < y2 + radius {
         if pos1.y > pos2.y {
             Vec2::new(0.0, y2 - y + radius)
@@ -116,16 +95,23 @@ pub fn circle_and_rect(pos1: Vec2, radius: f32, pos2: Vec2, scale2: Vec2) -> Vec
         } else {
             Vec2::new(x1 - x - radius, 0.0)
         }
-    } else if a.length_squared() < rr {
-        a.normalize() * (radius - a.length())
-    } else if b.length_squared() < rr {
-        b.normalize() * (radius - b.length())
-    } else if c.length_squared() < rr {
-        c.normalize() * (radius - c.length())
-    } else if d.length_squared() < rr {
-        d.normalize() * (radius - d.length())
     } else {
-        Vec2::ZERO
+        let rr = radius * radius;
+        let a = Vec2::new(x - x1, y - y1);
+        let b = Vec2::new(x - x2, y - y1);
+        let c = Vec2::new(x - x1, y - y2);
+        let d = Vec2::new(x - x2, y - y2);
+        if a.length_squared() < rr {
+            a.normalize() * (radius - a.length())
+        } else if b.length_squared() < rr {
+            b.normalize() * (radius - b.length())
+        } else if c.length_squared() < rr {
+            c.normalize() * (radius - c.length())
+        } else if d.length_squared() < rr {
+            d.normalize() * (radius - d.length())
+        } else {
+            Vec2::ZERO
+        }
     }
     // TODO dived center
 }

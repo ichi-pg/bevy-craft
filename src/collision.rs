@@ -1,6 +1,6 @@
-use bevy::prelude::*;
-use arrayvec::ArrayVec;
 use crate::hit_test::*;
+use arrayvec::ArrayVec;
+use bevy::prelude::*;
 
 #[derive(Component)]
 pub struct Grounded;
@@ -40,10 +40,10 @@ pub struct NarrowHit {
 }
 
 #[derive(Component, Deref, DerefMut, Default)]
-pub struct BroadHits(ArrayVec::<BroadHit, 10>);
+pub struct BroadHits(ArrayVec<BroadHit, 10>);
 
 #[derive(Component, Deref, DerefMut, Default)]
-pub struct NarrowHits(ArrayVec::<NarrowHit, 10>);
+pub struct NarrowHits(ArrayVec<NarrowHit, 10>);
 
 fn broad_phase(
     mut players: Query<(&Transform, &mut BroadHits, &Collider)>,
@@ -69,15 +69,8 @@ fn broad_phase(
     // TODO sleeping
 }
 
-fn narrow_phase(
-    mut players: Query<(&Transform, &Collider, &BroadHits, &mut NarrowHits)>,
-) {
-    for (
-        transform,
-        collider,
-        broad_hits,
-        mut narrow_hits,
-    ) in &mut players {
+fn narrow_phase(mut players: Query<(&Transform, &Collider, &BroadHits, &mut NarrowHits)>) {
+    for (transform, collider, broad_hits, mut narrow_hits) in &mut players {
         narrow_hits.clear();
         for hit in broad_hits.iter() {
             let push = shape_and_shape(
@@ -86,7 +79,7 @@ fn narrow_phase(
                 collider.scale,
                 hit.pos,
                 hit.collider.shape,
-                hit.collider.scale
+                hit.collider.scale,
             );
             if push == Vec2::ZERO {
                 continue;
@@ -97,10 +90,7 @@ fn narrow_phase(
                 order: push.length_squared(),
             });
         }
-        narrow_hits.sort_by(
-            |a, b|
-            a.order.partial_cmp(&b.order).unwrap()
-        );
+        narrow_hits.sort_by(|a, b| a.order.partial_cmp(&b.order).unwrap());
     }
     // TODO when any hits
 }
@@ -109,11 +99,7 @@ fn dynamics_phase(
     mut players: Query<(Entity, &mut Transform, &Collider, &NarrowHits)>,
     mut commands: Commands,
 ) {
-    for (entity,
-        mut transform,
-        collider,
-        narrow_hits,
-    ) in &mut players {
+    for (entity, mut transform, collider, narrow_hits) in &mut players {
         let mut pushed = Vec2::ZERO;
         for hit in narrow_hits.iter() {
             let push = shape_and_shape(
@@ -122,7 +108,7 @@ fn dynamics_phase(
                 collider.scale,
                 hit.pos,
                 hit.collider.shape,
-                hit.collider.scale
+                hit.collider.scale,
             );
             transform.translation.x += push.x;
             transform.translation.y += push.y;
@@ -140,10 +126,6 @@ pub struct CollisionPlugin;
 
 impl Plugin for CollisionPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (
-            broad_phase,
-            narrow_phase,
-            dynamics_phase,
-        ));
+        app.add_systems(Update, (broad_phase, narrow_phase, dynamics_phase));
     }
 }

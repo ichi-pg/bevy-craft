@@ -1,7 +1,7 @@
-use bevy_rapier2d::prelude::*;
-use bevy::prelude::*;
 use crate::input::*;
 use crate::player::*;
+use bevy::prelude::*;
+use bevy_rapier2d::prelude::*;
 
 fn spawn_player(mut commands: Commands) {
     commands.spawn((
@@ -24,15 +24,12 @@ fn add_velocity(
         let y = velocity.y * time.delta_seconds();
         controller.translation = match controller.translation {
             Some(v) => Some(Vec2::new(v.x + x, v.y + y)),
-            None =>  Some(Vec2::new(x, y)),
+            None => Some(Vec2::new(x, y)),
         };
     }
 }
 
-fn add_move(
-    mut players: Query<&mut Velocity2, With<Controllable>>,
-    input: Res<Input>,
-) {
+fn add_move(mut players: Query<&mut Velocity2, With<Controllable>>, input: Res<Input>) {
     for mut velocity in &mut players {
         if input.left_stick.x == 0.0 {
             velocity.x = 0.0;
@@ -75,11 +72,6 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_player);
-        app.add_systems(Update, (
-            add_move,
-            add_jump,
-            add_gravity,
-            add_velocity,
-        ));
+        app.add_systems(Update, (add_move, add_jump, add_gravity, add_velocity));
     }
 }

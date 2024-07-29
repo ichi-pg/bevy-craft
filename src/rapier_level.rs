@@ -9,7 +9,7 @@ fn spawn_blocks(mut commands: Commands) {
                 TransformBundle::from_transform(Transform::from_xyz(
                     (x * 128) as f32,
                     (y * 128) as f32,
-                    0.0
+                    0.0,
                 )),
                 RigidBody::Fixed,
             ));

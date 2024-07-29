@@ -1,8 +1,5 @@
 use bevy::{
-    input::mouse::{
-        MouseWheel,
-        MouseScrollUnit,
-    },
+    input::mouse::{MouseScrollUnit, MouseWheel},
     prelude::*,
     window::PrimaryWindow,
 };
@@ -28,10 +25,7 @@ pub struct Input {
     pub num: [bool; 10],
 }
 
-fn read_keyboard(
-    mut input: ResMut<Input>,
-    keyboard: Res<ButtonInput<KeyCode>>,
-) {
+fn read_keyboard(mut input: ResMut<Input>, keyboard: Res<ButtonInput<KeyCode>>) {
     input.left_stick = Vec2::ZERO;
     if keyboard.pressed(KeyCode::KeyW) {
         input.left_stick.y += 1.0;
@@ -68,27 +62,17 @@ fn read_keyboard(
     input.num[9] = keyboard.just_pressed(KeyCode::Digit9);
 }
 
-fn read_mouse(
-    mut input: ResMut<Input>,
-    mouse: Res<ButtonInput<MouseButton>>,
-) {
+fn read_mouse(mut input: ResMut<Input>, mouse: Res<ButtonInput<MouseButton>>) {
     input.left_click = mouse.just_released(MouseButton::Left);
     input.right_click = mouse.just_pressed(MouseButton::Right);
 }
 
-fn read_wheel(
-    mut input: ResMut<Input>,
-    mut wheels: EventReader<MouseWheel>,
-) {
+fn read_wheel(mut input: ResMut<Input>, mut wheels: EventReader<MouseWheel>) {
     input.wheel = 0;
     for wheel in wheels.read() {
         input.wheel += match wheel.unit {
-            MouseScrollUnit::Line => {
-                wheel.y as i8
-            }
-            MouseScrollUnit::Pixel => {
-                wheel.y as i8
-            }
+            MouseScrollUnit::Line => wheel.y as i8,
+            MouseScrollUnit::Pixel => wheel.y as i8,
         };
     }
 }
@@ -100,11 +84,9 @@ fn read_cursor(
 ) {
     let (camera, camera_transform) = q_camera.single();
     let window = q_window.single();
-    if let Some(world_position) = window.cursor_position()
-        .and_then(
-            |cursor|
-            camera.viewport_to_world(camera_transform, cursor)
-        )
+    if let Some(world_position) = window
+        .cursor_position()
+        .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
         .map(|ray| ray.origin.truncate())
     {
         input.cursor = world_position;
@@ -115,14 +97,7 @@ pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(Input {
-            ..default()
-        });
-        app.add_systems(Update, (
-            read_keyboard,
-            read_mouse,
-            read_wheel,
-            read_cursor,
-        ));
+        app.insert_resource(Input { ..default() });
+        app.add_systems(Update, (read_keyboard, read_mouse, read_wheel, read_cursor));
     }
 }
