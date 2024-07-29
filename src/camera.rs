@@ -7,7 +7,7 @@ fn spawn_camera(mut commands: Commands) {
 
 fn move_camera(
     mut cameras: Query<&mut Transform, With<Camera>>,
-    players: Query<&Transform, (With<Controllable>, Without<Camera>)>,
+    players: Query<&Transform, (With<PlayerController>, Without<Camera>)>,
 ) {
     for mut camera in &mut cameras {
         for player in &players {

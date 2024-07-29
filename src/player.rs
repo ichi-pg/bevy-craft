@@ -1,16 +1,14 @@
 use crate::collision::*;
 use crate::input::*;
 use crate::layer::*;
+use crate::rigid_body::*;
 use bevy::{
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
 
 #[derive(Component)]
-pub struct Controllable;
-
-#[derive(Component, Deref, DerefMut, Default)]
-pub struct Velocity2(Vec2);
+pub struct PlayerController;
 
 fn spawn_player(
     mut commands: Commands,
@@ -32,7 +30,8 @@ fn spawn_player(
             material: materials.add(Color::srgb(1.0, 1.0, 1.0)),
             ..default()
         },
-        Controllable,
+        PlayerController,
+        RigitBodyController,
         Velocity2::default(),
         BroadHits::default(),
         NarrowHits::default(),
@@ -40,31 +39,14 @@ fn spawn_player(
     ));
 }
 
-fn add_velocity(
-    mut players: Query<(Entity, &mut Transform, &Velocity2)>,
-    time: Res<Time>,
-    mut commands: Commands,
-) {
-    for (entity, mut transform, velocity) in &mut players {
-        if velocity.0 == Vec2::ZERO {
-            continue;
-        }
-        if velocity.y >= 0.0 {
-            commands.entity(entity).remove::<Grounded>();
-        }
-        transform.translation.x += velocity.x * time.delta_seconds();
-        transform.translation.y += velocity.y * time.delta_seconds();
-    }
-}
-
-fn add_move_x(mut players: Query<&mut Velocity2, With<Controllable>>, input: Res<Input>) {
+fn add_move_x(mut players: Query<&mut Velocity2, With<PlayerController>>, input: Res<Input>) {
     for mut velocity in &mut players {
         velocity.x = input.left_stick.x * 400.0;
     }
 }
 
 // fn add_move_xy(
-//     mut players: Query<&mut Velocity2, With<Controllable>>,
+//     mut players: Query<&mut Velocity2, With<PlayerController>>,
 //     input: Res<Input>,
 // ) {
 //     for mut velocity in &mut players {
@@ -77,7 +59,7 @@ fn add_move_x(mut players: Query<&mut Velocity2, With<Controllable>>, input: Res
 // }
 
 fn add_jump(
-    mut players: Query<&mut Velocity2, (With<Controllable>, With<Grounded>)>,
+    mut players: Query<&mut Velocity2, (With<PlayerController>, With<Grounded>)>,
     input: Res<Input>,
 ) {
     for mut velocity in &mut players {
@@ -86,12 +68,6 @@ fn add_jump(
         } else {
             velocity.y = 0.0;
         }
-    }
-}
-
-fn add_gravity(mut players: Query<&mut Velocity2, Without<Grounded>>, time: Res<Time>) {
-    for mut velocity in &mut players {
-        velocity.y = (velocity.y - 4000.0 * time.delta_seconds()).max(-2048.0);
     }
 }
 
@@ -104,10 +80,7 @@ impl Plugin for PlayerPlugin {
             Update,
             (
                 // add_move_xy,
-                add_move_x,
-                add_jump,
-                add_gravity,
-                add_velocity,
+                add_move_x, add_jump,
             ),
         );
     }

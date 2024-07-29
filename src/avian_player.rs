@@ -26,14 +26,14 @@ fn spawn_player(mut commands: Commands) {
         ColliderDensity::default(),
         GravityScale(128.0),
         LinearVelocity::default(),
-        Controllable,
+        PlayerController,
         // FIXME bounding
         // FIXME vibrating
     ));
 }
 
 fn update_velocity(
-    mut players: Query<&mut LinearVelocity, (With<Controllable>, With<Grounded>)>,
+    mut players: Query<&mut LinearVelocity, (With<PlayerController>, With<Grounded>)>,
     input: Res<Input>,
     time: Res<Time>,
 ) {

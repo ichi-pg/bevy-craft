@@ -1,5 +1,6 @@
 use crate::input::*;
 use crate::player::*;
+use crate::rigid_body::*;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
@@ -10,7 +11,7 @@ fn spawn_player(mut commands: Commands) {
         TransformBundle::default(),
         RigidBody::KinematicPositionBased,
         Velocity2::default(),
-        Controllable,
+        PlayerController,
         // FIXME wall grounded
     ));
 }
@@ -29,7 +30,7 @@ fn add_velocity(
     }
 }
 
-fn add_move(mut players: Query<&mut Velocity2, With<Controllable>>, input: Res<Input>) {
+fn add_move(mut players: Query<&mut Velocity2, With<PlayerController>>, input: Res<Input>) {
     for mut velocity in &mut players {
         if input.left_stick.x == 0.0 {
             velocity.x = 0.0;
@@ -40,7 +41,10 @@ fn add_move(mut players: Query<&mut Velocity2, With<Controllable>>, input: Res<I
 }
 
 fn add_jump(
-    mut players: Query<(&mut Velocity2, &KinematicCharacterControllerOutput), With<Controllable>>,
+    mut players: Query<
+        (&mut Velocity2, &KinematicCharacterControllerOutput),
+        With<PlayerController>,
+    >,
     input: Res<Input>,
 ) {
     for (mut velocity, output) in &mut players {

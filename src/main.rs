@@ -3,16 +3,17 @@ use bevy::prelude::*;
 // use bevy_rapier2d::prelude::*;
 mod avian_level;
 mod avian_player;
+mod block;
 mod camera;
 mod collision;
 mod hit_test;
 mod input;
 mod item;
 mod layer;
-mod level;
 mod player;
 mod rapier_level;
 mod rapier_player;
+mod rigid_body;
 
 fn main() {
     App::new()
@@ -32,7 +33,8 @@ fn main() {
             collision::CollisionPlugin,
             player::PlayerPlugin,
             camera::CameraPlugin,
-            level::LevelPlugin,
+            block::BlockPlugin,
+            rigid_body::RigitBodyPlugin,
         ))
         .run();
 

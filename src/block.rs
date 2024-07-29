@@ -3,6 +3,7 @@ use crate::hit_test::*;
 use crate::input::*;
 use crate::item::*;
 use crate::layer::*;
+use crate::rigid_body::Velocity2;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -58,6 +59,9 @@ fn destroy_block(
                     ..default()
                 },
                 Collider::circle(32.0, ITEM, BLOCK),
+                BroadHits::default(),
+                NarrowHits::default(),
+                Velocity2::default(),
                 ItemID(1),
                 ItemAmount(1),
             ));
@@ -68,9 +72,9 @@ fn destroy_block(
     // TODO event
 }
 
-pub struct LevelPlugin;
+pub struct BlockPlugin;
 
-impl Plugin for LevelPlugin {
+impl Plugin for BlockPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_blocks);
         app.add_systems(Update, destroy_block);
