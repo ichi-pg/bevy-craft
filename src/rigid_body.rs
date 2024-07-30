@@ -1,4 +1,4 @@
-use crate::collision::*;
+use crate::grounded::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -8,11 +8,11 @@ pub struct RigitBodyController;
 pub struct Velocity2(Vec2);
 
 fn add_velocity(
-    mut players: Query<(Entity, &mut Transform, &Velocity2)>,
+    mut query: Query<(Entity, &mut Transform, &Velocity2)>,
     time: Res<Time>,
     mut commands: Commands,
 ) {
-    for (entity, mut transform, velocity) in &mut players {
+    for (entity, mut transform, velocity) in &mut query {
         if velocity.0 == Vec2::ZERO {
             continue;
         }
@@ -22,19 +22,16 @@ fn add_velocity(
         transform.translation.x += velocity.x * time.delta_seconds();
         transform.translation.y += velocity.y * time.delta_seconds();
     }
-    // TODO remove grounded when destroied bottom block
 }
 
-fn add_gravity(mut players: Query<&mut Velocity2, Without<Grounded>>, time: Res<Time>) {
-    for mut velocity in &mut players {
+fn add_gravity(mut query: Query<&mut Velocity2, Without<Grounded>>, time: Res<Time>) {
+    for mut velocity in &mut query {
         velocity.y = (velocity.y - 4000.0 * time.delta_seconds()).max(-2048.0);
     }
 }
 
-fn stop_gravity(
-    mut players: Query<&mut Velocity2, (Without<RigitBodyController>, With<Grounded>)>,
-) {
-    for mut velocity in &mut players {
+fn stop_gravity(mut query: Query<&mut Velocity2, (Without<RigitBodyController>, With<Grounded>)>) {
+    for mut velocity in &mut query {
         velocity.y = 0.0;
     }
 }

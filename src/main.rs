@@ -6,6 +6,7 @@ mod avian_player;
 mod block;
 mod camera;
 mod collision;
+mod grounded;
 mod hit_test;
 mod input;
 mod item;
@@ -35,6 +36,8 @@ fn main() {
             camera::CameraPlugin,
             block::BlockPlugin,
             rigid_body::RigitBodyPlugin,
+            item::ItemPlugin,
+            grounded::GroundedPlugin,
         ))
         .run();
 

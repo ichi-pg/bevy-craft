@@ -1,9 +1,7 @@
+use crate::grounded::*;
 use crate::hit_test::*;
 use arrayvec::ArrayVec;
 use bevy::prelude::*;
-
-#[derive(Component)]
-pub struct Grounded;
 
 #[derive(Component, Clone, Copy)]
 pub struct Collider {
@@ -80,7 +78,7 @@ fn broad_phase(
 
 fn narrow_phase(
     mut players: Query<(&Transform, &Collider, &BroadHits, &mut NarrowHits)>,
-    mut collided: EventWriter<Collided>,
+    mut event_writer: EventWriter<Collided>,
 ) {
     for (transform, collider, broad_hits, mut narrow_hits) in &mut players {
         narrow_hits.clear();
@@ -103,7 +101,7 @@ fn narrow_phase(
                     order: push.length_squared(),
                 });
             }
-            collided.send(Collided {});
+            event_writer.send(Collided {});
         }
         narrow_hits.sort_by(|a, b| a.order.partial_cmp(&b.order).unwrap());
     }

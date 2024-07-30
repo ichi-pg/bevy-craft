@@ -1,10 +1,8 @@
+use crate::grounded::*;
 use crate::input::*;
 use crate::player::*;
 use avian2d::{math::*, prelude::*};
 use bevy::prelude::*;
-
-#[derive(Component)]
-struct Grounded;
 
 fn spawn_player(mut commands: Commands) {
     commands.spawn((

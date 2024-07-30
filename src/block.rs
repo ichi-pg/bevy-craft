@@ -1,13 +1,16 @@
 use crate::collision::*;
 use crate::hit_test::*;
 use crate::input::*;
-use crate::item::*;
 use crate::layer::*;
-use crate::rigid_body::Velocity2;
 use bevy::prelude::*;
 
 #[derive(Component)]
-pub struct Block;
+struct Block;
+
+#[derive(Event)]
+pub struct BlockDestroied {
+    pub transform: Transform,
+}
 
 fn spawn_blocks(mut commands: Commands) {
     for x in -10..10 {
@@ -41,6 +44,7 @@ fn destroy_block(
     mut blocks: Query<(Entity, &Transform, &Collider), With<Block>>,
     mut commands: Commands,
     input: Res<Input>,
+    mut event_writer: EventWriter<BlockDestroied>,
 ) {
     if !input.left_click {
         return;
@@ -48,34 +52,19 @@ fn destroy_block(
     for (entity, transform, collider) in &mut blocks {
         if point_and_rect(input.cursor, transform.translation, collider.scale) {
             commands.entity(entity).despawn();
-            commands.spawn((
-                SpriteBundle {
-                    sprite: Sprite {
-                        color: Color::srgb(0.6, 0.6, 0.6),
-                        custom_size: Some(Vec2::new(64.0, 64.0)),
-                        ..default()
-                    },
-                    transform: transform.clone(),
-                    ..default()
-                },
-                Collider::circle(32.0, ITEM, BLOCK),
-                BroadHits::default(),
-                NarrowHits::default(),
-                Velocity2::default(),
-                ItemID(1),
-                ItemAmount(1),
-            ));
+            event_writer.send(BlockDestroied {
+                transform: transform.clone(),
+            });
         }
     }
-    // TODO item collision
     // TODO chunk
-    // TODO event
 }
 
 pub struct BlockPlugin;
 
 impl Plugin for BlockPlugin {
     fn build(&self, app: &mut App) {
+        app.add_event::<BlockDestroied>();
         app.add_systems(Startup, spawn_blocks);
         app.add_systems(Update, destroy_block);
     }
