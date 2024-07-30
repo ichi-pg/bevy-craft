@@ -1,46 +1,47 @@
+use crate::block::*;
 use crate::grounded::*;
 use crate::hit_test::*;
+use crate::item::*;
+use crate::player::*;
 use arrayvec::ArrayVec;
 use bevy::prelude::*;
+
+#[derive(Component, Clone, Copy)]
+pub struct EnableNarrow;
 
 #[derive(Component, Clone, Copy)]
 pub struct Collider {
     shape: Shape,
     pub scale: Vec2,
-    layer: u8,
-    mask: u8,
 }
 
 impl Collider {
-    pub fn circle(radius: f32, layer: u8, mask: u8) -> Self {
+    pub fn circle(radius: f32) -> Self {
         Collider {
             shape: Shape::Circle,
             scale: Vec2::new(radius, radius),
-            layer,
-            mask,
         }
     }
-    pub fn rect(half_width: f32, half_height: f32, layer: u8, mask: u8) -> Self {
+    pub fn rect(half_width: f32, half_height: f32) -> Self {
         Collider {
             shape: Shape::Rect,
             scale: Vec2::new(half_width, half_height),
-            layer,
-            mask,
         }
     }
 }
 
-#[derive(Component, Clone, Copy)]
+#[derive(Component)]
 pub struct BroadHit {
-    pub pos: Vec2,
-    pub collider: Collider,
+    pos: Vec2,
+    collider: Collider,
+    enable_narrow: bool,
 }
 
-#[derive(Component, Clone, Copy)]
+#[derive(Component)]
 pub struct NarrowHit {
-    pub pos: Vec2,
-    pub collider: Collider,
-    pub order: f32,
+    pos: Vec2,
+    collider: Collider,
+    order: f32,
 }
 
 #[derive(Component, Deref, DerefMut, Default)]
@@ -50,37 +51,77 @@ pub struct BroadHits(ArrayVec<BroadHit, 10>);
 pub struct NarrowHits(ArrayVec<NarrowHit, 10>);
 
 #[derive(Event)]
-pub struct Collided {}
+pub struct Collided {
+    pub pos: Vec2,
+    // TODO spawn id
+}
 
-fn broad_phase(
-    mut players: Query<(&Transform, &mut BroadHits, &Collider)>,
-    blocks: Query<(&Transform, &Collider), Without<BroadHits>>,
+fn check_items(
+    mut query1: Query<(&Transform, &Collider, &mut BroadHits), With<PlayerController>>,
+    query2: Query<(&Transform, &Collider), With<ItemID>>,
 ) {
-    for (player, mut hits, circle) in &mut players {
-        hits.clear();
-        for (block, rect) in &blocks {
-            if aabb(
-                player.translation,
-                circle.scale,
-                block.translation,
-                rect.scale,
-            ) {
-                hits.push(BroadHit {
-                    pos: block.translation.xy(),
-                    collider: rect.clone(),
-                });
-            }
+    for (transform1, collider1, mut hits) in &mut query1 {
+        for (transform2, collider2) in &query2 {
+            broad_test(
+                transform1, collider1, transform2, collider2, false, &mut hits,
+            );
         }
     }
     // TODO chunk or sweep or tree
     // TODO sleeping
+    // TODO want to commonalize using layer
+    // TODO should not check all players?
+}
+
+fn check_blocks(
+    mut query1: Query<(&Transform, &Collider, &mut BroadHits)>,
+    query2: Query<(&Transform, &Collider, Option<&EnableNarrow>), With<Block>>,
+) {
+    for (transform1, collider1, mut hits) in &mut query1 {
+        for (transform2, collider2, enable_narrow) in &query2 {
+            broad_test(
+                transform1,
+                collider1,
+                transform2,
+                collider2,
+                matches!(enable_narrow, Some(_)),
+                &mut hits,
+            );
+        }
+    }
+    // TODO chunk or sweep or tree
+    // TODO sleeping
+    // TODO want to commonalize using layer
+}
+
+#[inline(always)]
+fn broad_test(
+    transform1: &Transform,
+    collider1: &Collider,
+    transform2: &Transform,
+    collider2: &Collider,
+    enable_narrow: bool,
+    hits: &mut BroadHits,
+) {
+    if aabb_test(
+        transform1.translation,
+        collider1.scale,
+        transform2.translation,
+        collider2.scale,
+    ) {
+        hits.push(BroadHit {
+            pos: transform2.translation.xy(),
+            collider: collider2.clone(),
+            enable_narrow,
+        });
+    }
 }
 
 fn narrow_phase(
-    mut players: Query<(&Transform, &Collider, &BroadHits, &mut NarrowHits)>,
+    mut query: Query<(&Transform, &Collider, &mut BroadHits, &mut NarrowHits)>,
     mut event_writer: EventWriter<Collided>,
 ) {
-    for (transform, collider, broad_hits, mut narrow_hits) in &mut players {
+    for (transform, collider, mut broad_hits, mut narrow_hits) in &mut query {
         narrow_hits.clear();
         for hit in broad_hits.iter() {
             let push = shape_and_shape(
@@ -94,25 +135,27 @@ fn narrow_phase(
             if push == Vec2::ZERO {
                 continue;
             }
-            if collider.mask & hit.collider.layer > 0 {
+            if hit.enable_narrow {
                 narrow_hits.push(NarrowHit {
                     pos: hit.pos,
                     collider: hit.collider,
                     order: push.length_squared(),
                 });
             }
-            event_writer.send(Collided {});
+            // event_writer.send(Collided { pos: hit.pos });
         }
         narrow_hits.sort_by(|a, b| a.order.partial_cmp(&b.order).unwrap());
+        broad_hits.clear();
     }
     // TODO when any hits
+    // TODO collide item
 }
 
 fn dynamics_phase(
-    mut players: Query<(Entity, &mut Transform, &Collider, &NarrowHits)>,
+    mut query: Query<(Entity, &mut Transform, &Collider, &NarrowHits)>,
     mut commands: Commands,
 ) {
-    for (entity, mut transform, collider, narrow_hits) in &mut players {
+    for (entity, mut transform, collider, narrow_hits) in &mut query {
         let mut pushed = Vec2::ZERO;
         for hit in narrow_hits.iter() {
             let push = shape_and_shape(
@@ -140,6 +183,9 @@ pub struct CollisionPlugin;
 impl Plugin for CollisionPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<Collided>();
-        app.add_systems(Update, (broad_phase, narrow_phase, dynamics_phase));
+        app.add_systems(
+            Update,
+            (check_items, check_blocks, narrow_phase, dynamics_phase),
+        );
     }
 }

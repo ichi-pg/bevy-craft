@@ -10,7 +10,6 @@ mod grounded;
 mod hit_test;
 mod input;
 mod item;
-mod layer;
 mod player;
 mod rapier_level;
 mod rapier_player;

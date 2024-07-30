@@ -7,7 +7,7 @@ pub enum Shape {
 }
 
 #[inline(always)]
-pub fn aabb(pos1: Vec3, scale1: Vec2, pos2: Vec3, scale2: Vec2) -> bool {
+pub fn aabb_test(pos1: Vec3, scale1: Vec2, pos2: Vec3, scale2: Vec2) -> bool {
     let w = scale1.x + scale2.x;
     if pos1.x < pos2.x - w {
         false
@@ -26,7 +26,7 @@ pub fn aabb(pos1: Vec3, scale1: Vec2, pos2: Vec3, scale2: Vec2) -> bool {
 }
 
 #[inline(always)]
-pub fn point_and_rect(pos1: Vec2, pos2: Vec3, scale2: Vec2) -> bool {
+pub fn point_test(pos1: Vec2, pos2: Vec3, scale2: Vec2) -> bool {
     if pos1.x < pos2.x - scale2.x {
         false
     } else if pos1.x > pos2.x + scale2.x {

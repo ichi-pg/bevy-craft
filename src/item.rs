@@ -1,17 +1,16 @@
 use crate::block::*;
 use crate::collision::*;
-use crate::layer::*;
 use crate::rigid_body::*;
 use bevy::prelude::*;
 
 #[derive(Component, Deref, DerefMut, Default)]
-struct ItemID(pub i32);
+pub struct ItemID(i32);
 
 #[derive(Component, Deref, DerefMut, Default)]
-struct ItemAmount(pub i32);
+struct ItemAmount(i32);
 
-fn spawn_item(mut events: EventReader<BlockDestroied>, mut commands: Commands) {
-    for event in events.read() {
+fn spawn_item(mut event_reader: EventReader<BlockDestroied>, mut commands: Commands) {
+    for event in event_reader.read() {
         commands.spawn((
             SpriteBundle {
                 sprite: Sprite {
@@ -22,7 +21,7 @@ fn spawn_item(mut events: EventReader<BlockDestroied>, mut commands: Commands) {
                 transform: event.transform.clone(),
                 ..default()
             },
-            Collider::circle(32.0, ITEM, BLOCK),
+            Collider::circle(32.0),
             BroadHits::default(),
             NarrowHits::default(),
             Velocity2::default(),
@@ -30,13 +29,28 @@ fn spawn_item(mut events: EventReader<BlockDestroied>, mut commands: Commands) {
             ItemAmount(1),
         ));
     }
-    // TODO pick up
+}
+
+fn pick_up_item(
+    query: Query<(Entity, &Transform), With<ItemID>>,
+    mut event_reader: EventReader<Collided>,
+    mut commands: Commands,
+) {
+    for event in event_reader.read() {
+        for (entity, transform) in &query {
+            if transform.translation.xy() == event.pos {
+                commands.entity(entity).despawn();
+            }
+        }
+    }
+    // TODO into inventory
+    // TODO optimize loop count
 }
 
 pub struct ItemPlugin;
 
 impl Plugin for ItemPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, spawn_item);
+        app.add_systems(Update, (spawn_item, pick_up_item));
     }
 }

@@ -1,11 +1,10 @@
 use crate::collision::*;
 use crate::hit_test::*;
 use crate::input::*;
-use crate::layer::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
-struct Block;
+pub struct Block;
 
 #[derive(Event)]
 pub struct BlockDestroied {
@@ -33,7 +32,8 @@ fn spawn_blocks(mut commands: Commands) {
                     transform: Transform::from_xyz(x as f32 * size, y as f32 * size, 0.0),
                     ..default()
                 },
-                Collider::rect(size * 0.5, size * 0.5, BLOCK, NONE),
+                Collider::rect(size * 0.5, size * 0.5),
+                EnableNarrow,
                 Block,
             ));
         }
@@ -50,7 +50,7 @@ fn destroy_block(
         return;
     }
     for (entity, transform, collider) in &mut blocks {
-        if point_and_rect(input.cursor, transform.translation, collider.scale) {
+        if point_test(input.cursor, transform.translation, collider.scale) {
             commands.entity(entity).despawn();
             event_writer.send(BlockDestroied {
                 transform: transform.clone(),

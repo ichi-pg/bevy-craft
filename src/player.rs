@@ -1,7 +1,6 @@
 use crate::collision::*;
 use crate::grounded::*;
 use crate::input::*;
-use crate::layer::*;
 use crate::rigid_body::*;
 use bevy::{
     prelude::*,
@@ -36,7 +35,7 @@ fn spawn_player(
         Velocity2::default(),
         BroadHits::default(),
         NarrowHits::default(),
-        Collider::circle(size * 0.5, PLAYER, BLOCK),
+        Collider::circle(size * 0.5),
     ));
 }
 
