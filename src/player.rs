@@ -33,8 +33,9 @@ fn spawn_player(
         PlayerController,
         RigitBodyController,
         Velocity2::default(),
-        BroadHits::default(),
-        NarrowHits::default(),
+        BroadItems::default(),
+        BroadBlocks::default(),
+        NarrowBlocks::default(),
         Collider::circle(size * 0.5),
     ));
 }

@@ -2,12 +2,16 @@ use crate::block::*;
 use crate::collision::*;
 use crate::rigid_body::*;
 use bevy::prelude::*;
+use rand::prelude::*;
 
-#[derive(Component, Deref, DerefMut, Default)]
-pub struct ItemID(i32);
+#[derive(Component, Clone, Copy)]
+pub struct SpawnID(u64);
 
-#[derive(Component, Deref, DerefMut, Default)]
-struct ItemAmount(i32);
+#[derive(Component)]
+pub struct ItemID;
+
+#[derive(Component)]
+struct ItemAmount;
 
 fn spawn_item(mut event_reader: EventReader<BlockDestroied>, mut commands: Commands) {
     for event in event_reader.read() {
@@ -22,23 +26,25 @@ fn spawn_item(mut event_reader: EventReader<BlockDestroied>, mut commands: Comma
                 ..default()
             },
             Collider::circle(32.0),
-            BroadHits::default(),
-            NarrowHits::default(),
+            BroadBlocks::default(),
+            NarrowBlocks::default(),
             Velocity2::default(),
-            ItemID(1),
-            ItemAmount(1),
+            ItemID,
+            ItemAmount,
+            SpawnID(rand::thread_rng().r#gen()),
         ));
     }
+    // TODO rand resource
 }
 
 fn pick_up_item(
-    query: Query<(Entity, &Transform), With<ItemID>>,
-    mut event_reader: EventReader<Collided>,
+    query: Query<(Entity, &SpawnID), With<ItemID>>,
+    mut event_reader: EventReader<ItemCollided>,
     mut commands: Commands,
 ) {
     for event in event_reader.read() {
-        for (entity, transform) in &query {
-            if transform.translation.xy() == event.pos {
+        for (entity, spawn_id) in &query {
+            if spawn_id.0 == event.spawn_id.0 {
                 commands.entity(entity).despawn();
             }
         }

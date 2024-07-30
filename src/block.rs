@@ -33,7 +33,6 @@ fn spawn_blocks(mut commands: Commands) {
                     ..default()
                 },
                 Collider::rect(size * 0.5, size * 0.5),
-                EnableNarrow,
                 Block,
             ));
         }

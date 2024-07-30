@@ -2,12 +2,8 @@ use crate::block::*;
 use crate::grounded::*;
 use crate::hit_test::*;
 use crate::item::*;
-use crate::player::*;
 use arrayvec::ArrayVec;
 use bevy::prelude::*;
-
-#[derive(Component, Clone, Copy)]
-pub struct EnableNarrow;
 
 #[derive(Component, Clone, Copy)]
 pub struct Collider {
@@ -31,100 +27,97 @@ impl Collider {
 }
 
 #[derive(Component)]
-pub struct BroadHit {
+pub struct BroadItem {
     pos: Vec2,
     collider: Collider,
-    enable_narrow: bool,
+    spawn_id: SpawnID,
 }
 
 #[derive(Component)]
-pub struct NarrowHit {
+pub struct BroadBlock {
+    pos: Vec2,
+    collider: Collider,
+}
+
+#[derive(Component)]
+pub struct NarrowBlock {
     pos: Vec2,
     collider: Collider,
     order: f32,
 }
 
 #[derive(Component, Deref, DerefMut, Default)]
-pub struct BroadHits(ArrayVec<BroadHit, 10>);
+pub struct BroadItems(ArrayVec<BroadItem, 10>);
 
 #[derive(Component, Deref, DerefMut, Default)]
-pub struct NarrowHits(ArrayVec<NarrowHit, 10>);
+pub struct BroadBlocks(ArrayVec<BroadBlock, 10>);
+
+#[derive(Component, Deref, DerefMut, Default)]
+pub struct NarrowBlocks(ArrayVec<NarrowBlock, 10>);
 
 #[derive(Event)]
-pub struct Collided {
-    pub pos: Vec2,
-    // TODO spawn id
+pub struct ItemCollided {
+    pub spawn_id: SpawnID,
 }
 
-fn check_items(
-    mut query1: Query<(&Transform, &Collider, &mut BroadHits), With<PlayerController>>,
-    query2: Query<(&Transform, &Collider), With<ItemID>>,
+fn broad_items(
+    mut query1: Query<(&Transform, &Collider, &mut BroadItems)>,
+    query2: Query<(&Transform, &Collider, &SpawnID), With<ItemID>>,
 ) {
     for (transform1, collider1, mut hits) in &mut query1 {
+        hits.clear();
+        for (transform2, collider2, spawn_id) in &query2 {
+            if aabb_test(
+                transform1.translation,
+                collider1.scale,
+                transform2.translation,
+                collider2.scale,
+            ) {
+                hits.push(BroadItem {
+                    pos: transform2.translation.xy(),
+                    collider: collider2.clone(),
+                    spawn_id: spawn_id.clone(),
+                });
+            }
+        }
+    }
+    // TODO chunk or sweep or tree
+    // TODO sleeping
+    // TODO commonalize using layer
+}
+
+fn broad_blocks(
+    mut query1: Query<(&Transform, &Collider, &mut BroadBlocks)>,
+    query2: Query<(&Transform, &Collider), With<Block>>,
+) {
+    for (transform1, collider1, mut hits) in &mut query1 {
+        hits.clear();
         for (transform2, collider2) in &query2 {
-            broad_test(
-                transform1, collider1, transform2, collider2, false, &mut hits,
-            );
+            if aabb_test(
+                transform1.translation,
+                collider1.scale,
+                transform2.translation,
+                collider2.scale,
+            ) {
+                hits.push(BroadBlock {
+                    pos: transform2.translation.xy(),
+                    collider: collider2.clone(),
+                });
+            }
         }
     }
     // TODO chunk or sweep or tree
     // TODO sleeping
-    // TODO want to commonalize using layer
-    // TODO should not check all players?
+    // TODO commonalize using layer
 }
 
-fn check_blocks(
-    mut query1: Query<(&Transform, &Collider, &mut BroadHits)>,
-    query2: Query<(&Transform, &Collider, Option<&EnableNarrow>), With<Block>>,
+fn narrow_items(
+    mut query: Query<(&Transform, &Collider, &BroadItems)>,
+    mut event_writer: EventWriter<ItemCollided>,
 ) {
-    for (transform1, collider1, mut hits) in &mut query1 {
-        for (transform2, collider2, enable_narrow) in &query2 {
-            broad_test(
-                transform1,
-                collider1,
-                transform2,
-                collider2,
-                matches!(enable_narrow, Some(_)),
-                &mut hits,
-            );
-        }
-    }
-    // TODO chunk or sweep or tree
-    // TODO sleeping
-    // TODO want to commonalize using layer
-}
-
-#[inline(always)]
-fn broad_test(
-    transform1: &Transform,
-    collider1: &Collider,
-    transform2: &Transform,
-    collider2: &Collider,
-    enable_narrow: bool,
-    hits: &mut BroadHits,
-) {
-    if aabb_test(
-        transform1.translation,
-        collider1.scale,
-        transform2.translation,
-        collider2.scale,
-    ) {
-        hits.push(BroadHit {
-            pos: transform2.translation.xy(),
-            collider: collider2.clone(),
-            enable_narrow,
-        });
-    }
-}
-
-fn narrow_phase(
-    mut query: Query<(&Transform, &Collider, &mut BroadHits, &mut NarrowHits)>,
-    mut event_writer: EventWriter<Collided>,
-) {
-    for (transform, collider, mut broad_hits, mut narrow_hits) in &mut query {
-        narrow_hits.clear();
-        for hit in broad_hits.iter() {
-            let push = shape_and_shape(
+    for (transform, collider, hits) in &mut query {
+        for hit in hits.iter() {
+            let repulsion = shape_and_shape(
                 transform.translation.xy(),
                 collider.shape,
                 collider.scale,
@@ -132,33 +125,50 @@ fn narrow_phase(
                 hit.collider.shape,
                 hit.collider.scale,
             );
-            if push == Vec2::ZERO {
+            if repulsion == Vec2::ZERO {
                 continue;
             }
-            if hit.enable_narrow {
-                narrow_hits.push(NarrowHit {
-                    pos: hit.pos,
-                    collider: hit.collider,
-                    order: push.length_squared(),
-                });
-            }
-            // event_writer.send(Collided { pos: hit.pos });
+            event_writer.send(ItemCollided { spawn_id: hit.spawn_id });
         }
-        narrow_hits.sort_by(|a, b| a.order.partial_cmp(&b.order).unwrap());
-        broad_hits.clear();
     }
     // TODO when any hits
-    // TODO collide item
+    // TODO commonalize using layer
+}
+
+fn narrow_blocks(mut query: Query<(&Transform, &Collider, &BroadBlocks, &mut NarrowBlocks)>) {
+    for (transform, collider, broad_hits, mut narrow_hits) in &mut query {
+        narrow_hits.clear();
+        for hit in broad_hits.iter() {
+            let repulsion = shape_and_shape(
+                transform.translation.xy(),
+                collider.shape,
+                collider.scale,
+                hit.pos,
+                hit.collider.shape,
+                hit.collider.scale,
+            );
+            if repulsion == Vec2::ZERO {
+                continue;
+            }
+            narrow_hits.push(NarrowBlock {
+                pos: hit.pos,
+                collider: hit.collider,
+                order: repulsion.length_squared(),
+            });
+        }
+        narrow_hits.sort_by(|a, b| a.order.partial_cmp(&b.order).unwrap());
+    }
+    // TODO when any hits
 }
 
 fn dynamics_phase(
-    mut query: Query<(Entity, &mut Transform, &Collider, &NarrowHits)>,
+    mut query: Query<(Entity, &mut Transform, &Collider, &NarrowBlocks)>,
     mut commands: Commands,
 ) {
     for (entity, mut transform, collider, narrow_hits) in &mut query {
-        let mut pushed = Vec2::ZERO;
+        let mut repulsions = Vec2::ZERO;
         for hit in narrow_hits.iter() {
-            let push = shape_and_shape(
+            let repulsion = shape_and_shape(
                 transform.translation.xy(),
                 collider.shape,
                 collider.scale,
@@ -166,11 +176,11 @@ fn dynamics_phase(
                 hit.collider.shape,
                 hit.collider.scale,
             );
-            transform.translation.x += push.x;
-            transform.translation.y += push.y;
-            pushed += push;
+            transform.translation.x += repulsion.x;
+            transform.translation.y += repulsion.y;
+            repulsions += repulsion;
         }
-        if pushed.y > pushed.x.abs() {
+        if repulsions.y > repulsions.x.abs() {
             commands.entity(entity).insert(Grounded);
         }
     }
@@ -182,10 +192,16 @@ pub struct CollisionPlugin;
 
 impl Plugin for CollisionPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<Collided>();
+        app.add_event::<ItemCollided>();
         app.add_systems(
             Update,
-            (check_items, check_blocks, narrow_phase, dynamics_phase),
+            (
+                broad_items,
+                broad_blocks,
+                narrow_items,
+                narrow_blocks,
+                dynamics_phase,
+            ),
         );
     }
 }
