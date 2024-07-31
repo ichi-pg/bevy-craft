@@ -37,6 +37,7 @@ fn spawn_blocks(mut commands: Commands) {
             ));
         }
     }
+    // TODO texture
 }
 
 fn destroy_block(

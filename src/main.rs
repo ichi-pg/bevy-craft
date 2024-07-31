@@ -8,6 +8,7 @@ mod camera;
 mod collision;
 mod grounded;
 mod hit_test;
+mod hotbar;
 mod input;
 mod item;
 mod player;
@@ -37,6 +38,7 @@ fn main() {
             rigid_body::RigitBodyPlugin,
             item::ItemPlugin,
             grounded::GroundedPlugin,
+            hotbar::HotbarPlugin,
         ))
         .run();
 

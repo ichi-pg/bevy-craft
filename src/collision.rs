@@ -128,7 +128,9 @@ fn narrow_items(
             if repulsion == Vec2::ZERO {
                 continue;
             }
-            event_writer.send(ItemCollided { spawn_id: hit.spawn_id });
+            event_writer.send(ItemCollided {
+                spawn_id: hit.spawn_id,
+            });
         }
     }
     // TODO when any hits
@@ -159,9 +161,10 @@ fn narrow_blocks(mut query: Query<(&Transform, &Collider, &BroadBlocks, &mut Nar
         narrow_hits.sort_by(|a, b| a.order.partial_cmp(&b.order).unwrap());
     }
     // TODO when any hits
+    // TODO commonalize using layer
 }
 
-fn dynamics_phase(
+fn dynamics_blocks(
     mut query: Query<(Entity, &mut Transform, &Collider, &NarrowBlocks)>,
     mut commands: Commands,
 ) {
@@ -200,7 +203,7 @@ impl Plugin for CollisionPlugin {
                 broad_blocks,
                 narrow_items,
                 narrow_blocks,
-                dynamics_phase,
+                dynamics_blocks,
             ),
         );
     }
