@@ -4,6 +4,15 @@ use bevy::prelude::*;
 #[derive(Component)]
 struct Hotbar;
 
+#[derive(Component)]
+struct HotbarItem;
+
+#[derive(Component)]
+struct MaxCount(u8);
+
+#[derive(Event)]
+struct HotbarOverflowed;
+
 fn spawn_hotbar(mut commands: Commands) {
     commands
         .spawn((NodeBundle {
@@ -43,20 +52,40 @@ fn spawn_hotbar(mut commands: Commands) {
                             ..default()
                         },
                         Hotbar,
+                        MaxCount(10),
                     ));
                 });
         });
     // TODO toggle visible
-    // TODO layout
 }
 
-fn spawn_item(
-    mut query: Query<Entity, With<Hotbar>>,
+fn picked_up_item(
+    mut hotbar_query: Query<(Entity, Option<&Children>, &MaxCount), With<Hotbar>>,
+    mut item_query: Query<(&ItemID, &mut Amount), With<HotbarItem>>,
     mut event_reader: EventReader<ItemPickedUp>,
+    mut event_writer: EventWriter<HotbarOverflowed>,
     mut commands: Commands,
 ) {
     for event in event_reader.read() {
-        for entity in &mut query {
+        for (entity, children, max_count) in &mut hotbar_query {
+        let mut found = false;
+            for (item_id, mut amount) in &mut item_query {
+                if item_id.0 == event.item_id.0 {
+                    amount.0 += event.amount.0;
+                    found = true;
+                    break;
+                }
+            }
+            if found {
+                continue;
+            }
+            match children {
+                Some(v) => if v.len() >= max_count.0 as usize {
+                    event_writer.send(HotbarOverflowed);
+                    continue;
+                },
+                None => {},
+            }
             commands.entity(entity).with_children(|parent| {
                 parent.spawn((
                     NodeBundle {
@@ -70,20 +99,24 @@ fn spawn_item(
                     },
                     event.item_id,
                     event.amount,
+                    HotbarItem,
                 ));
             });
         }
     }
     // FIXME double spawn
+    // FIXME same time merge
+    // FIXME same time overflow
     // TODO texture
-    // TODO merge amount
+    // TODO commonalize hotbar, inventory, and chest
 }
 
 pub struct HotbarPlugin;
 
 impl Plugin for HotbarPlugin {
     fn build(&self, app: &mut App) {
+        app.add_event::<HotbarOverflowed>();
         app.add_systems(Startup, spawn_hotbar);
-        app.add_systems(Update, spawn_item);
+        app.add_systems(Update, picked_up_item);
     }
 }

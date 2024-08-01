@@ -189,6 +189,8 @@ fn dynamics_blocks(
     }
     // TODO when any hits
     // TODO can replace entities?
+    // TODO dynamics gizmo
+    // TODO collision profiler
 }
 
 pub struct CollisionPlugin;

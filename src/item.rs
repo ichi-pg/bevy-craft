@@ -5,13 +5,13 @@ use bevy::prelude::*;
 use rand::prelude::*;
 
 #[derive(Component, Clone, Copy)]
-pub struct SpawnID(u64);
+pub struct SpawnID(pub u64);
 
 #[derive(Component, Clone, Copy)]
-pub struct ItemID;
+pub struct ItemID(pub u16);
 
 #[derive(Component, Clone, Copy)]
-pub struct Amount;
+pub struct Amount(pub u16);
 
 #[derive(Event)]
 pub struct ItemPickedUp {
@@ -35,8 +35,8 @@ fn spawn_item(mut event_reader: EventReader<BlockDestroied>, mut commands: Comma
             BroadBlocks::default(),
             NarrowBlocks::default(),
             Velocity2::default(),
-            ItemID,
-            Amount,
+            ItemID(1),
+            Amount(1),
             SpawnID(rand::thread_rng().r#gen()),
         ));
     }
@@ -45,19 +45,20 @@ fn spawn_item(mut event_reader: EventReader<BlockDestroied>, mut commands: Comma
 }
 
 fn pick_up_item(
-    item_query: Query<(Entity, &SpawnID, &ItemID, &Amount)>,
+    query: Query<(Entity, &SpawnID, &ItemID, &Amount)>,
     mut event_reader: EventReader<ItemCollided>,
     mut event_writer: EventWriter<ItemPickedUp>,
     mut commands: Commands,
 ) {
     for event in event_reader.read() {
-        for (entity, spawn_id, item_id, amount) in &item_query {
+        for (entity, spawn_id, item_id, amount) in &query {
             if spawn_id.0 == event.spawn_id.0 {
                 commands.entity(entity).despawn();
                 event_writer.send(ItemPickedUp {
                     item_id: item_id.clone(),
                     amount: amount.clone(),
                 });
+                break;
             }
         }
     }
