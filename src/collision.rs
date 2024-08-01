@@ -57,6 +57,9 @@ fn broad_items(
                     shape: *shape2,
                     spawn_id: *spawn_id,
                 });
+                if hits.is_full() {
+                    break;
+                }
             }
         }
     }
@@ -82,6 +85,9 @@ fn broad_blocks(
                     pos: transform2.translation.xy(),
                     shape: *shape2,
                 });
+                if hits.is_full() {
+                    break;
+                }
             }
         }
     }
@@ -122,6 +128,9 @@ fn narrow_blocks(mut query: Query<(&Transform, &Shape, &BroadBlocks, &mut Narrow
                 shape: hit.shape,
                 order: repulsion.length_squared(),
             });
+            if narrow_hits.is_full() {
+                break;
+            }
         }
         narrow_hits.sort_by(|a, b| a.order.partial_cmp(&b.order).unwrap());
     }
