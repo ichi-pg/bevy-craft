@@ -40,7 +40,7 @@ pub struct ItemCollided {
 }
 
 fn broad_items(
-    mut query1: Query<(&Transform, &Shape, &mut BroadItems)>,
+    mut query1: Query<(&Transform, &Shape, &mut BroadItems), Changed<Transform>>,
     query2: Query<(&Transform, &Shape, &SpawnID), With<ItemID>>,
 ) {
     for (transform1, shape1, mut hits) in &mut query1 {
@@ -64,12 +64,11 @@ fn broad_items(
         }
     }
     // TODO chunk or sweep or tree
-    // TODO sleeping
     // TODO commonalize using layer
 }
 
 fn broad_blocks(
-    mut query1: Query<(&Transform, &Shape, &mut BroadBlocks)>,
+    mut query1: Query<(&Transform, &Shape, &mut BroadBlocks), Changed<Transform>>,
     query2: Query<(&Transform, &Shape), With<Block>>,
 ) {
     for (transform1, shape1, mut hits) in &mut query1 {
@@ -92,15 +91,14 @@ fn broad_blocks(
         }
     }
     // TODO chunk or sweep or tree
-    // TODO sleeping
     // TODO commonalize using layer
 }
 
 fn narrow_items(
-    mut query: Query<(&Transform, &Shape, &BroadItems)>,
+    mut query: Query<(&Transform, &Shape, &mut BroadItems)>,
     mut event_writer: EventWriter<ItemCollided>,
 ) {
-    for (transform, shape, hits) in &mut query {
+    for (transform, shape, mut hits) in &mut query {
         for hit in hits.iter() {
             let repulsion = shape_and_shape(transform.translation.xy(), *shape, hit.pos, hit.shape);
             if repulsion == Vec2::ZERO {
@@ -110,13 +108,14 @@ fn narrow_items(
                 spawn_id: hit.spawn_id,
             });
         }
+        hits.clear();
     }
     // TODO when any hits
     // TODO commonalize using layer
 }
 
-fn narrow_blocks(mut query: Query<(&Transform, &Shape, &BroadBlocks, &mut NarrowBlocks)>) {
-    for (transform, shape, broad_hits, mut narrow_hits) in &mut query {
+fn narrow_blocks(mut query: Query<(&Transform, &Shape, &mut BroadBlocks, &mut NarrowBlocks)>) {
+    for (transform, shape, mut broad_hits, mut narrow_hits) in &mut query {
         narrow_hits.clear();
         for hit in broad_hits.iter() {
             let repulsion = shape_and_shape(transform.translation.xy(), *shape, hit.pos, hit.shape);
@@ -133,6 +132,7 @@ fn narrow_blocks(mut query: Query<(&Transform, &Shape, &BroadBlocks, &mut Narrow
             };
         }
         narrow_hits.sort_by(|a, b| a.order.partial_cmp(&b.order).unwrap());
+        broad_hits.clear();
     }
     // TODO when any hits
     // TODO commonalize using layer
