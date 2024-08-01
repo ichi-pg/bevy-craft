@@ -46,7 +46,6 @@ fn spawn_item(
             SpawnID(random.next_u64()),
         ));
     }
-    // TODO rand resource
     // TODO texture
 }
 

@@ -19,42 +19,32 @@ fn spawn_hotbar(mut commands: Commands) {
             style: Style {
                 width: Val::Percent(100.0),
                 height: Val::Percent(100.0),
-                flex_direction: FlexDirection::Row,
-                justify_content: JustifyContent::Center,
+                flex_direction: FlexDirection::Column,
+                justify_content: JustifyContent::End,
+                align_items: AlignItems::Center,
+                padding: UiRect::all(Val::Px(10.0)),
                 ..default()
             },
             ..default()
         },))
         .with_children(|parent| {
-            parent
-                .spawn((NodeBundle {
+            parent.spawn((
+                NodeBundle {
                     style: Style {
-                        height: Val::Percent(100.0),
-                        flex_direction: FlexDirection::Column,
-                        justify_content: JustifyContent::End,
+                        width: Val::Px(1110.0),
+                        height: Val::Px(120.0),
+                        flex_direction: FlexDirection::Row,
+                        justify_content: JustifyContent::Start,
+                        column_gap: Val::Px(10.0),
+                        padding: UiRect::all(Val::Px(10.0)),
                         ..default()
                     },
+                    background_color: BackgroundColor(Color::srgba(0.0, 0.0, 0.0, 0.5)),
                     ..default()
-                },))
-                .with_children(|parent| {
-                    parent.spawn((
-                        NodeBundle {
-                            style: Style {
-                                width: Val::Px(1110.0),
-                                height: Val::Px(120.0),
-                                flex_direction: FlexDirection::Row,
-                                justify_content: JustifyContent::Start,
-                                column_gap: Val::Px(10.0),
-                                padding: UiRect::all(Val::Px(10.0)),
-                                ..default()
-                            },
-                            background_color: BackgroundColor(Color::srgba(0.0, 0.0, 0.0, 0.5)),
-                            ..default()
-                        },
-                        Hotbar,
-                        MaxCount(10),
-                    ));
-                });
+                },
+                Hotbar,
+                MaxCount(10),
+            ));
         });
     // TODO toggle visible
 }
@@ -89,20 +79,31 @@ fn picked_up_item(
                 None => {}
             }
             commands.entity(entity).with_children(|parent| {
-                parent.spawn((
-                    NodeBundle {
-                        style: Style {
-                            width: Val::Px(100.0),
-                            height: Val::Px(100.0),
+                parent
+                    .spawn((
+                        NodeBundle {
+                            style: Style {
+                                width: Val::Px(100.0),
+                                height: Val::Px(100.0),
+                                flex_direction: FlexDirection::Column,
+                                justify_content: JustifyContent::End,
+                                align_items: AlignItems::End,
+                                padding: UiRect::all(Val::Px(4.0)),
+                                ..default()
+                            },
+                            background_color: BackgroundColor(Color::srgba(0.5, 0.5, 0.5, 0.5)),
                             ..default()
                         },
-                        background_color: BackgroundColor(Color::srgba(0.5, 0.5, 0.5, 0.5)),
-                        ..default()
-                    },
-                    event.item_id,
-                    event.amount,
-                    HotbarItem,
-                ));
+                        event.item_id,
+                        event.amount,
+                        HotbarItem,
+                    ))
+                    .with_children(|parent| {
+                        parent.spawn(TextBundle::from_section(
+                            format!("{}", event.amount.0),
+                            TextStyle { ..default() },
+                        ));
+                    });
             });
         }
     }
