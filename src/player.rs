@@ -1,5 +1,6 @@
 use crate::collision::*;
 use crate::grounded::*;
+use crate::hit_test::*;
 use crate::input::*;
 use crate::rigid_body::*;
 use bevy::{
@@ -36,7 +37,7 @@ fn spawn_player(
         BroadItems::default(),
         BroadBlocks::default(),
         NarrowBlocks::default(),
-        Collider::circle(size * 0.5),
+        Shape::Circle(size * 0.5),
     ));
 }
 
@@ -46,18 +47,15 @@ fn add_move_x(mut players: Query<&mut Velocity2, With<PlayerController>>, input:
     }
 }
 
-// fn add_move_xy(
-//     mut players: Query<&mut Velocity2, With<PlayerController>>,
-//     input: Res<Input>,
-// ) {
-//     for mut velocity in &mut players {
-//         if input.left_stick.x != 0.0 || input.left_stick.y != 0.0 {
-//             velocity.0 = input.left_stick.normalize() * 400.0;
-//         } else {
-//             velocity.0 = Vec2::ZERO;
-//         }
-//     }
-// }
+fn add_move_xy(mut players: Query<&mut Velocity2, With<PlayerController>>, input: Res<Input>) {
+    for mut velocity in &mut players {
+        if input.left_stick != Vec2::ZERO {
+            velocity.0 = input.left_stick.normalize() * 400.0;
+        } else {
+            velocity.0 = Vec2::ZERO;
+        }
+    }
+}
 
 fn add_jump(
     mut players: Query<&mut Velocity2, (With<PlayerController>, With<Grounded>)>,
@@ -77,12 +75,15 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_player);
-        app.add_systems(
-            Update,
-            (
-                // add_move_xy,
-                add_move_x, add_jump,
-            ),
-        );
+        app.add_systems(Update, (add_move_x, add_jump));
+    }
+}
+
+pub struct TopDownPlayerPlugin;
+
+impl Plugin for TopDownPlayerPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Startup, spawn_player);
+        app.add_systems(Update, (add_move_xy,));
     }
 }

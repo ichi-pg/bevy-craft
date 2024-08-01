@@ -1,5 +1,6 @@
 use crate::block::*;
 use crate::collision::*;
+use crate::hit_test::*;
 use crate::rigid_body::*;
 use bevy::prelude::*;
 use rand::prelude::*;
@@ -28,10 +29,10 @@ fn spawn_item(mut event_reader: EventReader<BlockDestroied>, mut commands: Comma
                     custom_size: Some(Vec2::new(64.0, 64.0)),
                     ..default()
                 },
-                transform: event.transform.clone(),
+                transform: event.transform,
                 ..default()
             },
-            Collider::circle(32.0),
+            Shape::Circle(32.0),
             BroadBlocks::default(),
             NarrowBlocks::default(),
             Velocity2::default(),
@@ -55,8 +56,8 @@ fn pick_up_item(
             if spawn_id.0 == event.spawn_id.0 {
                 commands.entity(entity).despawn();
                 event_writer.send(ItemPickedUp {
-                    item_id: item_id.clone(),
-                    amount: amount.clone(),
+                    item_id: *item_id,
+                    amount: *amount,
                 });
                 break;
             }

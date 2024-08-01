@@ -68,7 +68,7 @@ fn picked_up_item(
 ) {
     for event in event_reader.read() {
         for (entity, children, max_count) in &mut hotbar_query {
-        let mut found = false;
+            let mut found = false;
             for (item_id, mut amount) in &mut item_query {
                 if item_id.0 == event.item_id.0 {
                     amount.0 += event.amount.0;
@@ -80,11 +80,13 @@ fn picked_up_item(
                 continue;
             }
             match children {
-                Some(v) => if v.len() >= max_count.0 as usize {
-                    event_writer.send(HotbarOverflowed);
-                    continue;
-                },
-                None => {},
+                Some(v) => {
+                    if v.len() >= max_count.0 as usize {
+                        event_writer.send(HotbarOverflowed);
+                        continue;
+                    }
+                }
+                None => {}
             }
             commands.entity(entity).with_children(|parent| {
                 parent.spawn((

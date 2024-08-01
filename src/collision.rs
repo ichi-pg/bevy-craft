@@ -5,44 +5,23 @@ use crate::item::*;
 use arrayvec::ArrayVec;
 use bevy::prelude::*;
 
-#[derive(Component, Clone, Copy)]
-pub struct Collider {
-    shape: Shape,
-    pub scale: Vec2,
-}
-
-impl Collider {
-    pub fn circle(radius: f32) -> Self {
-        Collider {
-            shape: Shape::Circle,
-            scale: Vec2::new(radius, radius),
-        }
-    }
-    pub fn rect(half_width: f32, half_height: f32) -> Self {
-        Collider {
-            shape: Shape::Rect,
-            scale: Vec2::new(half_width, half_height),
-        }
-    }
-}
-
 #[derive(Component)]
 pub struct BroadItem {
     pos: Vec2,
-    collider: Collider,
+    shape: Shape,
     spawn_id: SpawnID,
 }
 
 #[derive(Component)]
 pub struct BroadBlock {
     pos: Vec2,
-    collider: Collider,
+    shape: Shape,
 }
 
 #[derive(Component)]
 pub struct NarrowBlock {
     pos: Vec2,
-    collider: Collider,
+    shape: Shape,
     order: f32,
 }
 
@@ -61,22 +40,22 @@ pub struct ItemCollided {
 }
 
 fn broad_items(
-    mut query1: Query<(&Transform, &Collider, &mut BroadItems)>,
-    query2: Query<(&Transform, &Collider, &SpawnID), With<ItemID>>,
+    mut query1: Query<(&Transform, &Shape, &mut BroadItems)>,
+    query2: Query<(&Transform, &Shape, &SpawnID), With<ItemID>>,
 ) {
-    for (transform1, collider1, mut hits) in &mut query1 {
+    for (transform1, shape1, mut hits) in &mut query1 {
         hits.clear();
-        for (transform2, collider2, spawn_id) in &query2 {
+        for (transform2, shape2, spawn_id) in &query2 {
             if aabb_test(
                 transform1.translation,
-                collider1.scale,
+                *shape1,
                 transform2.translation,
-                collider2.scale,
+                *shape2,
             ) {
                 hits.push(BroadItem {
                     pos: transform2.translation.xy(),
-                    collider: collider2.clone(),
-                    spawn_id: spawn_id.clone(),
+                    shape: *shape2,
+                    spawn_id: *spawn_id,
                 });
             }
         }
@@ -87,21 +66,21 @@ fn broad_items(
 }
 
 fn broad_blocks(
-    mut query1: Query<(&Transform, &Collider, &mut BroadBlocks)>,
-    query2: Query<(&Transform, &Collider), With<Block>>,
+    mut query1: Query<(&Transform, &Shape, &mut BroadBlocks)>,
+    query2: Query<(&Transform, &Shape), With<Block>>,
 ) {
-    for (transform1, collider1, mut hits) in &mut query1 {
+    for (transform1, shape1, mut hits) in &mut query1 {
         hits.clear();
-        for (transform2, collider2) in &query2 {
+        for (transform2, shape2) in &query2 {
             if aabb_test(
                 transform1.translation,
-                collider1.scale,
+                *shape1,
                 transform2.translation,
-                collider2.scale,
+                *shape2,
             ) {
                 hits.push(BroadBlock {
                     pos: transform2.translation.xy(),
-                    collider: collider2.clone(),
+                    shape: *shape2,
                 });
             }
         }
@@ -112,19 +91,12 @@ fn broad_blocks(
 }
 
 fn narrow_items(
-    mut query: Query<(&Transform, &Collider, &BroadItems)>,
+    mut query: Query<(&Transform, &Shape, &BroadItems)>,
     mut event_writer: EventWriter<ItemCollided>,
 ) {
-    for (transform, collider, hits) in &mut query {
+    for (transform, shape, hits) in &mut query {
         for hit in hits.iter() {
-            let repulsion = shape_and_shape(
-                transform.translation.xy(),
-                collider.shape,
-                collider.scale,
-                hit.pos,
-                hit.collider.shape,
-                hit.collider.scale,
-            );
+            let repulsion = shape_and_shape(transform.translation.xy(), *shape, hit.pos, hit.shape);
             if repulsion == Vec2::ZERO {
                 continue;
             }
@@ -137,24 +109,17 @@ fn narrow_items(
     // TODO commonalize using layer
 }
 
-fn narrow_blocks(mut query: Query<(&Transform, &Collider, &BroadBlocks, &mut NarrowBlocks)>) {
-    for (transform, collider, broad_hits, mut narrow_hits) in &mut query {
+fn narrow_blocks(mut query: Query<(&Transform, &Shape, &BroadBlocks, &mut NarrowBlocks)>) {
+    for (transform, shape, broad_hits, mut narrow_hits) in &mut query {
         narrow_hits.clear();
         for hit in broad_hits.iter() {
-            let repulsion = shape_and_shape(
-                transform.translation.xy(),
-                collider.shape,
-                collider.scale,
-                hit.pos,
-                hit.collider.shape,
-                hit.collider.scale,
-            );
+            let repulsion = shape_and_shape(transform.translation.xy(), *shape, hit.pos, hit.shape);
             if repulsion == Vec2::ZERO {
                 continue;
             }
             narrow_hits.push(NarrowBlock {
                 pos: hit.pos,
-                collider: hit.collider,
+                shape: hit.shape,
                 order: repulsion.length_squared(),
             });
         }
@@ -165,20 +130,13 @@ fn narrow_blocks(mut query: Query<(&Transform, &Collider, &BroadBlocks, &mut Nar
 }
 
 fn dynamics_blocks(
-    mut query: Query<(Entity, &mut Transform, &Collider, &NarrowBlocks)>,
+    mut query: Query<(Entity, &mut Transform, &Shape, &NarrowBlocks)>,
     mut commands: Commands,
 ) {
-    for (entity, mut transform, collider, narrow_hits) in &mut query {
+    for (entity, mut transform, shape, narrow_hits) in &mut query {
         let mut repulsions = Vec2::ZERO;
         for hit in narrow_hits.iter() {
-            let repulsion = shape_and_shape(
-                transform.translation.xy(),
-                collider.shape,
-                collider.scale,
-                hit.pos,
-                hit.collider.shape,
-                hit.collider.scale,
-            );
+            let repulsion = shape_and_shape(transform.translation.xy(), *shape, hit.pos, hit.shape);
             transform.translation.x += repulsion.x;
             transform.translation.y += repulsion.y;
             repulsions += repulsion;

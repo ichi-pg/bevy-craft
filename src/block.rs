@@ -1,4 +1,3 @@
-use crate::collision::*;
 use crate::hit_test::*;
 use crate::input::*;
 use bevy::prelude::*;
@@ -32,7 +31,7 @@ fn spawn_blocks(mut commands: Commands) {
                     transform: Transform::from_xyz(x as f32 * size, y as f32 * size, 0.0),
                     ..default()
                 },
-                Collider::rect(size * 0.5, size * 0.5),
+                Shape::Rect(Vec2::new(size * 0.5, size * 0.5)),
                 Block,
             ));
         }
@@ -41,7 +40,7 @@ fn spawn_blocks(mut commands: Commands) {
 }
 
 fn destroy_block(
-    mut blocks: Query<(Entity, &Transform, &Collider), With<Block>>,
+    mut blocks: Query<(Entity, &Transform, &Shape), With<Block>>,
     mut commands: Commands,
     input: Res<Input>,
     mut event_writer: EventWriter<BlockDestroied>,
@@ -49,11 +48,11 @@ fn destroy_block(
     if !input.left_click {
         return;
     }
-    for (entity, transform, collider) in &mut blocks {
-        if point_test(input.cursor, transform.translation, collider.scale) {
+    for (entity, transform, shape) in &mut blocks {
+        if point_test(input.cursor, transform.translation, *shape) {
             commands.entity(entity).despawn();
             event_writer.send(BlockDestroied {
-                transform: transform.clone(),
+                transform: *transform,
             });
         }
     }

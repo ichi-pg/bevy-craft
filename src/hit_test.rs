@@ -1,20 +1,32 @@
 use bevy::prelude::*;
 
-#[derive(Clone, Copy)]
+#[derive(Component, Clone, Copy)]
 pub enum Shape {
-    Circle,
-    Rect,
+    Circle(f32),
+    Rect(Vec2),
 }
 
 #[inline(always)]
-pub fn aabb_test(pos1: Vec3, scale1: Vec2, pos2: Vec3, scale2: Vec2) -> bool {
-    let w = scale1.x + scale2.x;
+pub fn aabb_test(pos1: Vec3, shape1: Shape, pos2: Vec3, shape2: Shape) -> bool {
+    let w = match shape1 {
+        Shape::Circle(radius) => radius,
+        Shape::Rect(half_size) => half_size.x,
+    } + match shape2 {
+        Shape::Circle(radius) => radius,
+        Shape::Rect(half_size) => half_size.x,
+    };
     if pos1.x < pos2.x - w {
         false
     } else if pos1.x > pos2.x + w {
         false
     } else {
-        let h = scale1.y + scale2.y;
+        let h = match shape1 {
+            Shape::Circle(radius) => radius,
+            Shape::Rect(half_size) => half_size.y,
+        } + match shape2 {
+            Shape::Circle(radius) => radius,
+            Shape::Rect(half_size) => half_size.y,
+        };
         if pos1.y < pos2.y - h {
             false
         } else if pos1.y > pos2.y + h {
@@ -26,42 +38,40 @@ pub fn aabb_test(pos1: Vec3, scale1: Vec2, pos2: Vec3, scale2: Vec2) -> bool {
 }
 
 #[inline(always)]
-pub fn point_test(pos1: Vec2, pos2: Vec3, scale2: Vec2) -> bool {
-    if pos1.x < pos2.x - scale2.x {
-        false
-    } else if pos1.x > pos2.x + scale2.x {
-        false
-    } else if pos1.y < pos2.y - scale2.y {
-        false
-    } else if pos1.y > pos2.y + scale2.y {
-        false
-    } else {
-        true
+pub fn point_test(pos1: Vec2, pos2: Vec3, shape2: Shape) -> bool {
+    match shape2 {
+        Shape::Circle(_) => todo!(),
+        Shape::Rect(half_size) => {
+            if pos1.x < pos2.x - half_size.x {
+                false
+            } else if pos1.x > pos2.x + half_size.x {
+                false
+            } else if pos1.y < pos2.y - half_size.y {
+                false
+            } else if pos1.y > pos2.y + half_size.y {
+                false
+            } else {
+                true
+            }
+        }
     }
 }
 
-pub fn shape_and_shape(
-    pos1: Vec2,
-    shape1: Shape,
-    scale1: Vec2,
-    pos2: Vec2,
-    shape2: Shape,
-    scale2: Vec2,
-) -> Vec2 {
+pub fn shape_and_shape(pos1: Vec2, shape1: Shape, pos2: Vec2, shape2: Shape) -> Vec2 {
     match shape1 {
-        Shape::Circle => match shape2 {
-            Shape::Circle => circle_and_circle(pos1, scale1.x, pos2, scale2.x),
-            Shape::Rect => circle_and_rect(pos1, scale1.x, pos2, scale2),
+        Shape::Circle(radius1) => match shape2 {
+            Shape::Circle(radius2) => circle_and_circle(pos1, radius1, pos2, radius2),
+            Shape::Rect(half_size) => circle_and_rect(pos1, radius1, pos2, half_size),
         },
-        Shape::Rect => match shape2 {
-            Shape::Circle => circle_and_rect(pos2, scale2.x, pos1, scale1),
-            Shape::Rect => rect_and_rect(pos1, scale1, pos2, scale2),
+        Shape::Rect(half_size1) => match shape2 {
+            Shape::Circle(radius2) => circle_and_rect(pos2, radius2, pos1, half_size1),
+            Shape::Rect(half_size2) => rect_and_rect(pos1, half_size1, pos2, half_size2),
         },
     }
 }
 
-pub fn rect_and_rect(pos1: Vec2, scale1: Vec2, pos2: Vec2, scale2: Vec2) -> Vec2 {
-    println!("{} {} {} {}", pos1, scale1, pos2, scale2);
+pub fn rect_and_rect(pos1: Vec2, half_size1: Vec2, pos2: Vec2, half_size2: Vec2) -> Vec2 {
+    println!("{} {} {} {}", pos1, half_size1, pos2, half_size2);
     Vec2::ZERO
     // TODO rect and rect
 }
@@ -76,13 +86,13 @@ pub fn circle_and_circle(pos1: Vec2, radius1: f32, pos2: Vec2, radius2: f32) -> 
     }
 }
 
-pub fn circle_and_rect(pos1: Vec2, radius: f32, pos2: Vec2, scale2: Vec2) -> Vec2 {
+pub fn circle_and_rect(pos1: Vec2, radius: f32, pos2: Vec2, half_size: Vec2) -> Vec2 {
     let x = pos1.x;
     let y = pos1.y;
-    let x1 = pos2.x - scale2.x;
-    let x2 = pos2.x + scale2.x;
-    let y1 = pos2.y - scale2.y;
-    let y2 = pos2.y + scale2.y;
+    let x1 = pos2.x - half_size.x;
+    let x2 = pos2.x + half_size.x;
+    let y1 = pos2.y - half_size.y;
+    let y2 = pos2.y + half_size.y;
     if x1 < x && x < x2 && y1 - radius < y && y < y2 + radius {
         if pos1.y > pos2.y {
             Vec2::new(0.0, y2 - y + radius)

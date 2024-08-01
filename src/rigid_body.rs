@@ -5,7 +5,7 @@ use bevy::prelude::*;
 pub struct RigitBodyController;
 
 #[derive(Component, Deref, DerefMut, Default)]
-pub struct Velocity2(Vec2);
+pub struct Velocity2(pub Vec2);
 
 fn add_velocity(
     mut query: Query<(Entity, &mut Transform, &Velocity2)>,
