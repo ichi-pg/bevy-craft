@@ -52,14 +52,14 @@ fn broad_items(
                 transform2.translation,
                 *shape2,
             ) {
-                hits.push(BroadItem {
+                match hits.try_push(BroadItem {
                     pos: transform2.translation.xy(),
                     shape: *shape2,
                     spawn_id: *spawn_id,
-                });
-                if hits.is_full() {
-                    break;
-                }
+                }) {
+                    Ok(_) => continue,
+                    Err(_) => break,
+                };
             }
         }
     }
@@ -81,13 +81,13 @@ fn broad_blocks(
                 transform2.translation,
                 *shape2,
             ) {
-                hits.push(BroadBlock {
+                match hits.try_push(BroadBlock {
                     pos: transform2.translation.xy(),
                     shape: *shape2,
-                });
-                if hits.is_full() {
-                    break;
-                }
+                }) {
+                    Ok(_) => continue,
+                    Err(_) => break,
+                };
             }
         }
     }
@@ -123,14 +123,14 @@ fn narrow_blocks(mut query: Query<(&Transform, &Shape, &BroadBlocks, &mut Narrow
             if repulsion == Vec2::ZERO {
                 continue;
             }
-            narrow_hits.push(NarrowBlock {
+            match narrow_hits.try_push(NarrowBlock {
                 pos: hit.pos,
                 shape: hit.shape,
                 order: repulsion.length_squared(),
-            });
-            if narrow_hits.is_full() {
-                break;
-            }
+            }) {
+                Ok(_) => continue,
+                Err(_) => break,
+            };
         }
         narrow_hits.sort_by(|a, b| a.order.partial_cmp(&b.order).unwrap());
     }
