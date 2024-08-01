@@ -5,9 +5,6 @@ use bevy::prelude::*;
 struct Hotbar;
 
 #[derive(Component)]
-struct HotbarItem;
-
-#[derive(Component)]
 struct MaxCount(u8);
 
 #[derive(Event)]
@@ -49,9 +46,9 @@ fn spawn_hotbar(mut commands: Commands) {
     // TODO toggle visible
 }
 
-fn picked_up_item(
+fn pick_up_item(
     mut hotbar_query: Query<(Entity, Option<&Children>, &MaxCount), With<Hotbar>>,
-    mut item_query: Query<(&ItemID, &mut Amount), With<HotbarItem>>,
+    mut item_query: Query<(&ItemID, &mut Amount), With<Node>>,
     mut event_reader: EventReader<ItemPickedUp>,
     mut event_writer: EventWriter<HotbarOverflowed>,
     mut commands: Commands,
@@ -80,28 +77,27 @@ fn picked_up_item(
             }
             commands.entity(entity).with_children(|parent| {
                 parent
-                    .spawn((
-                        NodeBundle {
-                            style: Style {
-                                width: Val::Px(100.0),
-                                height: Val::Px(100.0),
-                                flex_direction: FlexDirection::Column,
-                                justify_content: JustifyContent::End,
-                                align_items: AlignItems::End,
-                                padding: UiRect::all(Val::Px(4.0)),
-                                ..default()
-                            },
-                            background_color: BackgroundColor(Color::srgba(0.5, 0.5, 0.5, 0.5)),
+                    .spawn(NodeBundle {
+                        style: Style {
+                            width: Val::Px(100.0),
+                            height: Val::Px(100.0),
+                            flex_direction: FlexDirection::Column,
+                            justify_content: JustifyContent::End,
+                            align_items: AlignItems::End,
+                            padding: UiRect::all(Val::Px(4.0)),
                             ..default()
                         },
-                        event.item_id,
-                        event.amount,
-                        HotbarItem,
-                    ))
+                        background_color: BackgroundColor(Color::srgba(0.5, 0.5, 0.5, 0.5)),
+                        ..default()
+                    })
                     .with_children(|parent| {
-                        parent.spawn(TextBundle::from_section(
-                            format!("{}", event.amount.0),
-                            TextStyle { ..default() },
+                        parent.spawn((
+                            TextBundle::from_section(
+                                format!("{}", event.amount.0),
+                                TextStyle { ..default() },
+                            ),
+                            event.item_id,
+                            event.amount,
                         ));
                     });
             });
@@ -110,6 +106,7 @@ fn picked_up_item(
     // FIXME double spawn
     // FIXME same time merge
     // FIXME same time overflow
+    // TODO move spawn to item mod
     // TODO texture
     // TODO commonalize hotbar, inventory, and chest
 }
@@ -120,6 +117,6 @@ impl Plugin for HotbarPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<HotbarOverflowed>();
         app.add_systems(Startup, spawn_hotbar);
-        app.add_systems(Update, picked_up_item);
+        app.add_systems(Update, pick_up_item);
     }
 }

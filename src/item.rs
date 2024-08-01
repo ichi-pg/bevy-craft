@@ -70,11 +70,19 @@ fn pick_up_item(
     // TODO optimize loop count
 }
 
+fn sync_amount(mut query: Query<(&Amount, &mut Text), (Changed<Amount>, With<Node>)>) {
+    for (amount, mut text) in &mut query {
+        for section in &mut text.sections {
+            section.value = format!("{}", amount.0);
+        }
+    }
+}
+
 pub struct ItemPlugin;
 
 impl Plugin for ItemPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ItemPickedUp>();
-        app.add_systems(Update, (spawn_item, pick_up_item));
+        app.add_systems(Update, (spawn_item, pick_up_item, sync_amount));
     }
 }
