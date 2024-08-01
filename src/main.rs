@@ -12,6 +12,7 @@ mod hotbar;
 mod input;
 mod item;
 mod player;
+mod random;
 mod rapier_level;
 mod rapier_player;
 mod rigid_body;
@@ -39,6 +40,7 @@ fn main() {
             item::ItemPlugin,
             grounded::GroundedPlugin,
             hotbar::HotbarPlugin,
+            random::RandomPlugin,
         ))
         .run();
 

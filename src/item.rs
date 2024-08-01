@@ -1,6 +1,7 @@
 use crate::block::*;
 use crate::collision::*;
 use crate::hit_test::*;
+use crate::random::*;
 use crate::rigid_body::*;
 use bevy::prelude::*;
 use rand::prelude::*;
@@ -20,7 +21,11 @@ pub struct ItemPickedUp {
     pub amount: Amount,
 }
 
-fn spawn_item(mut event_reader: EventReader<BlockDestroied>, mut commands: Commands) {
+fn spawn_item(
+    mut event_reader: EventReader<BlockDestroied>,
+    mut commands: Commands,
+    mut random: ResMut<Random>,
+) {
     for event in event_reader.read() {
         commands.spawn((
             SpriteBundle {
@@ -38,7 +43,7 @@ fn spawn_item(mut event_reader: EventReader<BlockDestroied>, mut commands: Comma
             Velocity2::default(),
             ItemID(1),
             Amount(1),
-            SpawnID(rand::thread_rng().r#gen()),
+            SpawnID(random.next_u64()),
         ));
     }
     // TODO rand resource
