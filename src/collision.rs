@@ -95,10 +95,10 @@ fn broad_blocks(
 }
 
 fn narrow_items(
-    mut query: Query<(&Transform, &Shape, &mut BroadItems)>,
+    mut query: Query<(&Transform, &Shape, &BroadItems), Changed<BroadItems>>,
     mut event_writer: EventWriter<ItemCollided>,
 ) {
-    for (transform, shape, mut hits) in &mut query {
+    for (transform, shape, hits) in &mut query {
         for hit in hits.iter() {
             let repulsion = shape_and_shape(transform.translation.xy(), *shape, hit.pos, hit.shape);
             if repulsion == Vec2::ZERO {
@@ -108,14 +108,15 @@ fn narrow_items(
                 spawn_id: hit.spawn_id,
             });
         }
-        hits.clear();
     }
     // TODO when any hits
     // TODO commonalize using layer
 }
 
-fn narrow_blocks(mut query: Query<(&Transform, &Shape, &mut BroadBlocks, &mut NarrowBlocks)>) {
-    for (transform, shape, mut broad_hits, mut narrow_hits) in &mut query {
+fn narrow_blocks(
+    mut query: Query<(&Transform, &Shape, &BroadBlocks, &mut NarrowBlocks), Changed<BroadBlocks>>,
+) {
+    for (transform, shape, broad_hits, mut narrow_hits) in &mut query {
         narrow_hits.clear();
         for hit in broad_hits.iter() {
             let repulsion = shape_and_shape(transform.translation.xy(), *shape, hit.pos, hit.shape);
@@ -131,15 +132,14 @@ fn narrow_blocks(mut query: Query<(&Transform, &Shape, &mut BroadBlocks, &mut Na
                 Err(_) => break,
             };
         }
-        narrow_hits.sort_by(|a, b| a.order.partial_cmp(&b.order).unwrap());
-        broad_hits.clear();
+        narrow_hits.sort_by(|a: &NarrowBlock, b| a.order.partial_cmp(&b.order).unwrap());
     }
     // TODO when any hits
     // TODO commonalize using layer
 }
 
 fn dynamics_blocks(
-    mut query: Query<(Entity, &mut Transform, &Shape, &NarrowBlocks)>,
+    mut query: Query<(Entity, &mut Transform, &Shape, &NarrowBlocks), Changed<NarrowBlocks>>,
     mut commands: Commands,
 ) {
     for (entity, mut transform, shape, narrow_hits) in &mut query {

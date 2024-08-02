@@ -100,4 +100,5 @@ impl Plugin for InputPlugin {
         app.insert_resource(Input { ..default() });
         app.add_systems(Update, (read_keyboard, read_mouse, read_wheel, read_cursor));
     }
+    // TODO optimize to changed
 }

@@ -42,7 +42,7 @@ fn main() {
             grounded::GroundedPlugin,
             hotbar::HotbarPlugin,
             random::RandomPlugin,
-            profiler::ProfilerPlugin,
+            // profiler::ProfilerPlugin,
         ))
         .run();
 
