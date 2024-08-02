@@ -2,6 +2,7 @@ use crate::block::*;
 use crate::grounded::*;
 use crate::hit_test::*;
 use crate::item::*;
+use crate::rigid_body::*;
 use arrayvec::ArrayVec;
 use bevy::prelude::*;
 
@@ -139,10 +140,19 @@ fn narrow_blocks(
 }
 
 fn dynamics_blocks(
-    mut query: Query<(Entity, &mut Transform, &Shape, &NarrowBlocks), Changed<NarrowBlocks>>,
+    mut query: Query<
+        (
+            Entity,
+            &mut Transform,
+            &mut Velocity2,
+            &Shape,
+            &NarrowBlocks,
+        ),
+        Changed<NarrowBlocks>,
+    >,
     mut commands: Commands,
 ) {
-    for (entity, mut transform, shape, narrow_hits) in &mut query {
+    for (entity, mut transform, mut velocity, shape, narrow_hits) in &mut query {
         let mut repulsions = Vec2::ZERO;
         for hit in narrow_hits.iter() {
             let repulsion = shape_and_shape(transform.translation.xy(), *shape, hit.pos, hit.shape);
@@ -150,8 +160,11 @@ fn dynamics_blocks(
             transform.translation.y += repulsion.y;
             repulsions += repulsion;
         }
-        if repulsions.y > repulsions.x.abs() {
+        let x_abs = repulsions.x.abs();
+        if repulsions.y > x_abs {
             commands.entity(entity).insert(Grounded);
+        } else if -repulsions.y > x_abs && velocity.y > 0.0 {
+            velocity.y = 0.0;
         }
     }
     // TODO when any hits
