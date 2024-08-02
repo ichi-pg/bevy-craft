@@ -5,6 +5,7 @@ mod avian_level;
 mod avian_player;
 mod block;
 mod camera;
+mod click_shape;
 mod collision;
 mod grounded;
 mod hit_test;
@@ -42,6 +43,7 @@ fn main() {
             grounded::GroundedPlugin,
             hotbar::HotbarPlugin,
             random::RandomPlugin,
+            click_shape::ClickShapePlugin,
             // profiler::ProfilerPlugin,
         ))
         .run();

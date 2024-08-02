@@ -1,5 +1,6 @@
+use crate::click_shape::Clicked;
+use crate::click_shape::EmptyClicked;
 use crate::hit_test::*;
-use crate::input::*;
 use bevy::prelude::*;
 
 const BLOCK_SIZE: f32 = 128.0;
@@ -44,54 +45,45 @@ fn spawn_blocks(mut commands: Commands) {
     // TODO texture
 }
 
-fn touch_block(
-    mut block_query: Query<(Entity, &Transform, &Shape), With<Block>>,
-    other_query: Query<(&Transform, &Shape), Without<Block>>,
+fn destroy_block(
+    query: Query<(Entity, &Transform), (With<Block>, With<Clicked>)>,
     mut commands: Commands,
-    input: Res<Input>,
     mut event_writer: EventWriter<BlockDestroied>,
 ) {
-    if !input.left_click {
-        return;
+    for (entity, transform) in &query {
+        commands.entity(entity).despawn();
+        event_writer.send(BlockDestroied {
+            transform: *transform,
+        });
     }
-    for (entity, transform, shape) in &mut block_query {
-        if point_test(input.cursor, transform.translation, *shape) {
-            commands.entity(entity).despawn();
-            event_writer.send(BlockDestroied {
-                transform: *transform,
-            });
-            return;
-        }
-    }
-    for (transform, shape) in &other_query {
-        if point_test(input.cursor, transform.translation, *shape) {
-            return;
-        }
-    }
-    commands.spawn((
-        SpriteBundle {
-            sprite: Sprite {
-                color: Color::srgb(0.6, 0.6, 0.6),
-                custom_size: Some(Vec2::new(BLOCK_SIZE, BLOCK_SIZE)),
+    // TODO block hp
+    // TODO pickaxe
+    // TODO select item
+}
+
+fn placement_block(mut event_reader: EventReader<EmptyClicked>, mut commands: Commands) {
+    for event in event_reader.read() {
+        commands.spawn((
+            SpriteBundle {
+                sprite: Sprite {
+                    color: Color::srgb(0.6, 0.6, 0.6),
+                    custom_size: Some(Vec2::new(BLOCK_SIZE, BLOCK_SIZE)),
+                    ..default()
+                },
+                transform: Transform::from_xyz(
+                    ((event.pos.x + BLOCK_SIZE * 0.5) / BLOCK_SIZE).floor() * BLOCK_SIZE,
+                    ((event.pos.y + BLOCK_SIZE * 0.5) / BLOCK_SIZE).floor() * BLOCK_SIZE,
+                    0.0,
+                ),
                 ..default()
             },
-            transform: Transform::from_xyz(
-                ((input.cursor.x + BLOCK_SIZE * 0.5) / BLOCK_SIZE).floor() * BLOCK_SIZE,
-                ((input.cursor.y + BLOCK_SIZE * 0.5) / BLOCK_SIZE).floor() * BLOCK_SIZE,
-                0.0,
-            ),
-            ..default()
-        },
-        Shape::Rect(Vec2::new(BLOCK_SIZE * 0.5, BLOCK_SIZE * 0.5)),
-        Block,
-    ));
+            Shape::Rect(Vec2::new(BLOCK_SIZE * 0.5, BLOCK_SIZE * 0.5)),
+            Block,
+        ));
+    }
     // TODO consume item
     // TODO select item
-    // TODO pickaxe
-    // TODO block hp
-    // TODO chunk
     // TODO bundle
-    // TODO clicked event
 }
 
 pub struct BlockPlugin;
@@ -100,6 +92,6 @@ impl Plugin for BlockPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<BlockDestroied>();
         app.add_systems(Startup, spawn_blocks);
-        app.add_systems(Update, touch_block);
+        app.add_systems(Update, (destroy_block, placement_block));
     }
 }
