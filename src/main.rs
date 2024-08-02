@@ -12,6 +12,7 @@ mod hotbar;
 mod input;
 mod item;
 mod player;
+mod profiler;
 mod random;
 mod rapier_level;
 mod rapier_player;
@@ -41,6 +42,7 @@ fn main() {
             grounded::GroundedPlugin,
             hotbar::HotbarPlugin,
             random::RandomPlugin,
+            profiler::ProfilerPlugin,
         ))
         .run();
 

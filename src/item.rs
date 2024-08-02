@@ -70,7 +70,7 @@ fn pick_up_item(
     // TODO optimize loop count
 }
 
-fn sync_amount(mut query: Query<(&Amount, &mut Text), (Changed<Amount>, With<Node>)>) {
+fn sync_amount(mut query: Query<(&Amount, &mut Text), Changed<Amount>>) {
     for (amount, mut text) in &mut query {
         for section in &mut text.sections {
             section.value = format!("{}", amount.0);
