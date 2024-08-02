@@ -68,8 +68,6 @@ fn touch_block(
             return;
         }
     }
-    let x = ((input.cursor.x + BLOCK_SIZE * 0.5) / BLOCK_SIZE).floor() * BLOCK_SIZE;
-    let y = ((input.cursor.y + BLOCK_SIZE * 0.5) / BLOCK_SIZE).floor() * BLOCK_SIZE;
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
@@ -77,12 +75,20 @@ fn touch_block(
                 custom_size: Some(Vec2::new(BLOCK_SIZE, BLOCK_SIZE)),
                 ..default()
             },
-            transform: Transform::from_xyz(x, y, 0.0),
+            transform: Transform::from_xyz(
+                ((input.cursor.x + BLOCK_SIZE * 0.5) / BLOCK_SIZE).floor() * BLOCK_SIZE,
+                ((input.cursor.y + BLOCK_SIZE * 0.5) / BLOCK_SIZE).floor() * BLOCK_SIZE,
+                0.0,
+            ),
             ..default()
         },
         Shape::Rect(Vec2::new(BLOCK_SIZE * 0.5, BLOCK_SIZE * 0.5)),
         Block,
     ));
+    // TODO consume item
+    // TODO select item
+    // TODO pickaxe
+    // TODO block hp
     // TODO chunk
     // TODO bundle
     // TODO clicked event

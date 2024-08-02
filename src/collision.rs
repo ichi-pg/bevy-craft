@@ -66,6 +66,7 @@ fn broad_items(
     }
     // TODO chunk or sweep or tree
     // TODO commonalize using layer
+    // TODO commonalize using filter component
 }
 
 fn broad_blocks(
@@ -93,6 +94,7 @@ fn broad_blocks(
     }
     // TODO chunk or sweep or tree
     // TODO commonalize using layer
+    // TODO commonalize using filter component
 }
 
 fn narrow_items(
@@ -112,6 +114,7 @@ fn narrow_items(
     }
     // TODO when any hits
     // TODO commonalize using layer
+    // TODO commonalize using filter component
 }
 
 fn narrow_blocks(
@@ -137,6 +140,7 @@ fn narrow_blocks(
     }
     // TODO when any hits
     // TODO commonalize using layer
+    // TODO commonalize using filter component
 }
 
 fn dynamics_blocks(
@@ -167,10 +171,12 @@ fn dynamics_blocks(
             velocity.y = 0.0;
         }
     }
+    // TODO refactor velocity, grounded, and hit head.
     // TODO when any hits
     // TODO can replace entities?
     // TODO dynamics gizmo
     // TODO collision profiler
+    // TODO commonalize using filter component
 }
 
 pub struct CollisionPlugin;

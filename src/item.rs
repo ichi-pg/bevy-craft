@@ -68,6 +68,7 @@ fn pick_up_item(
         }
     }
     // TODO optimize loop count
+    // TODO commonalize using filter component
 }
 
 fn sync_amount(mut query: Query<(&Amount, &mut Text), Changed<Amount>>) {
