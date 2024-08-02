@@ -63,7 +63,7 @@ fn read_keyboard(mut input: ResMut<Input>, keyboard: Res<ButtonInput<KeyCode>>) 
 }
 
 fn read_mouse(mut input: ResMut<Input>, mouse: Res<ButtonInput<MouseButton>>) {
-    input.left_click = mouse.just_released(MouseButton::Left);
+    input.left_click = mouse.just_pressed(MouseButton::Left);
     input.right_click = mouse.just_pressed(MouseButton::Right);
 }
 
