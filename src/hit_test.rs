@@ -39,20 +39,25 @@ pub fn aabb_test(pos1: Vec3, shape1: Shape, pos2: Vec3, shape2: Shape) -> bool {
 
 #[inline(always)]
 pub fn point_test(pos1: Vec2, pos2: Vec3, shape2: Shape) -> bool {
-    match shape2 {
-        Shape::Circle(_) => todo!(),
-        Shape::Rect(half_size) => {
-            if pos1.x < pos2.x - half_size.x {
-                false
-            } else if pos1.x > pos2.x + half_size.x {
-                false
-            } else if pos1.y < pos2.y - half_size.y {
-                false
-            } else if pos1.y > pos2.y + half_size.y {
-                false
-            } else {
-                true
-            }
+    let w = match shape2 {
+        Shape::Circle(radius) => radius,
+        Shape::Rect(half_size) => half_size.x,
+    };
+    if pos1.x < pos2.x - w {
+        false
+    } else if pos1.x > pos2.x + w {
+        false
+    } else {
+        let h = match shape2 {
+            Shape::Circle(radius) => radius,
+            Shape::Rect(half_size) => half_size.y,
+        };
+        if pos1.y < pos2.y - h {
+            false
+        } else if pos1.y > pos2.y + h {
+            false
+        } else {
+            true
         }
     }
 }
@@ -108,19 +113,25 @@ pub fn circle_and_rect(pos1: Vec2, radius: f32, pos2: Vec2, half_size: Vec2) -> 
     } else {
         let rr = radius * radius;
         let a = Vec2::new(x - x1, y - y1);
-        let b = Vec2::new(x - x2, y - y1);
-        let c = Vec2::new(x - x1, y - y2);
-        let d = Vec2::new(x - x2, y - y2);
         if a.length_squared() < rr {
             a.normalize() * (radius - a.length())
-        } else if b.length_squared() < rr {
-            b.normalize() * (radius - b.length())
-        } else if c.length_squared() < rr {
-            c.normalize() * (radius - c.length())
-        } else if d.length_squared() < rr {
-            d.normalize() * (radius - d.length())
         } else {
-            Vec2::ZERO
+            let b = Vec2::new(x - x2, y - y1);
+            if b.length_squared() < rr {
+                b.normalize() * (radius - b.length())
+            } else {
+                let c = Vec2::new(x - x1, y - y2);
+                if c.length_squared() < rr {
+                    c.normalize() * (radius - c.length())
+                } else {
+                    let d = Vec2::new(x - x2, y - y2);
+                    if d.length_squared() < rr {
+                        d.normalize() * (radius - d.length())
+                    } else {
+                        Vec2::ZERO
+                    }
+                }
+            }
         }
     }
     // TODO dived center

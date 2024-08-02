@@ -29,7 +29,11 @@ fn spawn_blocks(mut commands: Commands) {
                         custom_size: Some(Vec2::new(BLOCK_SIZE, BLOCK_SIZE)),
                         ..default()
                     },
-                    transform: Transform::from_xyz(x as f32 * BLOCK_SIZE, y as f32 * BLOCK_SIZE, 0.0),
+                    transform: Transform::from_xyz(
+                        x as f32 * BLOCK_SIZE,
+                        y as f32 * BLOCK_SIZE,
+                        0.0,
+                    ),
                     ..default()
                 },
                 Shape::Rect(Vec2::new(BLOCK_SIZE * 0.5, BLOCK_SIZE * 0.5)),
@@ -41,7 +45,8 @@ fn spawn_blocks(mut commands: Commands) {
 }
 
 fn touch_block(
-    mut blocks: Query<(Entity, &Transform, &Shape), With<Block>>,
+    mut block_query: Query<(Entity, &Transform, &Shape), With<Block>>,
+    other_query: Query<(&Transform, &Shape), Without<Block>>,
     mut commands: Commands,
     input: Res<Input>,
     mut event_writer: EventWriter<BlockDestroied>,
@@ -49,7 +54,7 @@ fn touch_block(
     if !input.left_click {
         return;
     }
-    for (entity, transform, shape) in &mut blocks {
+    for (entity, transform, shape) in &mut block_query {
         if point_test(input.cursor, transform.translation, *shape) {
             commands.entity(entity).despawn();
             event_writer.send(BlockDestroied {
@@ -58,8 +63,13 @@ fn touch_block(
             return;
         }
     }
-    let x = input.cursor.x;
-    let y = input.cursor.y;
+    for (transform, shape) in &other_query {
+        if point_test(input.cursor, transform.translation, *shape) {
+            return;
+        }
+    }
+    let x = ((input.cursor.x + BLOCK_SIZE * 0.5) / BLOCK_SIZE).floor() * BLOCK_SIZE;
+    let y = ((input.cursor.y + BLOCK_SIZE * 0.5) / BLOCK_SIZE).floor() * BLOCK_SIZE;
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
@@ -75,7 +85,7 @@ fn touch_block(
     ));
     // TODO chunk
     // TODO bundle
-    // TODO fit grid
+    // TODO clicked event
 }
 
 pub struct BlockPlugin;
