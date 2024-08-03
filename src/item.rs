@@ -29,8 +29,6 @@ fn spawn_item(mut event_reader: EventReader<BlockDestroied>, mut commands: Comma
                 ..default()
             },
             Shape::Circle(32.0),
-            BroadBlocks::default(),
-            NarrowBlocks::default(),
             Velocity2::default(),
             ItemID(1),
             Amount(1),

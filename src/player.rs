@@ -1,4 +1,3 @@
-use crate::collision::*;
 use crate::grounded::*;
 use crate::hit_test::*;
 use crate::input::*;
@@ -38,8 +37,6 @@ fn spawn_player(
         PlayerController,
         RigitBodyController,
         Velocity2::default(),
-        BroadBlocks::default(),
-        NarrowBlocks::default(),
         Shape::Circle(size * 0.5),
     ));
 }
