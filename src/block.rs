@@ -92,6 +92,7 @@ impl Plugin for BlockPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<BlockDestroied>();
         app.add_systems(Startup, spawn_blocks);
-        app.add_systems(Update, (destroy_block, placement_block));
+        app.add_systems(Update, placement_block);
+        app.add_systems(PostUpdate, destroy_block);
     }
 }

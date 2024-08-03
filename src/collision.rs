@@ -171,7 +171,6 @@ fn dynamics_blocks(
             velocity.y = 0.0;
         }
     }
-    // FIXME pick up item and grouned item at the same time
     // TODO refactor velocity, grounded, and hit head.
     // TODO when any hits
     // TODO can replace entities?

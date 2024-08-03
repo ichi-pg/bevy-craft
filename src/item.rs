@@ -84,6 +84,7 @@ pub struct ItemPlugin;
 impl Plugin for ItemPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ItemPickedUp>();
-        app.add_systems(Update, (spawn_item, pick_up_item, sync_amount));
+        app.add_systems(Update, (spawn_item, sync_amount));
+        app.add_systems(PostUpdate, pick_up_item);
     }
 }
