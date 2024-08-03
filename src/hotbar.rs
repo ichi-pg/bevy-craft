@@ -47,14 +47,14 @@ fn spawn_hotbar(mut commands: Commands) {
 }
 
 fn pick_up_item(
-    mut hotbar_query: Query<(Entity, Option<&Children>, &MaxCount), With<Hotbar>>,
+    hotbar_query: Query<(Entity, Option<&Children>, &MaxCount), With<Hotbar>>,
     mut item_query: Query<(&ItemID, &mut Amount), With<Node>>,
     mut event_reader: EventReader<ItemPickedUp>,
     mut event_writer: EventWriter<HotbarOverflowed>,
     mut commands: Commands,
 ) {
     for event in event_reader.read() {
-        for (entity, children, max_count) in &mut hotbar_query {
+        for (entity, children, max_count) in &hotbar_query {
             let mut found = false;
             for (item_id, mut amount) in &mut item_query {
                 if item_id.0 == event.item_id.0 {

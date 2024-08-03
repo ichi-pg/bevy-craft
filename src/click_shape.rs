@@ -30,7 +30,8 @@ fn click_shape(
         return;
     }
     event_writer.send(EmptyClicked { pos: input.cursor });
-    // TODO chunk
+    // FIXME click and despawn at the same time
+    // TODO chunk or sweep or tree
 }
 
 pub struct ClickShapePlugin;

@@ -98,10 +98,10 @@ fn broad_blocks(
 }
 
 fn narrow_items(
-    mut query: Query<(&Transform, &Shape, &BroadItems), Changed<BroadItems>>,
+    query: Query<(&Transform, &Shape, &BroadItems), Changed<BroadItems>>,
     mut event_writer: EventWriter<ItemCollided>,
 ) {
-    for (transform, shape, hits) in &mut query {
+    for (transform, shape, hits) in &query {
         for hit in hits.iter() {
             let repulsion = shape_and_shape(transform.translation.xy(), *shape, hit.pos, hit.shape);
             if repulsion == Vec2::ZERO {
@@ -171,6 +171,7 @@ fn dynamics_blocks(
             velocity.y = 0.0;
         }
     }
+    // FIXME pick up item and grouned item at the same time
     // TODO refactor velocity, grounded, and hit head.
     // TODO when any hits
     // TODO can replace entities?

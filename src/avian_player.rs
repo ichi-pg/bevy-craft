@@ -43,8 +43,8 @@ fn update_velocity(
     }
 }
 
-fn update_grounded(mut players: Query<(Entity, &ShapeHits)>, mut commands: Commands) {
-    for (entity, hits) in &mut players {
+fn update_grounded(players: Query<(Entity, &ShapeHits)>, mut commands: Commands) {
+    for (entity, hits) in &players {
         if hits.is_empty() {
             commands.entity(entity).remove::<Grounded>();
         } else {

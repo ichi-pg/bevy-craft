@@ -5,14 +5,14 @@ use bevy::prelude::*;
 pub struct Grounded;
 
 fn remove_grounded(
-    mut query: Query<Entity, With<Grounded>>,
+    query: Query<Entity, With<Grounded>>,
     mut commands: Commands,
     event_reader: EventReader<BlockDestroied>,
 ) {
     if event_reader.is_empty() {
         return;
     }
-    for entity in &mut query {
+    for entity in &query {
         commands.entity(entity).remove::<Grounded>();
     }
 }
