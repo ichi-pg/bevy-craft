@@ -2,16 +2,10 @@ use crate::block::*;
 use crate::grounded::*;
 use crate::hit_test::*;
 use crate::item::*;
+use crate::player::*;
 use crate::rigid_body::*;
 use arrayvec::ArrayVec;
 use bevy::prelude::*;
-
-#[derive(Component)]
-pub struct BroadItem {
-    pos: Vec2,
-    shape: Shape,
-    spawn_id: SpawnID,
-}
 
 #[derive(Component)]
 pub struct BroadBlock {
@@ -27,46 +21,57 @@ pub struct NarrowBlock {
 }
 
 #[derive(Component, Deref, DerefMut, Default)]
-pub struct BroadItems(ArrayVec<BroadItem, 10>);
-
-#[derive(Component, Deref, DerefMut, Default)]
 pub struct BroadBlocks(ArrayVec<BroadBlock, 10>);
 
 #[derive(Component, Deref, DerefMut, Default)]
 pub struct NarrowBlocks(ArrayVec<NarrowBlock, 10>);
 
-#[derive(Event)]
-pub struct ItemCollided {
-    pub spawn_id: SpawnID,
-}
+#[derive(Component)]
+pub struct Collided;
+
+#[derive(Component)]
+struct BroadCollided;
 
 fn broad_items(
-    mut query1: Query<(&Transform, &Shape, &mut BroadItems), Changed<Transform>>,
-    query2: Query<(&Transform, &Shape, &SpawnID), With<ItemID>>,
+    query1: Query<(&Transform, &Shape), (With<Player>, Changed<Transform>)>,
+    query2: Query<(Entity, &Transform, &Shape), With<ItemID>>,
+    mut commands: Commands,
 ) {
-    for (transform1, shape1, mut hits) in &mut query1 {
-        hits.clear();
-        for (transform2, shape2, spawn_id) in &query2 {
+    for (transform1, shape1) in &query1 {
+        for (entity, transform2, shape2) in &query2 {
             if aabb_test(
                 transform1.translation,
                 *shape1,
                 transform2.translation,
                 *shape2,
             ) {
-                match hits.try_push(BroadItem {
-                    pos: transform2.translation.xy(),
-                    shape: *shape2,
-                    spawn_id: *spawn_id,
-                }) {
-                    Ok(_) => continue,
-                    Err(_) => break,
-                };
+                commands.entity(entity).insert(BroadCollided);
             }
         }
     }
-    // TODO chunk or sweep or tree
     // TODO commonalize using layer
-    // TODO commonalize using filter component
+}
+
+fn narrow_items(
+    query1: Query<(&Transform, &Shape), With<Player>>,
+    query2: Query<(Entity, &Transform, &Shape), (With<ItemID>, With<BroadCollided>)>,
+    mut commands: Commands,
+) {
+    for (transform1, shape1) in &query1 {
+        for (entity, transform2, shape2) in &query2 {
+            let repulsion = shape_and_shape(
+                transform1.translation.xy(),
+                *shape1,
+                transform2.translation.xy(),
+                *shape2,
+            );
+            if repulsion != Vec2::ZERO {
+                commands.entity(entity).insert(Collided);
+            }
+            commands.entity(entity).remove::<BroadCollided>();
+        }
+    }
+    // TODO commonalize using layer
 }
 
 fn broad_blocks(
@@ -93,26 +98,6 @@ fn broad_blocks(
         }
     }
     // TODO chunk or sweep or tree
-    // TODO commonalize using layer
-    // TODO commonalize using filter component
-}
-
-fn narrow_items(
-    query: Query<(&Transform, &Shape, &BroadItems), Changed<BroadItems>>,
-    mut event_writer: EventWriter<ItemCollided>,
-) {
-    for (transform, shape, hits) in &query {
-        for hit in hits.iter() {
-            let repulsion = shape_and_shape(transform.translation.xy(), *shape, hit.pos, hit.shape);
-            if repulsion == Vec2::ZERO {
-                continue;
-            }
-            event_writer.send(ItemCollided {
-                spawn_id: hit.spawn_id,
-            });
-        }
-    }
-    // TODO when any hits
     // TODO commonalize using layer
     // TODO commonalize using filter component
 }
@@ -184,13 +169,12 @@ pub struct CollisionPlugin;
 
 impl Plugin for CollisionPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<ItemCollided>();
         app.add_systems(
             Update,
             (
                 broad_items,
-                broad_blocks,
                 narrow_items,
+                broad_blocks,
                 narrow_blocks,
                 dynamics_blocks,
             ),

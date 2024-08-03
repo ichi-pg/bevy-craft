@@ -11,6 +11,9 @@ use bevy::{
 #[derive(Component)]
 pub struct PlayerController;
 
+#[derive(Component)]
+pub struct Player;
+
 fn spawn_player(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -31,10 +34,10 @@ fn spawn_player(
             material: materials.add(Color::srgb(1.0, 1.0, 1.0)),
             ..default()
         },
+        Player,
         PlayerController,
         RigitBodyController,
         Velocity2::default(),
-        BroadItems::default(),
         BroadBlocks::default(),
         NarrowBlocks::default(),
         Shape::Circle(size * 0.5),
