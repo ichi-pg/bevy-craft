@@ -135,4 +135,5 @@ pub fn circle_and_rect(pos1: Vec2, radius: f32, pos2: Vec2, half_size: Vec2) -> 
         }
     }
     // TODO dived center
+    // TODO optimize &
 }

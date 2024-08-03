@@ -105,6 +105,7 @@ fn pick_up_item(
     }
     // FIXME same time merge
     // FIXME same time overflow
+    // TODO which player?
     // TODO move spawn to item mod
     // TODO texture
     // TODO commonalize hotbar, inventory, and chest
