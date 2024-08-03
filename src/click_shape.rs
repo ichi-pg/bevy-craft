@@ -30,7 +30,6 @@ fn click_shape(
         return;
     }
     event_writer.send(EmptyClicked { pos: input.cursor });
-    // FIXME double clicking
     // TODO chunk or sweep or tree
 }
 
