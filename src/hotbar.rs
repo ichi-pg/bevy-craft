@@ -103,7 +103,6 @@ fn pick_up_item(
             });
         }
     }
-    // FIXME double spawn
     // FIXME same time merge
     // FIXME same time overflow
     // TODO move spawn to item mod

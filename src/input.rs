@@ -103,5 +103,6 @@ impl Plugin for InputPlugin {
             (read_keyboard, read_mouse, read_wheel, read_cursor),
         );
     }
+    // FIXME not update frame
     // TODO optimize to changed
 }
