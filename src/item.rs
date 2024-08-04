@@ -1,13 +1,8 @@
 use crate::block::*;
 use crate::collision::*;
 use crate::hit_test::*;
-use crate::random::*;
 use crate::rigid_body::*;
 use bevy::prelude::*;
-use rand::prelude::*;
-
-#[derive(Component, Clone, Copy)]
-pub struct SpawnID(pub u64);
 
 #[derive(Component, Clone, Copy)]
 pub struct ItemID(pub u16);
@@ -21,11 +16,7 @@ pub struct ItemPickedUp {
     pub amount: Amount,
 }
 
-fn spawn_item(
-    mut event_reader: EventReader<BlockDestroied>,
-    mut commands: Commands,
-    mut random: ResMut<Random>,
-) {
+fn spawn_item(mut event_reader: EventReader<BlockDestroied>, mut commands: Commands) {
     for event in event_reader.read() {
         commands.spawn((
             SpriteBundle {
@@ -38,37 +29,26 @@ fn spawn_item(
                 ..default()
             },
             Shape::Circle(32.0),
-            BroadBlocks::default(),
-            NarrowBlocks::default(),
             Velocity2::default(),
             ItemID(1),
             Amount(1),
-            SpawnID(random.next_u64()),
         ));
     }
     // TODO texture
 }
 
 fn pick_up_item(
-    query: Query<(Entity, &SpawnID, &ItemID, &Amount)>,
-    mut event_reader: EventReader<ItemCollided>,
+    query: Query<(Entity, &ItemID, &Amount), With<Collided>>,
     mut event_writer: EventWriter<ItemPickedUp>,
     mut commands: Commands,
 ) {
-    for event in event_reader.read() {
-        for (entity, spawn_id, item_id, amount) in &query {
-            if spawn_id.0 == event.spawn_id.0 {
-                commands.entity(entity).despawn();
-                event_writer.send(ItemPickedUp {
-                    item_id: *item_id,
-                    amount: *amount,
-                });
-                break;
-            }
-        }
+    for (entity, item_id, amount) in &query {
+        commands.entity(entity).despawn();
+        event_writer.send(ItemPickedUp {
+            item_id: *item_id,
+            amount: *amount,
+        });
     }
-    // TODO optimize loop count
-    // TODO commonalize using filter component
 }
 
 fn sync_amount(mut query: Query<(&Amount, &mut Text), Changed<Amount>>) {

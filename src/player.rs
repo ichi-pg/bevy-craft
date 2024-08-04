@@ -1,4 +1,3 @@
-use crate::collision::*;
 use crate::grounded::*;
 use crate::hit_test::*;
 use crate::input::*;
@@ -7,6 +6,9 @@ use bevy::{
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
+
+#[derive(Component)]
+pub struct PlayerID;
 
 #[derive(Component)]
 pub struct PlayerController;
@@ -31,12 +33,10 @@ fn spawn_player(
             material: materials.add(Color::srgb(1.0, 1.0, 1.0)),
             ..default()
         },
+        PlayerID,
         PlayerController,
         RigitBodyController,
         Velocity2::default(),
-        BroadItems::default(),
-        BroadBlocks::default(),
-        NarrowBlocks::default(),
         Shape::Circle(size * 0.5),
     ));
 }
