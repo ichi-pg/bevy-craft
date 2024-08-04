@@ -38,7 +38,7 @@ fn broad_items(
         }
     }
     // TODO chunk or sweep or tree
-    // TODO commonalize using layer
+    // TODO commonalize using generics
 }
 
 fn narrow_items(
@@ -86,7 +86,7 @@ fn broad_blocks(
         }
     }
     // TODO chunk or sweep or tree
-    // TODO commonalize using layer
+    // TODO commonalize using generics
 }
 
 fn narrow_blocks(
@@ -141,11 +141,9 @@ fn narrow_blocks(
     }
     // FIXME jump out
     // TODO refactor velocity, grounded, and hit head.
-    // TODO can replace entities??
     // TODO dynamics gizmo
     // TODO collision profiler
-    // TODO can filter broad pairs?
-    // TODO can split systems?
+    // TODO splite systems using generics
 }
 
 pub struct CollisionPlugin;
