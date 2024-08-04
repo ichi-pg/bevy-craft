@@ -34,7 +34,6 @@ fn main() {
             // RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
             // RapierDebugRenderPlugin::default(),
             input::InputPlugin,
-            collision::CollisionPlugin,
             player::PlayerPlugin,
             camera::CameraPlugin,
             block::BlockPlugin,

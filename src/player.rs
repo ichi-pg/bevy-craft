@@ -84,6 +84,6 @@ pub struct TopDownPlayerPlugin;
 impl Plugin for TopDownPlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_player);
-        app.add_systems(Update, (add_move_xy,));
+        app.add_systems(Update, add_move_xy);
     }
 }

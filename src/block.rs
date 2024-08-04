@@ -1,6 +1,8 @@
-use crate::click_shape::Clicked;
-use crate::click_shape::EmptyClicked;
+use crate::click_shape::*;
+use crate::collision::*;
 use crate::hit_test::*;
+use crate::item::*;
+use crate::player::*;
 use bevy::prelude::*;
 
 const BLOCK_SIZE: f32 = 128.0;
@@ -92,7 +94,14 @@ impl Plugin for BlockPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<BlockDestroied>();
         app.add_systems(Startup, spawn_blocks);
-        app.add_systems(Update, placement_block);
+        app.add_systems(
+            Update,
+            (
+                placement_block,
+                dynamics_collision::<PlayerID, Block>,
+                dynamics_collision::<ItemID, Block>,
+            ),
+        );
         app.add_systems(PostUpdate, destroy_block);
     }
 }

@@ -1,7 +1,5 @@
 use crate::grounded::*;
 use crate::hit_test::*;
-use crate::item::*;
-use crate::player::*;
 use crate::rigid_body::*;
 use arrayvec::ArrayVec;
 use bevy::prelude::*;
@@ -9,9 +7,9 @@ use bevy::prelude::*;
 #[derive(Event)]
 pub struct Collided;
 
-fn items_collision(
-    query1: Query<(&Transform, &Shape), (With<PlayerID>, Changed<Transform>)>,
-    query2: Query<(Entity, &Transform, &Shape), With<ItemID>>,
+pub fn notify_collision<T: Component, U: Component>(
+    query1: Query<(&Transform, &Shape), (With<T>, Changed<Transform>)>,
+    query2: Query<(Entity, &Transform, &Shape), With<U>>,
     mut commands: Commands,
 ) {
     for (transform2, shape2) in &query1 {
@@ -39,12 +37,14 @@ fn items_collision(
         }
     }
     // TODO chunk or sweep or tree
-    // TODO commonalize using generics
 }
 
-fn blocks_collision(
-    mut query1: Query<(Entity, &mut Transform, &Shape, &mut Velocity2), Changed<Transform>>,
-    query2: Query<(&Transform, &Shape), Without<Velocity2>>,
+pub fn dynamics_collision<T: Component, U: Component>(
+    mut query1: Query<
+        (Entity, &mut Transform, &Shape, &mut Velocity2),
+        (With<T>, Changed<Transform>),
+    >,
+    query2: Query<(&Transform, &Shape), (With<U>, Without<T>)>,
     mut commands: Commands,
 ) {
     for (entity, mut transform1, shape1, mut velocity) in &mut query1 {
@@ -101,17 +101,6 @@ fn blocks_collision(
     // FIXME jump out
     // TODO chunk or sweep or tree
     // TODO refactor velocity, grounded, and hit head.
-    // TODO when any hits
-    // TODO can replace entities?
     // TODO dynamics gizmo
     // TODO collision profiler
-    // TODO commonalize using generics
-}
-
-pub struct CollisionPlugin;
-
-impl Plugin for CollisionPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(Update, (items_collision, blocks_collision));
-    }
 }
