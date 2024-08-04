@@ -45,6 +45,7 @@ fn spawn_blocks(mut commands: Commands) {
         }
     }
     // TODO texture
+    // TODO can merge shapes?
 }
 
 fn destroy_block(
