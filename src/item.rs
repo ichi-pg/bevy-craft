@@ -13,8 +13,30 @@ pub struct Amount(pub u16);
 
 #[derive(Event)]
 pub struct ItemPickedUp {
-    pub item_id: ItemID,
-    pub amount: Amount,
+    pub item_id: u16,
+    pub amount: u16,
+}
+
+pub trait ItemAndAmount {
+    fn item_id(&self) -> u16;
+    fn amount(&self) -> u16;
+    fn set_item_id(&mut self, item_id: u16);
+    fn set_amount(&mut self, item_id: u16);
+}
+
+impl ItemAndAmount for ItemPickedUp {
+    fn item_id(&self) -> u16 {
+        self.item_id
+    }
+    fn amount(&self) -> u16 {
+        self.amount
+    }
+    fn set_item_id(&mut self, item_id: u16) {
+        self.item_id = item_id;
+    }
+    fn set_amount(&mut self, amount: u16) {
+        self.amount = amount;
+    }
 }
 
 fn spawn_item(mut event_reader: EventReader<BlockDestroied>, mut commands: Commands) {
@@ -46,8 +68,8 @@ fn pick_up_item(
     for (entity, item_id, amount) in &query {
         commands.entity(entity).despawn();
         event_writer.send(ItemPickedUp {
-            item_id: *item_id,
-            amount: *amount,
+            item_id: item_id.0,
+            amount: amount.0,
         });
     }
 }

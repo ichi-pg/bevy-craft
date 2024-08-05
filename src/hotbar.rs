@@ -7,8 +7,26 @@ struct Hotbar;
 #[derive(Component)]
 struct HotbarItem;
 
-#[derive(Event)]
-struct HotbarOverflowed;
+#[derive(Event, Default)]
+struct HotbarOverflowed {
+    pub item_id: u16,
+    pub amount: u16,
+}
+
+impl ItemAndAmount for HotbarOverflowed {
+    fn item_id(&self) -> u16 {
+        self.item_id
+    }
+    fn amount(&self) -> u16 {
+        self.amount
+    }
+    fn set_item_id(&mut self, item_id: u16) {
+        self.item_id = item_id;
+    }
+    fn set_amount(&mut self, amount: u16) {
+        self.amount = amount;
+    }
+}
 
 fn spawn_hotbar(mut commands: Commands) {
     commands
@@ -75,17 +93,17 @@ fn spawn_hotbar(mut commands: Commands) {
     // TODO using generics
 }
 
-fn pick_up_item<T: Component>(
+fn put_in_item<T: Component, U: Event + ItemAndAmount, V: Event + Default + ItemAndAmount>(
     mut query: Query<(&ItemID, &mut Amount), With<T>>,
-    mut event_reader: EventReader<ItemPickedUp>,
-    mut event_writer: EventWriter<HotbarOverflowed>,
+    mut event_reader: EventReader<U>,
+    mut event_writer: EventWriter<V>,
 ) {
     for event in event_reader.read() {
         // Merge amount
         let mut found = false;
         for (item_id, mut amount) in &mut query {
-            if item_id.0 == event.item_id.0 {
-                amount.0 += event.amount.0;
+            if item_id.0 == event.item_id() {
+                amount.0 += event.amount();
                 found = true;
                 break;
             }
@@ -97,7 +115,7 @@ fn pick_up_item<T: Component>(
         let mut found = false;
         for (item_id, mut amount) in &mut query {
             if item_id.0 == 0 {
-                amount.0 += event.amount.0;
+                amount.0 += event.amount();
                 found = true;
                 break;
             }
@@ -106,9 +124,11 @@ fn pick_up_item<T: Component>(
             continue;
         }
         // Overflow
-        event_writer.send(HotbarOverflowed);
+        let mut v: V = V::default();
+        v.set_item_id(event.item_id());
+        v.set_amount(event.amount());
+        event_writer.send(v);
     }
-    // FIXME event reader with generics is anti pattern
     // TODO which player?
     // TODO closed chests items is hash map resource?
 }
@@ -119,6 +139,9 @@ impl Plugin for HotbarPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<HotbarOverflowed>();
         app.add_systems(Startup, spawn_hotbar);
-        app.add_systems(Update, pick_up_item::<HotbarItem>);
+        app.add_systems(
+            Update,
+            put_in_item::<HotbarItem, ItemPickedUp, HotbarOverflowed>,
+        );
     }
 }
