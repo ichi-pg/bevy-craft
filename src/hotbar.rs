@@ -108,6 +108,7 @@ fn pick_up_item<T: Component>(
         // Overflow
         event_writer.send(HotbarOverflowed);
     }
+    // FIXME event reader with generics is anti pattern
     // TODO which player?
     // TODO closed chests items is hash map resource?
 }
