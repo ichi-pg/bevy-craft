@@ -11,17 +11,17 @@ pub struct ItemID(pub u16);
 #[derive(Component, Clone, Copy)]
 pub struct Amount(pub u16);
 
-#[derive(Event)]
-pub struct ItemPickedUp {
-    pub item_id: u16,
-    pub amount: u16,
-}
-
 pub trait ItemAndAmount {
     fn item_id(&self) -> u16;
     fn amount(&self) -> u16;
     fn set_item_id(&mut self, item_id: u16);
     fn set_amount(&mut self, item_id: u16);
+}
+
+#[derive(Event)]
+pub struct ItemPickedUp {
+    pub item_id: u16,
+    pub amount: u16,
 }
 
 impl ItemAndAmount for ItemPickedUp {

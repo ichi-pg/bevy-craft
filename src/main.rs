@@ -11,7 +11,9 @@ mod grounded;
 mod hit_test;
 mod hotbar;
 mod input;
+mod inventory;
 mod item;
+mod item_container;
 mod player;
 mod profiler;
 mod random;
@@ -43,6 +45,8 @@ fn main() {
             hotbar::HotbarPlugin,
             random::RandomPlugin,
             click_shape::ClickShapePlugin,
+            item_container::ItemContainerPlugin,
+            inventory::InventoryPlugin,
             // profiler::ProfilerPlugin,
         ))
         .run();
