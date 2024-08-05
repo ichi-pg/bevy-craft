@@ -133,6 +133,7 @@ impl Plugin for ItemContainerPlugin {
                 put_in_item::<HotbarOverflowed, InventoryItem, InventoryOverflowed>,
                 put_in_item::<ChestOverflowed, InventoryItem, InventoryOverflowed>,
                 // TODO item push
+                // TODO spawn item when inventory overflowed
             ),
         );
     }
