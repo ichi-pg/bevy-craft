@@ -2,18 +2,18 @@ use crate::item::*;
 use bevy::prelude::*;
 
 #[derive(Component, Default)]
-pub struct Hotbar;
+pub struct Chest;
 
 #[derive(Component, Default)]
-pub struct HotbarItem;
+pub struct ChestItem;
 
 #[derive(Event, Default)]
-pub struct HotbarOverflowed {
+pub struct ChestOverflowed {
     pub item_id: u16,
     pub amount: u16,
 }
 
-impl ItemAndAmount for HotbarOverflowed {
+impl ItemAndAmount for ChestOverflowed {
     fn item_id(&self) -> u16 {
         self.item_id
     }
@@ -28,10 +28,10 @@ impl ItemAndAmount for HotbarOverflowed {
     }
 }
 
-pub struct HotbarPlugin;
+pub struct ChestPlugin;
 
-impl Plugin for HotbarPlugin {
+impl Plugin for ChestPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<HotbarOverflowed>();
+        app.add_event::<ChestOverflowed>();
     }
 }

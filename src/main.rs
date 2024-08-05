@@ -5,6 +5,7 @@ mod avian_level;
 mod avian_player;
 mod block;
 mod camera;
+mod chest;
 mod click_shape;
 mod collision;
 mod grounded;
@@ -42,10 +43,12 @@ fn main() {
             rigid_body::RigitBodyPlugin,
             item::ItemPlugin,
             grounded::GroundedPlugin,
-            hotbar::HotbarPlugin,
             random::RandomPlugin,
             click_shape::ClickShapePlugin,
+            item_container::ItemContainerPlugin,
+            hotbar::HotbarPlugin,
             inventory::InventoryPlugin,
+            chest::ChestPlugin,
             // profiler::ProfilerPlugin,
         ))
         .run();

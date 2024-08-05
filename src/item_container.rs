@@ -1,7 +1,10 @@
+use crate::chest::*;
+use crate::hotbar::*;
+use crate::inventory::*;
 use crate::item::*;
 use bevy::prelude::*;
 
-pub fn build_container<T: Component + Default, U: Component + Default>(
+fn build_container<T: Component + Default, U: Component + Default>(
     parent: &mut ChildBuilder,
     x: u16,
     y: u16,
@@ -55,9 +58,31 @@ pub fn build_container<T: Component + Default, U: Component + Default>(
     // TODO texture
 }
 
-pub fn put_in_item<T: Component, U: Event + ItemAndAmount, V: Event + Default + ItemAndAmount>(
-    mut query: Query<(&ItemID, &mut Amount), With<T>>,
-    mut event_reader: EventReader<U>,
+fn spawn_containers(mut commands: Commands) {
+    commands
+        .spawn((NodeBundle {
+            style: Style {
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                flex_direction: FlexDirection::Column,
+                justify_content: JustifyContent::End,
+                align_items: AlignItems::Center,
+                row_gap: Val::Px(10.0),
+                padding: UiRect::all(Val::Px(10.0)),
+                ..default()
+            },
+            ..default()
+        },))
+        .with_children(|parent: &mut ChildBuilder| {
+            build_container::<Chest, ChestItem>(parent, 10, 4, Visibility::Hidden);
+            build_container::<Inventory, InventoryItem>(parent, 10, 4, Visibility::Hidden);
+            build_container::<Hotbar, HotbarItem>(parent, 10, 1, Visibility::Inherited);
+        });
+}
+
+fn put_in_item<T: Event + ItemAndAmount, U: Component, V: Event + Default + ItemAndAmount>(
+    mut query: Query<(&ItemID, &mut Amount), With<U>>,
+    mut event_reader: EventReader<T>,
     mut event_writer: EventWriter<V>,
 ) {
     for event in event_reader.read() {
@@ -93,4 +118,22 @@ pub fn put_in_item<T: Component, U: Event + ItemAndAmount, V: Event + Default + 
     }
     // TODO which player?
     // TODO closed chests items is hash map resource?
+    // TODO using state
+}
+
+pub struct ItemContainerPlugin;
+
+impl Plugin for ItemContainerPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Startup, spawn_containers);
+        app.add_systems(
+            Update,
+            (
+                put_in_item::<ItemPickedUp, HotbarItem, HotbarOverflowed>,
+                put_in_item::<HotbarOverflowed, InventoryItem, InventoryOverflowed>,
+                put_in_item::<ChestOverflowed, InventoryItem, InventoryOverflowed>,
+                // TODO item push
+            ),
+        );
+    }
 }
