@@ -55,7 +55,11 @@ fn pick_up_item(
 fn sync_amount(mut query: Query<(&Amount, &mut Text), Changed<Amount>>) {
     for (amount, mut text) in &mut query {
         for section in &mut text.sections {
-            section.value = format!("{}", amount.0);
+            section.value = if amount.0 == 0 {
+                String::new()
+            } else {
+                format!("{}", amount.0)
+            };
         }
     }
 }
