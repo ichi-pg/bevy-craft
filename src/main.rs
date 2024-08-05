@@ -45,7 +45,6 @@ fn main() {
             hotbar::HotbarPlugin,
             random::RandomPlugin,
             click_shape::ClickShapePlugin,
-            item_container::ItemContainerPlugin,
             inventory::InventoryPlugin,
             // profiler::ProfilerPlugin,
         ))

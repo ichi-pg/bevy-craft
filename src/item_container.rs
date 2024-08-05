@@ -1,12 +1,11 @@
-use crate::hotbar::*;
-use crate::inventory::*;
 use crate::item::*;
 use bevy::prelude::*;
 
-fn build_container<T: Component + Default, U: Component + Default>(
+pub fn build_container<T: Component + Default, U: Component + Default>(
     parent: &mut ChildBuilder,
     x: u16,
     y: u16,
+    visibility: Visibility,
 ) {
     parent
         .spawn((
@@ -22,6 +21,7 @@ fn build_container<T: Component + Default, U: Component + Default>(
                     ..default()
                 },
                 background_color: BackgroundColor(Color::srgba(0.0, 0.0, 0.0, 0.5)),
+                visibility,
                 ..default()
             },
             T::default(),
@@ -52,28 +52,6 @@ fn build_container<T: Component + Default, U: Component + Default>(
                     });
             }
         });
-}
-
-fn spawn_containers(mut commands: Commands) {
-    commands
-        .spawn((NodeBundle {
-            style: Style {
-                width: Val::Percent(100.0),
-                height: Val::Percent(100.0),
-                flex_direction: FlexDirection::Column,
-                justify_content: JustifyContent::End,
-                align_items: AlignItems::Center,
-                row_gap: Val::Px(10.0),
-                padding: UiRect::all(Val::Px(10.0)),
-                ..default()
-            },
-            ..default()
-        },))
-        .with_children(|parent| {
-            build_container::<Inventory, InventoryItem>(parent, 10, 4);
-            build_container::<Hotbar, HotbarItem>(parent, 10, 1);
-        });
-    // TODO split mod
     // TODO texture
 }
 
@@ -115,12 +93,4 @@ pub fn put_in_item<T: Component, U: Event + ItemAndAmount, V: Event + Default + 
     }
     // TODO which player?
     // TODO closed chests items is hash map resource?
-}
-
-pub struct ItemContainerPlugin;
-
-impl Plugin for ItemContainerPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_containers);
-    }
 }
