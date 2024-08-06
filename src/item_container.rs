@@ -4,6 +4,9 @@ use crate::inventory::*;
 use crate::item::*;
 use bevy::prelude::*;
 
+#[derive(Component)]
+pub struct UI;
+
 fn build_container<T: Component + Default, U: Component + Default>(
     parent: &mut ChildBuilder,
     x: u16,
@@ -27,6 +30,8 @@ fn build_container<T: Component + Default, U: Component + Default>(
                 visibility,
                 ..default()
             },
+            Interaction::None,
+            UI,
             T::default(),
         ))
         .with_children(|parent| {
@@ -62,7 +67,7 @@ fn build_container<T: Component + Default, U: Component + Default>(
 
 fn spawn_containers(mut commands: Commands) {
     commands
-        .spawn((NodeBundle {
+        .spawn(NodeBundle {
             style: Style {
                 width: Val::Percent(100.0),
                 height: Val::Percent(100.0),
@@ -74,7 +79,7 @@ fn spawn_containers(mut commands: Commands) {
                 ..default()
             },
             ..default()
-        },))
+        })
         .with_children(|parent: &mut ChildBuilder| {
             build_container::<Chest, ChestItem>(parent, 10, 4, Visibility::Hidden);
             build_container::<Inventory, InventoryItem>(parent, 10, 4, Visibility::Hidden);
