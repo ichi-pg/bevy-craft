@@ -25,6 +25,7 @@ mod rigid_body;
 fn main() {
     App::new()
         .add_plugins((
+            // Bevy Setting
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
                     title: "Bevy Craft".into(),
@@ -33,23 +34,31 @@ fn main() {
                 }),
                 ..default()
             }),
+            // Physics Package
             // PhysicsPlugins::default(),
             // RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
             // RapierDebugRenderPlugin::default(),
-            input::InputPlugin,
-            player::PlayerPlugin,
+
+            // Base System
             camera::CameraPlugin,
-            block::BlockPlugin,
-            rigid_body::RigitBodyPlugin,
-            item::ItemPlugin,
-            grounded::GroundedPlugin,
+            input::InputPlugin,
             random::RandomPlugin,
+            // profiler::ProfilerPlugin,
+
+            // Collision
+            collision::CollisionPlugin,
+            rigid_body::RigitBodyPlugin,
+            grounded::GroundedPlugin,
             click_shape::ClickShapePlugin,
+            // Item UI
             item_container::ItemContainerPlugin,
             hotbar::HotbarPlugin,
             inventory::InventoryPlugin,
             chest::ChestPlugin,
-            // profiler::ProfilerPlugin,
+            // Game Object
+            player::PlayerPlugin,
+            block::BlockPlugin,
+            item::ItemPlugin,
         ))
         .run();
 

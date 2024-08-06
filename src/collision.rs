@@ -1,13 +1,16 @@
+use crate::block::*;
 use crate::grounded::*;
 use crate::hit_test::*;
+use crate::item::*;
+use crate::player::*;
 use crate::rigid_body::*;
 use arrayvec::ArrayVec;
 use bevy::prelude::*;
 
-#[derive(Event)]
+#[derive(Component)]
 pub struct Collided;
 
-pub fn notify_collision<T: Component, U: Component>(
+fn notify_collision<T: Component, U: Component>(
     query1: Query<(&Transform, &Shape), (With<T>, Changed<Transform>)>,
     query2: Query<(Entity, &Transform, &Shape), With<U>>,
     mut commands: Commands,
@@ -39,7 +42,7 @@ pub fn notify_collision<T: Component, U: Component>(
     // TODO chunk or sweep or tree
 }
 
-pub fn dynamics_collision<T: Component, U: Component>(
+fn dynamics_collision<T: Component, U: Component>(
     mut query1: Query<
         (Entity, &mut Transform, &Shape, &mut Velocity2),
         (With<T>, Changed<Transform>),
@@ -103,4 +106,19 @@ pub fn dynamics_collision<T: Component, U: Component>(
     // TODO refactor velocity, grounded, and hit head.
     // TODO dynamics gizmo
     // TODO collision profiler
+}
+
+pub struct CollisionPlugin;
+
+impl Plugin for CollisionPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            Update,
+            (
+                notify_collision::<PlayerID, ItemID>,
+                dynamics_collision::<PlayerID, Block>,
+                dynamics_collision::<ItemID, Block>,
+            ),
+        );
+    }
 }

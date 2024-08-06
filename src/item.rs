@@ -1,7 +1,6 @@
 use crate::block::*;
 use crate::collision::*;
 use crate::hit_test::*;
-use crate::player::*;
 use crate::rigid_body::*;
 use bevy::prelude::*;
 
@@ -91,14 +90,7 @@ pub struct ItemPlugin;
 impl Plugin for ItemPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ItemPickedUp>();
-        app.add_systems(
-            Update,
-            (
-                spawn_item,
-                sync_amount,
-                notify_collision::<PlayerID, ItemID>,
-            ),
-        );
+        app.add_systems(Update, (spawn_item, sync_amount));
         app.add_systems(PostUpdate, pick_up_item);
     }
 }
