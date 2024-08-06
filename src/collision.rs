@@ -101,7 +101,7 @@ fn dynamics_collision<T: Component, U: Component>(
             velocity.y = 0.0;
         }
     }
-    // FIXME jump out
+    // FIXME jump out when placement block to player position
     // TODO chunk or sweep or tree
     // TODO refactor velocity, grounded, and hit head.
     // TODO dynamics gizmo
