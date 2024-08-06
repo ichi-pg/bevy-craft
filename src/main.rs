@@ -69,11 +69,14 @@ fn main() {
     // TODO tame, mount
     // TODO weapon, tools, potion
     // TODO hotbar, inventory, chest
-    // TODO craft, enchant, skill
-    // TODO level generate
+    // TODO craft, enchant(job building), skill(combo building)
     // TODO farmming, industry
     // TODO rogue dungeon
     // TODO enemy
+
+    // TODO level generate
+    // forest and ruins, submerged city, 
+    // magic fantasy or cyber punk or post apocalypse
 
     // TODO master data
     // TODO save and load
