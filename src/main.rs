@@ -75,7 +75,7 @@ fn main() {
     // TODO enemy
 
     // TODO level generate
-    // forest and ruins, submerged city, 
+    // forest and ruins, submerged city,
     // magic fantasy or cyber punk or post apocalypse
 
     // TODO master data

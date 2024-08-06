@@ -85,12 +85,23 @@ fn sync_amount(mut query: Query<(&Amount, &mut Text), Changed<Amount>>) {
     }
 }
 
+fn sync_image(mut query: Query<(&ItemID, &mut BackgroundColor), Changed<ItemID>>) {
+    for (item_id, mut color) in &mut query {
+        if item_id.0 == 0 {
+            color.0 = Color::srgb(0.2, 0.2, 0.2)
+        } else {
+            color.0 = Color::srgb(0.5, 0.5, 0.5)
+        }
+    }
+    // TODO texture
+}
+
 pub struct ItemPlugin;
 
 impl Plugin for ItemPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ItemPickedUp>();
-        app.add_systems(Update, (spawn_item, sync_amount));
+        app.add_systems(Update, (spawn_item, sync_amount, sync_image));
         app.add_systems(PostUpdate, pick_up_item);
     }
 }

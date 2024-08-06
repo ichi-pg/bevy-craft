@@ -23,7 +23,7 @@ fn build_container<T: Component + Default, U: Component + Default>(
                     padding: UiRect::all(Val::Px(10.0)),
                     ..default()
                 },
-                background_color: BackgroundColor(Color::srgba(0.0, 0.0, 0.0, 0.5)),
+                background_color: BackgroundColor(Color::srgb(0.3, 0.3, 0.3)),
                 visibility,
                 ..default()
             },
@@ -32,25 +32,27 @@ fn build_container<T: Component + Default, U: Component + Default>(
         .with_children(|parent| {
             for _ in 0..x * y {
                 parent
-                    .spawn(NodeBundle {
-                        style: Style {
-                            width: Val::Px(100.0),
-                            height: Val::Px(100.0),
-                            flex_direction: FlexDirection::Column,
-                            justify_content: JustifyContent::End,
-                            align_items: AlignItems::End,
-                            padding: UiRect::all(Val::Px(4.0)),
+                    .spawn((
+                        NodeBundle {
+                            style: Style {
+                                width: Val::Px(100.0),
+                                height: Val::Px(100.0),
+                                flex_direction: FlexDirection::Column,
+                                justify_content: JustifyContent::End,
+                                align_items: AlignItems::End,
+                                padding: UiRect::all(Val::Px(4.0)),
+                                ..default()
+                            },
+                            background_color: BackgroundColor(Color::srgb(0.2, 0.2, 0.2)),
                             ..default()
                         },
-                        background_color: BackgroundColor(Color::srgba(0.5, 0.5, 0.5, 0.5)),
-                        ..default()
-                    })
+                        ItemID(0),
+                        U::default(),
+                    ))
                     .with_children(|parent| {
                         parent.spawn((
                             TextBundle::from_section("", TextStyle { ..default() }),
-                            ItemID(0),
                             Amount(0),
-                            U::default(),
                         ));
                     });
             }
@@ -81,40 +83,62 @@ fn spawn_containers(mut commands: Commands) {
 }
 
 fn put_in_item<T: Event + ItemAndAmount, U: Component, V: Event + Default + ItemAndAmount>(
-    mut query: Query<(&ItemID, &mut Amount), With<U>>,
+    mut parent_query: Query<(Entity, &Children, &mut ItemID), With<U>>,
+    mut child_query: Query<&mut Amount, With<Text>>,
     mut event_reader: EventReader<T>,
     mut event_writer: EventWriter<V>,
 ) {
     for event in event_reader.read() {
         // Merge amount
         let mut found = false;
-        for (item_id, mut amount) in &mut query {
+        let mut empty = None;
+        for (entity, children, item_id) in &parent_query {
             if item_id.0 == event.item_id() {
-                amount.0 += event.amount();
+                for &child in children.iter() {
+                    match child_query.get_mut(child) {
+                        Ok(mut amount) => {
+                            amount.0 += event.amount();
+                        }
+                        Err(_) => continue,
+                    }
+                }
                 found = true;
                 break;
+            }
+            if empty.is_none() && item_id.0 == 0 {
+                empty = Some(entity);
             }
         }
         if found {
             continue;
         }
         // Empty slot
-        let mut found = false;
-        for (item_id, mut amount) in &mut query {
-            if item_id.0 == 0 {
-                amount.0 += event.amount();
-                found = true;
-                break;
+        match empty {
+            Some(entity) => match parent_query.get_mut(entity) {
+                Ok((_, children, mut item_id)) => {
+                    if item_id.0 == 0 {
+                        for &child in children.iter() {
+                            match child_query.get_mut(child) {
+                                Ok(mut amount) => {
+                                    amount.0 += event.amount();
+                                }
+                                Err(_) => continue,
+                            }
+                        }
+                        item_id.0 = event.item_id();
+                        break;
+                    }
+                }
+                Err(_) => todo!(),
+            },
+            None => {
+                // Overflow
+                let mut v: V = V::default();
+                v.set_item_id(event.item_id());
+                v.set_amount(event.amount());
+                event_writer.send(v);
             }
         }
-        if found {
-            continue;
-        }
-        // Overflow
-        let mut v: V = V::default();
-        v.set_item_id(event.item_id());
-        v.set_amount(event.amount());
-        event_writer.send(v);
     }
     // TODO which player?
     // TODO closed chests items is hash map resource?
