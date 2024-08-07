@@ -12,7 +12,7 @@ pub struct EmptyClicked {
 }
 
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
-enum UIHober {
+enum UIHobered {
     None,
     Hovered,
 }
@@ -28,7 +28,7 @@ fn click_shape(
     }
     let mut found = false;
     for (entity, transform, shape) in &query {
-        if point_test(input.cursor, transform.translation, *shape) {
+        if point_test(input.world_cursor, transform.translation, *shape) {
             commands.entity(entity).insert(Clicked);
             found = true;
         }
@@ -36,19 +36,21 @@ fn click_shape(
     if found {
         return;
     }
-    event_writer.send(EmptyClicked { pos: input.cursor });
+    event_writer.send(EmptyClicked {
+        pos: input.world_cursor,
+    });
     // TODO chunk or sweep or tree
 }
 
 fn focus_ui(
     query: Query<&Interaction, (With<UI>, Changed<Interaction>)>,
-    mut next_state: ResMut<NextState<UIHober>>,
+    mut next_state: ResMut<NextState<UIHobered>>,
 ) {
     for intersection in &query {
         match intersection {
             Interaction::Pressed => continue,
-            Interaction::Hovered => next_state.set(UIHober::Hovered),
-            Interaction::None => next_state.set(UIHober::None),
+            Interaction::Hovered => next_state.set(UIHobered::Hovered),
+            Interaction::None => next_state.set(UIHobered::None),
         }
     }
 }
@@ -57,11 +59,11 @@ pub struct ClickShapePlugin;
 
 impl Plugin for ClickShapePlugin {
     fn build(&self, app: &mut App) {
-        app.insert_state(UIHober::None);
+        app.insert_state(UIHobered::None);
         app.add_event::<EmptyClicked>();
         app.add_systems(
             Update,
-            (click_shape.run_if(in_state(UIHober::None)), focus_ui),
+            (click_shape.run_if(in_state(UIHobered::None)), focus_ui),
         );
     }
 }

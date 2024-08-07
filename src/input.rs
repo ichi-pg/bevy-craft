@@ -7,7 +7,8 @@ use bevy::{
 #[derive(Resource, Default)]
 pub struct Input {
     pub wheel: i8,
-    pub cursor: Vec2,
+    pub world_cursor: Vec2,
+    pub window_cursor: Vec2,
     pub left_stick: Vec2,
     pub left_click: bool,
     pub right_click: bool,
@@ -79,17 +80,21 @@ fn read_wheel(mut input: ResMut<Input>, mut wheels: EventReader<MouseWheel>) {
 
 fn read_cursor(
     mut input: ResMut<Input>,
-    q_window: Query<&Window, With<PrimaryWindow>>,
-    q_camera: Query<(&Camera, &GlobalTransform)>,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+    camera_query: Query<(&Camera, &GlobalTransform)>,
 ) {
-    let (camera, camera_transform) = q_camera.single();
-    let window = q_window.single();
-    if let Some(world_position) = window
-        .cursor_position()
-        .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
-        .map(|ray| ray.origin.truncate())
-    {
-        input.cursor = world_position;
+    for (camera, transform) in &camera_query {
+        for window in &window_query {
+            if let Some(window_cursor) = window.cursor_position() {
+                if let Some(world_cursor) = camera
+                    .viewport_to_world(transform, window_cursor)
+                    .map(|ray| ray.origin.truncate())
+                {
+                    input.world_cursor = world_cursor;
+                }
+                input.window_cursor = window_cursor;
+            }
+        }
     }
 }
 

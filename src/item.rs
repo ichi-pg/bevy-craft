@@ -73,7 +73,7 @@ fn pick_up_item(
     }
 }
 
-fn sync_amount(mut query: Query<(&Amount, &mut Text), Changed<Amount>>) {
+fn sync_text(mut query: Query<(&Amount, &mut Text), Changed<Amount>>) {
     for (amount, mut text) in &mut query {
         for section in &mut text.sections {
             section.value = if amount.0 == 0 {
@@ -85,7 +85,7 @@ fn sync_amount(mut query: Query<(&Amount, &mut Text), Changed<Amount>>) {
     }
 }
 
-fn sync_image(mut query: Query<(&ItemID, &mut BackgroundColor), Changed<ItemID>>) {
+fn sync_image(mut query: Query<(&ItemID, &mut BackgroundColor), (With<UiImage>, Changed<ItemID>)>) {
     for (item_id, mut color) in &mut query {
         if item_id.0 == 0 {
             color.0 = Color::srgb(0.2, 0.2, 0.2)
@@ -101,7 +101,7 @@ pub struct ItemPlugin;
 impl Plugin for ItemPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ItemPickedUp>();
-        app.add_systems(Update, (spawn_item, sync_amount, sync_image));
+        app.add_systems(Update, (spawn_item, sync_text, sync_image));
         app.add_systems(PostUpdate, pick_up_item);
     }
 }
