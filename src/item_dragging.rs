@@ -6,39 +6,50 @@ use bevy::prelude::*;
 #[derive(Component, Default)]
 struct DragItem;
 
+#[derive(Component)]
+struct DragArea;
+
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
 enum ItemDragged {
     None,
     Dragged,
 }
+
+fn spawn_drag_area(mut commands: Commands) {
+    commands.spawn((
+        NodeBundle {
+            style: Style {
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                position_type: PositionType::Absolute,
+                ..default()
+            },
+            ..default()
+        },
+        DragArea,
+    ));
+}
+
 fn drag_item(
+    area_query: Query<Entity, With<DragArea>>,
     query: Query<(&Interaction, &ItemID, &Amount), Changed<Interaction>>,
     mut next_state: ResMut<NextState<ItemDragged>>,
     mut commands: Commands,
 ) {
-    for (intersection, item_id, amount) in &query {
-        match intersection {
-            Interaction::Pressed => {
-                commands
-                    .spawn(NodeBundle {
-                        style: Style {
-                            width: Val::Percent(100.0),
-                            height: Val::Percent(100.0),
-                            position_type: PositionType::Absolute,
-                            ..default()
-                        },
-                        ..default()
-                    })
-                    .with_children(|parent| {
+    for entity in &area_query {
+        for (intersection, item_id, amount) in &query {
+            match intersection {
+                Interaction::Pressed => {
+                    commands.entity(entity).with_children(|parent| {
                         build_item::<DragItem>(parent, item_id.0, amount.0);
                     });
-                next_state.set(ItemDragged::Dragged);
+                    next_state.set(ItemDragged::Dragged);
+                }
+                Interaction::Hovered => continue,
+                Interaction::None => continue,
             }
-            Interaction::Hovered => continue,
-            Interaction::None => continue,
         }
     }
-    // TODO global root
 }
 
 fn dragging_item(mut query: Query<&mut Style, With<DragItem>>, input: Res<Input>) {
@@ -81,6 +92,7 @@ pub struct ItemDraggingPlugin;
 impl Plugin for ItemDraggingPlugin {
     fn build(&self, app: &mut App) {
         app.insert_state(ItemDragged::None);
+        app.add_systems(Startup, spawn_drag_area);
         app.add_systems(
             Update,
             (
