@@ -64,18 +64,32 @@ fn drop_item(
         (&Interaction, &mut ItemID, &mut Amount),
         (Without<DragItem>, Changed<Interaction>),
     >,
-    drag_query: Query<(Entity, &ItemID, &Amount), With<DragItem>>,
+    mut drag_query: Query<(Entity, &mut ItemID, &mut Amount), With<DragItem>>,
     mut next_state: ResMut<NextState<ItemDragged>>,
     mut commands: Commands,
 ) {
     for (intersection, mut drop_item_id, mut drop_amount) in &mut drop_query {
         match intersection {
             Interaction::Pressed => {
-                for (entity, drag_item_id, drag_amount) in &drag_query {
-                    drop_item_id.0 = drag_item_id.0;
-                    drop_amount.0 = drag_amount.0;
-                    commands.entity(entity).despawn_recursive();
-                    next_state.set(ItemDragged::None);
+                for (entity, mut drag_item_id, mut drag_amount) in &mut drag_query {
+                    if drop_item_id.0 == 0 {
+                        drop_item_id.0 = drag_item_id.0;
+                        drop_amount.0 = drag_amount.0;
+                        commands.entity(entity).despawn_recursive();
+                        next_state.set(ItemDragged::None);
+                    } else if drop_item_id.0 == drag_item_id.0 {
+                        drop_item_id.0 += drag_item_id.0;
+                        drop_amount.0 += drag_amount.0;
+                        commands.entity(entity).despawn_recursive();
+                        next_state.set(ItemDragged::None);
+                    } else {
+                        let item_id = drop_item_id.0;
+                        let amount = drop_amount.0;
+                        drop_item_id.0 = drag_item_id.0;
+                        drop_amount.0 = drag_amount.0;
+                        drag_item_id.0 = item_id;
+                        drag_amount.0 = amount;
+                    }
                 }
             }
             Interaction::Hovered => continue,
@@ -83,8 +97,6 @@ fn drop_item(
         }
     }
     // FIXME spawn at the same time
-    // TODO exchange
-    // TODO merge
 }
 
 pub struct ItemDraggingPlugin;
