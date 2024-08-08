@@ -1,4 +1,4 @@
-use crate::input::Input;
+use crate::input::*;
 use crate::item::*;
 use crate::item_container::*;
 use bevy::prelude::*;
@@ -12,7 +12,9 @@ struct DragArea;
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
 enum ItemDragged {
     None,
+    PreNone,
     Dragged,
+    PreDragged,
 }
 
 fn spawn_drag_area(mut commands: Commands) {
@@ -45,7 +47,7 @@ fn drag_item(
                     });
                     item_id.0 = 0;
                     amount.0 = 0;
-                    next_state.set(ItemDragged::Dragged);
+                    next_state.set(ItemDragged::PreDragged);
                 }
                 Interaction::Hovered => continue,
                 Interaction::None => continue,
@@ -79,7 +81,7 @@ fn drop_item(
                         drop_item_id.0 = drag_item_id.0;
                         drop_amount.0 += drag_amount.0;
                         commands.entity(entity).despawn_recursive();
-                        next_state.set(ItemDragged::None);
+                        next_state.set(ItemDragged::PreNone);
                     } else {
                         // Swap
                         let item_id = drop_item_id.0;
@@ -98,6 +100,20 @@ fn drop_item(
     // FIXME spawn at the same time
 }
 
+fn proc_pre_none(mut next_state: ResMut<NextState<ItemDragged>>, input: Res<Input>) {
+    if input.left_click_pressed {
+        return;
+    }
+    next_state.set(ItemDragged::None);
+}
+
+fn proc_pre_dragged(mut next_state: ResMut<NextState<ItemDragged>>, input: Res<Input>) {
+    if input.left_click_pressed {
+        return;
+    }
+    next_state.set(ItemDragged::Dragged);
+}
+
 pub struct ItemDraggingPlugin;
 
 impl Plugin for ItemDraggingPlugin {
@@ -109,7 +125,9 @@ impl Plugin for ItemDraggingPlugin {
             (
                 drag_item.run_if(in_state(ItemDragged::None)),
                 dragging_item,
-                drop_item,
+                drop_item.run_if(in_state(ItemDragged::Dragged)),
+                proc_pre_none.run_if(in_state(ItemDragged::PreNone)),
+                proc_pre_dragged.run_if(in_state(ItemDragged::PreDragged)),
             ),
         );
     }

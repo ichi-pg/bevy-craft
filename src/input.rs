@@ -11,6 +11,7 @@ pub struct Input {
     pub window_cursor: Vec2,
     pub left_stick: Vec2,
     pub left_click: bool,
+    pub left_click_pressed: bool,
     pub right_click: bool,
     pub escape: bool,
     pub tab: bool,
@@ -65,6 +66,7 @@ fn read_keyboard(mut input: ResMut<Input>, keyboard: Res<ButtonInput<KeyCode>>) 
 
 fn read_mouse(mut input: ResMut<Input>, mouse: Res<ButtonInput<MouseButton>>) {
     input.left_click = mouse.just_pressed(MouseButton::Left);
+    input.left_click_pressed = mouse.pressed(MouseButton::Left);
     input.right_click = mouse.just_pressed(MouseButton::Right);
 }
 
