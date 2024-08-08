@@ -40,6 +40,9 @@ fn drag_item(
 ) {
     for entity in &area_query {
         for (intersection, mut item_id, mut amount) in &mut query {
+            if item_id.0 == 0 {
+                continue;
+            }
             match intersection {
                 Interaction::Pressed => {
                     commands.entity(entity).with_children(|parent| {
