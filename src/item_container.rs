@@ -116,20 +116,17 @@ fn put_in_item<T: Event + ItemAndAmount, U: Component, V: Event + Default + Item
         if found {
             continue;
         }
-        // Empty
         match empty {
+            // Overwrite
             Some(entity) => match query.get_mut(entity) {
                 Ok((_, mut item_id, mut amount)) => {
-                    if item_id.0 == 0 {
-                        item_id.0 = event.item_id();
-                        amount.0 += event.amount();
-                        break;
-                    }
+                    item_id.0 = event.item_id();
+                    amount.0 = event.amount();
                 }
                 Err(_) => todo!(),
             },
+            // Overflow
             None => {
-                // Overflow
                 let mut event: V = V::default();
                 event.set_item_id(event.item_id());
                 event.set_amount(event.amount());

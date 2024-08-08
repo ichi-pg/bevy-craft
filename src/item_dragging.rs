@@ -32,17 +32,19 @@ fn spawn_drag_area(mut commands: Commands) {
 
 fn drag_item(
     area_query: Query<Entity, With<DragArea>>,
-    query: Query<(&Interaction, &ItemID, &Amount), Changed<Interaction>>,
+    mut query: Query<(&Interaction, &mut ItemID, &mut Amount), Changed<Interaction>>,
     mut next_state: ResMut<NextState<ItemDragged>>,
     mut commands: Commands,
 ) {
     for entity in &area_query {
-        for (intersection, item_id, amount) in &query {
+        for (intersection, mut item_id, mut amount) in &mut query {
             match intersection {
                 Interaction::Pressed => {
                     commands.entity(entity).with_children(|parent| {
                         build_item::<DragItem>(parent, item_id.0, amount.0);
                     });
+                    item_id.0 = 0;
+                    amount.0 = 0;
                     next_state.set(ItemDragged::Dragged);
                 }
                 Interaction::Hovered => continue,
@@ -72,17 +74,14 @@ fn drop_item(
         match intersection {
             Interaction::Pressed => {
                 for (entity, mut drag_item_id, mut drag_amount) in &mut drag_query {
-                    if drop_item_id.0 == 0 {
+                    if drop_item_id.0 == 0 || drop_item_id.0 == drag_item_id.0 {
+                        // Overwrite or Merge
                         drop_item_id.0 = drag_item_id.0;
-                        drop_amount.0 = drag_amount.0;
-                        commands.entity(entity).despawn_recursive();
-                        next_state.set(ItemDragged::None);
-                    } else if drop_item_id.0 == drag_item_id.0 {
-                        drop_item_id.0 += drag_item_id.0;
                         drop_amount.0 += drag_amount.0;
                         commands.entity(entity).despawn_recursive();
                         next_state.set(ItemDragged::None);
                     } else {
+                        // Swap
                         let item_id = drop_item_id.0;
                         let amount = drop_amount.0;
                         drop_item_id.0 = drag_item_id.0;
