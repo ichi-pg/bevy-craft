@@ -55,7 +55,7 @@ fn build_container<T: Component + Default, U: Component + Default>(
                     padding: UiRect::all(Val::Px(10.0)),
                     ..default()
                 },
-                background_color: BackgroundColor(Color::srgb(0.3, 0.3, 0.3)),
+                background_color: BackgroundColor(Color::srgb(0.2, 0.2, 0.2)),
                 visibility,
                 ..default()
             },

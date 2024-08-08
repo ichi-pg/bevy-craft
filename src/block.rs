@@ -17,14 +17,12 @@ fn spawn_blocks(mut commands: Commands) {
             if x * 2 < y {
                 continue;
             }
+            let item_id = if (x + y) % 2 == 0 { 1 } else { 2 };
+            let rgb = item_id as f32 * 0.2 + 0.1;
             commands.spawn((
                 SpriteBundle {
                     sprite: Sprite {
-                        color: if (x + y) % 2 == 0 {
-                            Color::srgb(0.2, 0.2, 0.2)
-                        } else {
-                            Color::srgb(0.4, 0.4, 0.4)
-                        },
+                        color: Color::srgb(rgb, rgb, rgb),
                         custom_size: Some(Vec2::new(BLOCK_SIZE, BLOCK_SIZE)),
                         ..default()
                     },
@@ -37,6 +35,7 @@ fn spawn_blocks(mut commands: Commands) {
                 },
                 Shape::Rect(Vec2::new(BLOCK_SIZE * 0.5, BLOCK_SIZE * 0.5)),
                 Block,
+                ItemID(item_id),
             ));
         }
     }
@@ -45,17 +44,17 @@ fn spawn_blocks(mut commands: Commands) {
 }
 
 fn destroy_block(
-    query: Query<(Entity, &Transform), (With<Block>, With<Clicked>)>,
+    query: Query<(Entity, &Transform, &ItemID), (With<Block>, With<Clicked>)>,
     mut commands: Commands,
     mut item_event_writer: EventWriter<ItemDropped>,
     mut block_event_writer: EventWriter<BlockDestroied>,
 ) {
-    for (entity, transform) in &query {
+    for (entity, transform, item_id) in &query {
         commands.entity(entity).despawn();
         block_event_writer.send(BlockDestroied);
         item_event_writer.send(ItemDropped {
             translation: transform.translation,
-            item_id: 1,
+            item_id: item_id.0,
             amount: 1,
         });
     }
@@ -70,7 +69,7 @@ fn placement_block(mut event_reader: EventReader<EmptyClicked>, mut commands: Co
         commands.spawn((
             SpriteBundle {
                 sprite: Sprite {
-                    color: Color::srgb(0.6, 0.6, 0.6),
+                    color: Color::srgb(0.7, 0.7, 0.7),
                     custom_size: Some(Vec2::new(BLOCK_SIZE, BLOCK_SIZE)),
                     ..default()
                 },
@@ -83,6 +82,7 @@ fn placement_block(mut event_reader: EventReader<EmptyClicked>, mut commands: Co
             },
             Shape::Rect(Vec2::new(BLOCK_SIZE * 0.5, BLOCK_SIZE * 0.5)),
             Block,
+            ItemID(1),
         ));
     }
     // FIXME overlap item

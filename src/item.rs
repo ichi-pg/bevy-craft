@@ -3,6 +3,9 @@ use crate::hit_test::*;
 use crate::rigid_body::*;
 use bevy::prelude::*;
 
+#[derive(Component)]
+pub struct Item;
+
 #[derive(Component, Clone, Copy)]
 pub struct ItemID(pub u16);
 
@@ -46,10 +49,11 @@ impl ItemAndAmount for ItemPickedUp {
 
 fn spawn_item(mut event_reader: EventReader<ItemDropped>, mut commands: Commands) {
     for event in event_reader.read() {
+        let rgb = event.item_id as f32 * 0.2 + 0.1;
         commands.spawn((
             SpriteBundle {
                 sprite: Sprite {
-                    color: Color::srgb(0.6, 0.6, 0.6),
+                    color: Color::srgb(rgb, rgb, rgb),
                     custom_size: Some(Vec2::new(64.0, 64.0)),
                     ..default()
                 },
@@ -58,6 +62,7 @@ fn spawn_item(mut event_reader: EventReader<ItemDropped>, mut commands: Commands
             },
             Shape::Circle(32.0),
             Velocity2::default(),
+            Item,
             ItemID(event.item_id),
             Amount(event.amount),
         ));
@@ -93,11 +98,8 @@ fn sync_text(mut query: Query<(&Amount, &mut Text), Changed<Amount>>) {
 
 fn sync_image(mut query: Query<(&ItemID, &mut BackgroundColor), (With<UiImage>, Changed<ItemID>)>) {
     for (item_id, mut color) in &mut query {
-        if item_id.0 == 0 {
-            color.0 = Color::srgb(0.2, 0.2, 0.2)
-        } else {
-            color.0 = Color::srgb(0.5, 0.5, 0.5)
-        }
+        let rgb = item_id.0 as f32 * 0.2 + 0.1;
+        color.0 = Color::srgb(rgb, rgb, rgb);
     }
     // TODO texture
 }

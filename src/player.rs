@@ -8,7 +8,7 @@ use bevy::{
 };
 
 #[derive(Component)]
-pub struct PlayerID;
+pub struct Player;
 
 #[derive(Component)]
 pub struct PlayerController;
@@ -36,7 +36,7 @@ fn spawn_player(
             material: materials.add(Color::srgb(1.0, 1.0, 1.0)),
             ..default()
         },
-        PlayerID,
+        Player,
         PlayerController,
         RigitBodyController,
         Velocity2::default(),

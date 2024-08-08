@@ -115,9 +115,9 @@ impl Plugin for CollisionPlugin {
         app.add_systems(
             Update,
             (
-                notify_collision::<PlayerID, ItemID>,
-                dynamics_collision::<PlayerID, Block>,
-                dynamics_collision::<ItemID, Block>,
+                notify_collision::<Player, Item>,
+                dynamics_collision::<Player, Block>,
+                dynamics_collision::<Item, Block>,
             ),
         );
     }
