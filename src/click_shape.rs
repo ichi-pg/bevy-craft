@@ -1,6 +1,7 @@
 use crate::hit_test::*;
 use crate::input::*;
-use crate::item_container::*;
+use crate::item_dragging::*;
+use crate::ui_forcus::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -9,12 +10,6 @@ pub struct Clicked;
 #[derive(Event)]
 pub struct EmptyClicked {
     pub pos: Vec2,
-}
-
-#[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
-enum UIHobered {
-    None,
-    Hovered,
 }
 
 fn click_shape(
@@ -42,28 +37,16 @@ fn click_shape(
     // TODO chunk or sweep or tree
 }
 
-fn focus_ui(
-    query: Query<&Interaction, (With<UI>, Changed<Interaction>)>,
-    mut next_state: ResMut<NextState<UIHobered>>,
-) {
-    for intersection in &query {
-        match intersection {
-            Interaction::Pressed => continue,
-            Interaction::Hovered => next_state.set(UIHobered::Hovered),
-            Interaction::None => next_state.set(UIHobered::None),
-        }
-    }
-}
-
 pub struct ClickShapePlugin;
 
 impl Plugin for ClickShapePlugin {
     fn build(&self, app: &mut App) {
-        app.insert_state(UIHobered::None);
         app.add_event::<EmptyClicked>();
         app.add_systems(
             Update,
-            (click_shape.run_if(in_state(UIHobered::None)), focus_ui),
+            click_shape
+                .run_if(in_state(ItemDragged::None))
+                .run_if(in_state(UIHobered::None)),
         );
     }
 }

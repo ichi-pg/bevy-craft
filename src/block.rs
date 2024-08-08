@@ -1,5 +1,6 @@
 use crate::click_shape::*;
 use crate::hit_test::*;
+use crate::item::*;
 use bevy::prelude::*;
 
 const BLOCK_SIZE: f32 = 128.0;
@@ -8,9 +9,7 @@ const BLOCK_SIZE: f32 = 128.0;
 pub struct Block;
 
 #[derive(Event)]
-pub struct BlockDestroied {
-    pub transform: Transform,
-}
+pub struct BlockDestroied;
 
 fn spawn_blocks(mut commands: Commands) {
     for x in -10..10 {
@@ -48,12 +47,16 @@ fn spawn_blocks(mut commands: Commands) {
 fn destroy_block(
     query: Query<(Entity, &Transform), (With<Block>, With<Clicked>)>,
     mut commands: Commands,
-    mut event_writer: EventWriter<BlockDestroied>,
+    mut item_event_writer: EventWriter<ItemDropped>,
+    mut block_event_writer: EventWriter<BlockDestroied>,
 ) {
     for (entity, transform) in &query {
         commands.entity(entity).despawn();
-        event_writer.send(BlockDestroied {
-            transform: *transform,
+        block_event_writer.send(BlockDestroied);
+        item_event_writer.send(ItemDropped {
+            translation: transform.translation,
+            item_id: 1,
+            amount: 1,
         });
     }
     // TODO block hp

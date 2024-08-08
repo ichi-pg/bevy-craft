@@ -22,6 +22,7 @@ mod random;
 mod rapier_level;
 mod rapier_player;
 mod rigid_body;
+mod ui_forcus;
 
 fn main() {
     App::new()
@@ -39,7 +40,6 @@ fn main() {
         //     RapierDebugRenderPlugin::default(),
         // ))
         .add_plugins((
-            camera::CameraPlugin,
             input::InputPlugin,
             random::RandomPlugin,
             // profiler::ProfilerPlugin,
@@ -51,13 +51,19 @@ fn main() {
             click_shape::ClickShapePlugin,
         ))
         .add_plugins((
+            ui_forcus::UIForcusPlugin,
             item_container::ItemContainerPlugin,
             hotbar::HotbarPlugin,
             inventory::InventoryPlugin,
             chest::ChestPlugin,
             item_dragging::ItemDraggingPlugin,
         ))
-        .add_plugins((player::PlayerPlugin, block::BlockPlugin, item::ItemPlugin))
+        .add_plugins((
+            camera::CameraPlugin,
+            player::PlayerPlugin,
+            block::BlockPlugin,
+            item::ItemPlugin,
+        ))
         .run();
 
     // TODO gimmicks

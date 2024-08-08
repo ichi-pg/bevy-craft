@@ -1,4 +1,3 @@
-use crate::block::*;
 use crate::collision::*;
 use crate::hit_test::*;
 use crate::rigid_body::*;
@@ -9,6 +8,13 @@ pub struct ItemID(pub u16);
 
 #[derive(Component, Clone, Copy)]
 pub struct Amount(pub u16);
+
+#[derive(Event)]
+pub struct ItemDropped {
+    pub translation: Vec3,
+    pub item_id: u16,
+    pub amount: u16,
+}
 
 pub trait ItemAndAmount {
     fn item_id(&self) -> u16;
@@ -38,7 +44,7 @@ impl ItemAndAmount for ItemPickedUp {
     }
 }
 
-fn spawn_item(mut event_reader: EventReader<BlockDestroied>, mut commands: Commands) {
+fn spawn_item(mut event_reader: EventReader<ItemDropped>, mut commands: Commands) {
     for event in event_reader.read() {
         commands.spawn((
             SpriteBundle {
@@ -47,13 +53,13 @@ fn spawn_item(mut event_reader: EventReader<BlockDestroied>, mut commands: Comma
                     custom_size: Some(Vec2::new(64.0, 64.0)),
                     ..default()
                 },
-                transform: event.transform,
+                transform: Transform::from_translation(event.translation),
                 ..default()
             },
             Shape::Circle(32.0),
             Velocity2::default(),
-            ItemID(1),
-            Amount(1),
+            ItemID(event.item_id),
+            Amount(event.amount),
         ));
     }
     // TODO texture
@@ -100,6 +106,7 @@ pub struct ItemPlugin;
 
 impl Plugin for ItemPlugin {
     fn build(&self, app: &mut App) {
+        app.add_event::<ItemDropped>();
         app.add_event::<ItemPickedUp>();
         app.add_systems(Update, (spawn_item, sync_text, sync_image));
         app.add_systems(PostUpdate, pick_up_item);

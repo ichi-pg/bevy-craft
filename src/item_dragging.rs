@@ -1,6 +1,7 @@
 use crate::input::*;
 use crate::item::*;
 use crate::item_container::*;
+use crate::ui_forcus::*;
 use bevy::prelude::*;
 
 #[derive(Component, Default)]
@@ -10,11 +11,10 @@ struct DragItem;
 struct DragArea;
 
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
-enum ItemDragged {
+pub enum ItemDragged {
     None,
     PreNone,
     Dragged,
-    PreDragged,
 }
 
 fn spawn_drag_area(mut commands: Commands) {
@@ -58,7 +58,7 @@ fn drag_item(
                         item_id.0 = 0;
                     }
                     amount.0 = remain;
-                    next_state.set(ItemDragged::PreDragged);
+                    next_state.set(ItemDragged::Dragged);
                 }
                 Interaction::Hovered => continue,
                 Interaction::None => continue,
@@ -74,8 +74,8 @@ fn dragging_item(mut query: Query<&mut Style, With<DragItem>>, input: Res<Input>
     }
 }
 
-fn drop_item(
-    mut drop_query: Query<
+fn put_in_item(
+    mut slot_query: Query<
         (&Interaction, &mut ItemID, &mut Amount),
         (Without<DragItem>, Changed<Interaction>),
     >,
@@ -83,22 +83,22 @@ fn drop_item(
     mut next_state: ResMut<NextState<ItemDragged>>,
     mut commands: Commands,
 ) {
-    for (intersection, mut drop_item_id, mut drop_amount) in &mut drop_query {
+    for (intersection, mut slot_item_id, mut slot_amount) in &mut slot_query {
         match intersection {
             Interaction::Pressed => {
                 for (entity, mut drag_item_id, mut drag_amount) in &mut drag_query {
-                    if drop_item_id.0 == 0 || drop_item_id.0 == drag_item_id.0 {
+                    if slot_item_id.0 == 0 || slot_item_id.0 == drag_item_id.0 {
                         // Overwrite or Merge
-                        drop_item_id.0 = drag_item_id.0;
-                        drop_amount.0 += drag_amount.0;
+                        slot_item_id.0 = drag_item_id.0;
+                        slot_amount.0 += drag_amount.0;
                         commands.entity(entity).despawn_recursive();
                         next_state.set(ItemDragged::PreNone);
                     } else {
                         // Swap
-                        let item_id = drop_item_id.0;
-                        let amount = drop_amount.0;
-                        drop_item_id.0 = drag_item_id.0;
-                        drop_amount.0 = drag_amount.0;
+                        let item_id = slot_item_id.0;
+                        let amount = slot_amount.0;
+                        slot_item_id.0 = drag_item_id.0;
+                        slot_amount.0 = drag_amount.0;
                         drag_item_id.0 = item_id;
                         drag_amount.0 = amount;
                     }
@@ -110,18 +110,33 @@ fn drop_item(
     }
 }
 
+fn drop_item(
+    query: Query<(Entity, &ItemID, &Amount), With<DragItem>>,
+    input: Res<Input>,
+    mut commands: Commands,
+    mut event_writer: EventWriter<ItemDropped>,
+    mut next_state: ResMut<NextState<ItemDragged>>,
+) {
+    if !input.left_click {
+        return;
+    }
+    for (entity, item_id, amount) in &query {
+        event_writer.send(ItemDropped {
+            translation: Vec3::ZERO,
+            item_id: item_id.0,
+            amount: amount.0,
+        });
+        commands.entity(entity).despawn_recursive();
+        next_state.set(ItemDragged::PreNone);
+    }
+    // TODO player position
+}
+
 fn proc_pre_none(mut next_state: ResMut<NextState<ItemDragged>>, input: Res<Input>) {
     if input.left_click_pressed {
         return;
     }
     next_state.set(ItemDragged::None);
-}
-
-fn proc_pre_dragged(mut next_state: ResMut<NextState<ItemDragged>>, input: Res<Input>) {
-    if input.left_click_pressed {
-        return;
-    }
-    next_state.set(ItemDragged::Dragged);
 }
 
 pub struct ItemDraggingPlugin;
@@ -135,9 +150,9 @@ impl Plugin for ItemDraggingPlugin {
             (
                 drag_item.run_if(in_state(ItemDragged::None)),
                 dragging_item,
-                drop_item.run_if(in_state(ItemDragged::Dragged)),
+                put_in_item,
+                drop_item.run_if(in_state(UIHobered::None)),
                 proc_pre_none.run_if(in_state(ItemDragged::PreNone)),
-                proc_pre_dragged.run_if(in_state(ItemDragged::PreDragged)),
             ),
         );
     }

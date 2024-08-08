@@ -2,10 +2,8 @@ use crate::chest::*;
 use crate::hotbar::*;
 use crate::inventory::*;
 use crate::item::*;
+use crate::ui_forcus::*;
 use bevy::prelude::*;
-
-#[derive(Component)]
-pub struct UI;
 
 pub fn build_item<T: Component + Default>(parent: &mut ChildBuilder, item_id: u16, amount: u16) {
     parent
