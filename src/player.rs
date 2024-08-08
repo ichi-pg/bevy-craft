@@ -13,6 +13,9 @@ pub struct PlayerID;
 #[derive(Component)]
 pub struct PlayerController;
 
+#[derive(Component, Deref, DerefMut)]
+pub struct Direction2(Vec2);
+
 fn spawn_player(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -37,20 +40,35 @@ fn spawn_player(
         PlayerController,
         RigitBodyController,
         Velocity2::default(),
+        Direction2(Vec2::X),
         Shape::Circle(size * 0.5),
     ));
 }
 
-fn add_move_x(mut players: Query<&mut Velocity2, With<PlayerController>>, input: Res<Input>) {
-    for mut velocity in &mut players {
-        velocity.x = input.left_stick.x * 400.0;
+fn add_move_x(
+    mut query: Query<(&mut Velocity2, &mut Direction2), With<PlayerController>>,
+    input: Res<Input>,
+) {
+    for (mut velocity, mut direction) in &mut query {
+        if input.left_stick.x != 0.0 {
+            velocity.x = input.left_stick.x * 400.0;
+            direction.x = input.left_stick.x;
+        } else {
+            velocity.x = 0.0;
+        }
     }
 }
 
-fn add_move_xy(mut players: Query<&mut Velocity2, With<PlayerController>>, input: Res<Input>) {
-    for mut velocity in &mut players {
+fn add_move_xy(
+    mut query: Query<(&mut Velocity2, &mut Direction2), With<PlayerController>>,
+    input: Res<Input>,
+) {
+    for (mut velocity, mut direction) in &mut query {
         if input.left_stick != Vec2::ZERO {
-            velocity.0 = input.left_stick.normalize() * 400.0;
+            let normal = input.left_stick.normalize();
+            velocity.0 = normal * 400.0;
+            direction.x = normal.x;
+            direction.y = normal.y;
         } else {
             velocity.0 = Vec2::ZERO;
         }

@@ -59,6 +59,7 @@ fn destroy_block(
             amount: 1,
         });
     }
+    // FIXME overlap spawn
     // TODO block hp
     // TODO pickaxe
     // TODO select item
@@ -84,6 +85,7 @@ fn placement_block(mut event_reader: EventReader<EmptyClicked>, mut commands: Co
             Block,
         ));
     }
+    // FIXME overlap item
     // TODO consume item
     // TODO select item
     // TODO bundle

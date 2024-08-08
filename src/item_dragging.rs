@@ -1,6 +1,7 @@
 use crate::input::*;
 use crate::item::*;
 use crate::item_container::*;
+use crate::player::*;
 use crate::ui_forcus::*;
 use bevy::prelude::*;
 
@@ -111,6 +112,7 @@ fn put_in_item(
 }
 
 fn drop_item(
+    player_query: Query<(&Transform, &Direction2), With<PlayerController>>,
     query: Query<(Entity, &ItemID, &Amount), With<DragItem>>,
     input: Res<Input>,
     mut commands: Commands,
@@ -121,15 +123,20 @@ fn drop_item(
         return;
     }
     for (entity, item_id, amount) in &query {
-        event_writer.send(ItemDropped {
-            translation: Vec3::ZERO,
-            item_id: item_id.0,
-            amount: amount.0,
-        });
-        commands.entity(entity).despawn_recursive();
-        next_state.set(ItemDragged::PreNone);
+        for (transform, direction) in &player_query {
+            event_writer.send(ItemDropped {
+                translation: Vec3::new(
+                    transform.translation.x + direction.x * 200.0,
+                    transform.translation.y + direction.y * 200.0,
+                    0.0,
+                ),
+                item_id: item_id.0,
+                amount: amount.0,
+            });
+            commands.entity(entity).despawn_recursive();
+            next_state.set(ItemDragged::PreNone);
+        }
     }
-    // TODO player position
 }
 
 fn proc_pre_none(mut next_state: ResMut<NextState<ItemDragged>>, input: Res<Input>) {
