@@ -16,7 +16,7 @@ pub struct Input {
     pub escape: bool,
     pub tab: bool,
     pub shift_pressed: bool,
-    pub ctrl: bool,
+    pub ctrl_pressed: bool,
     pub space_pressed: bool,
     pub q: bool,
     pub e: bool,
@@ -44,7 +44,7 @@ fn read_keyboard(mut input: ResMut<Input>, keyboard: Res<ButtonInput<KeyCode>>) 
     input.escape = keyboard.just_pressed(KeyCode::Escape);
     input.tab = keyboard.just_pressed(KeyCode::Tab);
     input.shift_pressed = keyboard.pressed(KeyCode::ShiftLeft);
-    input.ctrl = keyboard.just_pressed(KeyCode::ControlLeft);
+    input.ctrl_pressed = keyboard.pressed(KeyCode::ControlLeft);
     input.space_pressed = keyboard.pressed(KeyCode::Space);
     input.q = keyboard.just_pressed(KeyCode::KeyQ);
     input.e = keyboard.just_pressed(KeyCode::KeyE);

@@ -37,6 +37,7 @@ fn drag_item(
     mut query: Query<(&Interaction, &mut ItemID, &mut Amount), Changed<Interaction>>,
     mut next_state: ResMut<NextState<ItemDragged>>,
     mut commands: Commands,
+    input: Res<Input>,
 ) {
     for entity in &area_query {
         for (intersection, mut item_id, mut amount) in &mut query {
@@ -45,11 +46,18 @@ fn drag_item(
             }
             match intersection {
                 Interaction::Pressed => {
+                    let remain = if input.ctrl_pressed {
+                        (amount.0 as f32 * 0.5).floor() as u16
+                    } else {
+                        0
+                    };
                     commands.entity(entity).with_children(|parent| {
-                        build_item::<DragItem>(parent, item_id.0, amount.0);
+                        build_item::<DragItem>(parent, item_id.0, amount.0 - remain);
                     });
-                    item_id.0 = 0;
-                    amount.0 = 0;
+                    if remain == 0 {
+                        item_id.0 = 0;
+                    }
+                    amount.0 = remain;
                     next_state.set(ItemDragged::PreDragged);
                 }
                 Interaction::Hovered => continue,
