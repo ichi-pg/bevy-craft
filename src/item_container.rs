@@ -132,6 +132,7 @@ fn put_in_item<T: Event + ItemAndAmount, U: Component, V: Event + Default + Item
             }
         }
     }
+    // FIXME other item at the same time
     // TODO which player?
     // TODO closed chests items is hash map resource?
     // TODO using state
