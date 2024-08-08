@@ -1,0 +1,93 @@
+use crate::input::Input;
+use crate::item::*;
+use crate::item_container::*;
+use bevy::prelude::*;
+
+#[derive(Component, Default)]
+struct DragItem;
+
+#[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
+enum ItemDragged {
+    None,
+    Dragged,
+}
+fn drag_item(
+    query: Query<(&Interaction, &ItemID, &Amount), Changed<Interaction>>,
+    mut next_state: ResMut<NextState<ItemDragged>>,
+    mut commands: Commands,
+) {
+    for (intersection, item_id, amount) in &query {
+        match intersection {
+            Interaction::Pressed => {
+                commands
+                    .spawn(NodeBundle {
+                        style: Style {
+                            width: Val::Percent(100.0),
+                            height: Val::Percent(100.0),
+                            position_type: PositionType::Absolute,
+                            ..default()
+                        },
+                        ..default()
+                    })
+                    .with_children(|parent| {
+                        build_item::<DragItem>(parent, item_id.0, amount.0);
+                    });
+                next_state.set(ItemDragged::Dragged);
+            }
+            Interaction::Hovered => continue,
+            Interaction::None => continue,
+        }
+    }
+    // TODO global root
+}
+
+fn dragging_item(mut query: Query<&mut Style, With<DragItem>>, input: Res<Input>) {
+    for mut style in &mut query {
+        style.left = Val::Px(input.window_cursor.x);
+        style.top = Val::Px(input.window_cursor.y);
+    }
+}
+
+fn drop_item(
+    mut drop_query: Query<
+        (&Interaction, &mut ItemID, &mut Amount),
+        (Without<DragItem>, Changed<Interaction>),
+    >,
+    drag_query: Query<(Entity, &ItemID, &Amount), With<DragItem>>,
+    mut next_state: ResMut<NextState<ItemDragged>>,
+    mut commands: Commands,
+) {
+    for (intersection, mut drop_item_id, mut drop_amount) in &mut drop_query {
+        match intersection {
+            Interaction::Pressed => {
+                for (entity, drag_item_id, drag_amount) in &drag_query {
+                    drop_item_id.0 = drag_item_id.0;
+                    drop_amount.0 = drag_amount.0;
+                    commands.entity(entity).despawn_recursive();
+                    next_state.set(ItemDragged::None);
+                }
+            }
+            Interaction::Hovered => continue,
+            Interaction::None => continue,
+        }
+    }
+    // FIXME spawn at the same time
+    // TODO exchange
+    // TODO merge
+}
+
+pub struct ItemDraggingPlugin;
+
+impl Plugin for ItemDraggingPlugin {
+    fn build(&self, app: &mut App) {
+        app.insert_state(ItemDragged::None);
+        app.add_systems(
+            Update,
+            (
+                drag_item.run_if(in_state(ItemDragged::None)),
+                dragging_item,
+                drop_item,
+            ),
+        );
+    }
+}

@@ -15,6 +15,7 @@ mod input;
 mod inventory;
 mod item;
 mod item_container;
+mod item_dragging;
 mod player;
 mod profiler;
 mod random;
@@ -24,42 +25,39 @@ mod rigid_body;
 
 fn main() {
     App::new()
-        .add_plugins((
-            // Bevy Setting
-            DefaultPlugins.set(WindowPlugin {
-                primary_window: Some(Window {
-                    title: "Bevy Craft".into(),
-                    resolution: (1920.0, 1080.0).into(),
-                    ..default()
-                }),
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                title: "Bevy Craft".into(),
+                resolution: (1920.0, 1080.0).into(),
                 ..default()
             }),
-            // Physics Package
-            // PhysicsPlugins::default(),
-            // RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
-            // RapierDebugRenderPlugin::default(),
-
-            // Base System
+            ..default()
+        }))
+        // .add_plugins((
+        //     PhysicsPlugins::default(),
+        //     RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
+        //     RapierDebugRenderPlugin::default(),
+        // ))
+        .add_plugins((
             camera::CameraPlugin,
             input::InputPlugin,
             random::RandomPlugin,
             // profiler::ProfilerPlugin,
-
-            // Collision
+        ))
+        .add_plugins((
             collision::CollisionPlugin,
             rigid_body::RigitBodyPlugin,
             grounded::GroundedPlugin,
             click_shape::ClickShapePlugin,
-            // Item UI
+        ))
+        .add_plugins((
             item_container::ItemContainerPlugin,
             hotbar::HotbarPlugin,
             inventory::InventoryPlugin,
             chest::ChestPlugin,
-            // Game Object
-            player::PlayerPlugin,
-            block::BlockPlugin,
-            item::ItemPlugin,
+            item_dragging::ItemDraggingPlugin,
         ))
+        .add_plugins((player::PlayerPlugin, block::BlockPlugin, item::ItemPlugin))
         .run();
 
     // TODO gimmicks

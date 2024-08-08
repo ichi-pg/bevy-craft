@@ -1,6 +1,5 @@
 use crate::chest::*;
 use crate::hotbar::*;
-use crate::input::Input;
 use crate::inventory::*;
 use crate::item::*;
 use bevy::prelude::*;
@@ -8,16 +7,7 @@ use bevy::prelude::*;
 #[derive(Component)]
 pub struct UI;
 
-#[derive(Component, Default)]
-struct DragItem;
-
-#[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
-enum ItemDragged {
-    None,
-    Dragged,
-}
-
-fn build_item<T: Component + Default>(parent: &mut ChildBuilder, item_id: u16, amount: u16) {
+pub fn build_item<T: Component + Default>(parent: &mut ChildBuilder, item_id: u16, amount: u16) {
     parent
         .spawn((
             ImageBundle {
@@ -104,51 +94,13 @@ fn spawn_containers(mut commands: Commands) {
         });
 }
 
-fn drag_item(
-    query: Query<(&Interaction, &ItemID, &Amount), Changed<Interaction>>,
-    mut next_state: ResMut<NextState<ItemDragged>>,
-    mut commands: Commands,
-) {
-    for (intersection, item_id, amount) in &query {
-        match intersection {
-            Interaction::Pressed => {
-                commands
-                    .spawn(NodeBundle {
-                        style: Style {
-                            width: Val::Percent(100.0),
-                            height: Val::Percent(100.0),
-                            position_type: PositionType::Absolute,
-                            // align_items: AlignItems::Center,
-                            // justify_content: JustifyContent::Center,
-                            ..default()
-                        },
-                        ..default()
-                    })
-                    .with_children(|parent| {
-                        build_item::<DragItem>(parent, item_id.0, amount.0);
-                    });
-                next_state.set(ItemDragged::Dragged);
-            }
-            Interaction::Hovered => continue,
-            Interaction::None => continue,
-        }
-    }
-}
-
-fn dragging_item(mut query: Query<&mut Style, With<DragItem>>, input: Res<Input>) {
-    for mut style in &mut query {
-        style.left = Val::Px(input.window_cursor.x);
-        style.top = Val::Px(input.window_cursor.y);
-    }
-}
-
 fn put_in_item<T: Event + ItemAndAmount, U: Component, V: Event + Default + ItemAndAmount>(
     mut query: Query<(Entity, &mut ItemID, &mut Amount), With<U>>,
     mut event_reader: EventReader<T>,
     mut event_writer: EventWriter<V>,
 ) {
     for event in event_reader.read() {
-        // Merge amount
+        // Merge
         let mut found = false;
         let mut empty = None;
         for (entity, item_id, mut amount) in &mut query {
@@ -164,7 +116,7 @@ fn put_in_item<T: Event + ItemAndAmount, U: Component, V: Event + Default + Item
         if found {
             continue;
         }
-        // Empty slot
+        // Empty
         match empty {
             Some(entity) => match query.get_mut(entity) {
                 Ok((_, mut item_id, mut amount)) => {
@@ -214,7 +166,6 @@ pub struct ItemContainerPlugin;
 
 impl Plugin for ItemContainerPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_state(ItemDragged::None);
         app.add_systems(Startup, spawn_containers);
         app.add_systems(
             Update,
@@ -223,8 +174,6 @@ impl Plugin for ItemContainerPlugin {
                 put_in_item::<HotbarOverflowed, InventoryItem, InventoryOverflowed>,
                 put_in_item::<ChestOverflowed, InventoryItem, InventoryOverflowed>,
                 sync_children::<UiImage>,
-                drag_item.run_if(in_state(ItemDragged::None)),
-                dragging_item,
                 // TODO item push
                 // TODO spawn item when inventory overflowed
             ),
