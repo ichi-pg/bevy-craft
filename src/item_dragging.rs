@@ -97,7 +97,6 @@ fn drop_item(
             Interaction::None => continue,
         }
     }
-    // FIXME spawn at the same time
 }
 
 fn proc_pre_none(mut next_state: ResMut<NextState<ItemDragged>>, input: Res<Input>) {
