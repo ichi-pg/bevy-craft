@@ -65,7 +65,6 @@ fn destroy_block(
             amount: 1,
         });
     }
-    // FIXME overlap spawn
     // TODO block hp
     // TODO pickaxe
     // TODO select item

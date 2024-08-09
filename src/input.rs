@@ -41,33 +41,33 @@ fn read_keyboard(mut input: ResMut<Input>, keyboard: Res<ButtonInput<KeyCode>>) 
     if keyboard.pressed(KeyCode::KeyA) {
         input.left_stick.x -= 1.0;
     }
-    input.escape = keyboard.just_pressed(KeyCode::Escape);
-    input.tab = keyboard.just_pressed(KeyCode::Tab);
+    input.escape = keyboard.just_pressed(KeyCode::Escape) && !input.escape;
+    input.tab = keyboard.just_pressed(KeyCode::Tab) && !input.tab;
     input.shift_pressed = keyboard.pressed(KeyCode::ShiftLeft);
     input.ctrl_pressed = keyboard.pressed(KeyCode::ControlLeft);
     input.space_pressed = keyboard.pressed(KeyCode::Space);
-    input.q = keyboard.just_pressed(KeyCode::KeyQ);
-    input.e = keyboard.just_pressed(KeyCode::KeyE);
-    input.r = keyboard.just_pressed(KeyCode::KeyR);
-    input.f = keyboard.just_pressed(KeyCode::KeyF);
-    input.v = keyboard.just_pressed(KeyCode::KeyV);
-    input.c = keyboard.just_pressed(KeyCode::KeyC);
-    input.num[0] = keyboard.just_pressed(KeyCode::Digit1);
-    input.num[1] = keyboard.just_pressed(KeyCode::Digit2);
-    input.num[2] = keyboard.just_pressed(KeyCode::Digit3);
-    input.num[3] = keyboard.just_pressed(KeyCode::Digit4);
-    input.num[4] = keyboard.just_pressed(KeyCode::Digit5);
-    input.num[5] = keyboard.just_pressed(KeyCode::Digit6);
-    input.num[6] = keyboard.just_pressed(KeyCode::Digit7);
-    input.num[7] = keyboard.just_pressed(KeyCode::Digit8);
-    input.num[8] = keyboard.just_pressed(KeyCode::Digit9);
-    input.num[9] = keyboard.just_pressed(KeyCode::Digit0);
+    input.q = keyboard.just_pressed(KeyCode::KeyQ) && !input.q;
+    input.e = keyboard.just_pressed(KeyCode::KeyE) && !input.e;
+    input.r = keyboard.just_pressed(KeyCode::KeyR) && !input.r;
+    input.f = keyboard.just_pressed(KeyCode::KeyF) && !input.f;
+    input.v = keyboard.just_pressed(KeyCode::KeyV) && !input.v;
+    input.c = keyboard.just_pressed(KeyCode::KeyC) && !input.c;
+    input.num[0] = keyboard.just_pressed(KeyCode::Digit1) && !input.num[0];
+    input.num[1] = keyboard.just_pressed(KeyCode::Digit2) && !input.num[1];
+    input.num[2] = keyboard.just_pressed(KeyCode::Digit3) && !input.num[2];
+    input.num[3] = keyboard.just_pressed(KeyCode::Digit4) && !input.num[3];
+    input.num[4] = keyboard.just_pressed(KeyCode::Digit5) && !input.num[4];
+    input.num[5] = keyboard.just_pressed(KeyCode::Digit6) && !input.num[5];
+    input.num[6] = keyboard.just_pressed(KeyCode::Digit7) && !input.num[6];
+    input.num[7] = keyboard.just_pressed(KeyCode::Digit8) && !input.num[7];
+    input.num[8] = keyboard.just_pressed(KeyCode::Digit9) && !input.num[8];
+    input.num[9] = keyboard.just_pressed(KeyCode::Digit0) && !input.num[9];
 }
 
 fn read_mouse(mut input: ResMut<Input>, mouse: Res<ButtonInput<MouseButton>>) {
-    input.left_click = mouse.just_pressed(MouseButton::Left);
+    input.left_click = mouse.just_pressed(MouseButton::Left) && !input.left_click;
     input.left_click_pressed = mouse.pressed(MouseButton::Left);
-    input.right_click = mouse.just_pressed(MouseButton::Right);
+    input.right_click = mouse.just_pressed(MouseButton::Right) && !input.right_click
 }
 
 fn read_wheel(mut input: ResMut<Input>, mut wheels: EventReader<MouseWheel>) {
