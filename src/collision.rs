@@ -1,9 +1,9 @@
 use crate::block::*;
-use crate::grounded::*;
+use crate::gravity::*;
 use crate::hit_test::*;
 use crate::item::*;
 use crate::player::*;
-use crate::rigid_body::*;
+use crate::velocity::*;
 use arrayvec::ArrayVec;
 use bevy::prelude::*;
 

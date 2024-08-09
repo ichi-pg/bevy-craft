@@ -4,7 +4,7 @@ mod camera;
 mod chest;
 mod click_shape;
 mod collision;
-mod grounded;
+mod gravity;
 mod hit_test;
 mod hotbar;
 mod input;
@@ -16,8 +16,8 @@ mod item_selecting;
 mod player;
 mod profiler;
 mod random;
-mod rigid_body;
 mod ui_forcus;
+mod velocity;
 
 fn main() {
     App::new()
@@ -37,8 +37,8 @@ fn main() {
         ))
         .add_plugins((
             collision::CollisionPlugin,
-            rigid_body::RigitBodyPlugin,
-            grounded::GroundedPlugin,
+            velocity::VelocityPlugin,
+            gravity::GravityPlugin,
             click_shape::ClickShapePlugin,
         ))
         .add_plugins((
@@ -52,7 +52,7 @@ fn main() {
         ))
         .add_plugins((
             camera::CameraPlugin,
-            player::PlayerPlugin,
+            player::PlatformerPlayerPlugin,
             block::BlockPlugin,
             item::ItemPlugin,
         ))

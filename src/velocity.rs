@@ -1,8 +1,5 @@
-use crate::grounded::*;
+use crate::gravity::*;
 use bevy::prelude::*;
-
-#[derive(Component)]
-pub struct RigitBodyController;
 
 #[derive(Component, Deref, DerefMut, Default)]
 pub struct Velocity2(pub Vec2);
@@ -24,22 +21,10 @@ fn add_velocity(
     }
 }
 
-fn add_gravity(mut query: Query<&mut Velocity2, Without<Grounded>>, time: Res<Time>) {
-    for mut velocity in &mut query {
-        velocity.y = (velocity.y - 4000.0 * time.delta_seconds()).max(-2048.0);
-    }
-}
+pub struct VelocityPlugin;
 
-fn stop_gravity(mut query: Query<&mut Velocity2, (Without<RigitBodyController>, With<Grounded>)>) {
-    for mut velocity in &mut query {
-        velocity.y = 0.0;
-    }
-}
-
-pub struct RigitBodyPlugin;
-
-impl Plugin for RigitBodyPlugin {
+impl Plugin for VelocityPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (add_gravity, add_velocity, stop_gravity));
+        app.add_systems(Update, add_velocity);
     }
 }

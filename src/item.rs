@@ -1,6 +1,6 @@
 use crate::collision::*;
 use crate::hit_test::*;
-use crate::rigid_body::*;
+use crate::velocity::*;
 use bevy::prelude::*;
 
 #[derive(Component)]

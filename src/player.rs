@@ -1,7 +1,7 @@
-use crate::grounded::*;
+use crate::gravity::*;
 use crate::hit_test::*;
 use crate::input::*;
-use crate::rigid_body::*;
+use crate::velocity::*;
 use bevy::{
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
@@ -38,7 +38,7 @@ fn spawn_player(
         },
         Player,
         PlayerController,
-        RigitBodyController,
+        JumpController,
         Velocity2::default(),
         Direction2(Vec2::X),
         Shape::Circle(size * 0.5),
@@ -88,9 +88,9 @@ fn add_jump(
     }
 }
 
-pub struct PlayerPlugin;
+pub struct PlatformerPlayerPlugin;
 
-impl Plugin for PlayerPlugin {
+impl Plugin for PlatformerPlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_player);
         app.add_systems(Update, (add_move_x, add_jump));
