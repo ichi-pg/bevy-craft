@@ -35,7 +35,7 @@ fn spawn_drag_area(mut commands: Commands) {
 
 fn drag_item(
     area_query: Query<Entity, With<DragArea>>,
-    mut query: Query<(&Interaction, &mut ItemID, &mut Amount), Changed<Interaction>>,
+    mut query: Query<(&Interaction, &mut ItemID, &mut ItemAmount), Changed<Interaction>>,
     mut next_state: ResMut<NextState<ItemDragged>>,
     mut commands: Commands,
     input: Res<Input>,
@@ -53,7 +53,7 @@ fn drag_item(
                         0
                     };
                     commands.entity(entity).with_children(|parent| {
-                        build_item::<DragItem>(parent, item_id.0, amount.0 - remain);
+                        build_item::<DragItem>(parent, item_id.0, amount.0 - remain, 0);
                     });
                     if remain == 0 {
                         item_id.0 = 0;
@@ -77,10 +77,10 @@ fn dragging_item(mut query: Query<&mut Style, With<DragItem>>, input: Res<Input>
 
 fn put_in_item(
     mut slot_query: Query<
-        (&Interaction, &mut ItemID, &mut Amount),
+        (&Interaction, &mut ItemID, &mut ItemAmount),
         (Without<DragItem>, Changed<Interaction>),
     >,
-    mut drag_query: Query<(Entity, &mut ItemID, &mut Amount), With<DragItem>>,
+    mut drag_query: Query<(Entity, &mut ItemID, &mut ItemAmount), With<DragItem>>,
     mut next_state: ResMut<NextState<ItemDragged>>,
     mut commands: Commands,
 ) {
@@ -113,7 +113,7 @@ fn put_in_item(
 
 fn drop_item(
     player_query: Query<(&Transform, &Direction2), With<PlayerController>>,
-    query: Query<(Entity, &ItemID, &Amount), With<DragItem>>,
+    query: Query<(Entity, &ItemID, &ItemAmount), With<DragItem>>,
     input: Res<Input>,
     mut commands: Commands,
     mut event_writer: EventWriter<ItemDropped>,

@@ -10,7 +10,7 @@ pub struct Item;
 pub struct ItemID(pub u16);
 
 #[derive(Component, Clone, Copy)]
-pub struct Amount(pub u16);
+pub struct ItemAmount(pub u16);
 
 #[derive(Event)]
 pub struct ItemDropped {
@@ -64,14 +64,14 @@ fn spawn_item(mut event_reader: EventReader<ItemDropped>, mut commands: Commands
             Velocity2::default(),
             Item,
             ItemID(event.item_id),
-            Amount(event.amount),
+            ItemAmount(event.amount),
         ));
     }
     // TODO texture
 }
 
 fn pick_up_item(
-    query: Query<(Entity, &ItemID, &Amount), With<Collided>>,
+    query: Query<(Entity, &ItemID, &ItemAmount), With<Collided>>,
     mut event_writer: EventWriter<ItemPickedUp>,
     mut commands: Commands,
 ) {
@@ -84,7 +84,7 @@ fn pick_up_item(
     }
 }
 
-fn sync_text(mut query: Query<(&Amount, &mut Text), Changed<Amount>>) {
+fn sync_text(mut query: Query<(&ItemAmount, &mut Text), Changed<ItemAmount>>) {
     for (amount, mut text) in &mut query {
         for section in &mut text.sections {
             section.value = if amount.0 == 0 {

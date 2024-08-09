@@ -5,7 +5,15 @@ use crate::item::*;
 use crate::ui_forcus::*;
 use bevy::prelude::*;
 
-pub fn build_item<T: Component + Default>(parent: &mut ChildBuilder, item_id: u16, amount: u16) {
+#[derive(Component)]
+pub struct ItemIndex(pub u8);
+
+pub fn build_item<T: Component + Default>(
+    parent: &mut ChildBuilder,
+    item_id: u16,
+    amount: u16,
+    index: u8,
+) {
     parent
         .spawn((
             ImageBundle {
@@ -23,14 +31,15 @@ pub fn build_item<T: Component + Default>(parent: &mut ChildBuilder, item_id: u1
             },
             Interaction::None,
             ItemID(item_id),
-            Amount(amount),
+            ItemAmount(amount),
+            ItemIndex(index),
             T::default(),
         ))
         .with_children(|parent| {
             parent.spawn((
                 TextBundle::from_section("", TextStyle { ..default() }),
                 ItemID(item_id),
-                Amount(amount),
+                ItemAmount(amount),
             ));
         });
     // TODO texture
@@ -64,8 +73,8 @@ fn build_container<T: Component + Default, U: Component + Default>(
             T::default(),
         ))
         .with_children(|parent| {
-            for _ in 0..x * y {
-                build_item::<U>(parent, 0, 0);
+            for i in 0..x * y {
+                build_item::<U>(parent, 0, 0, i as u8);
             }
         });
 }
@@ -93,7 +102,7 @@ fn spawn_containers(mut commands: Commands) {
 }
 
 fn put_in_item<T: Event + ItemAndAmount, U: Component, V: Event + Default + ItemAndAmount>(
-    mut query: Query<(Entity, &mut ItemID, &mut Amount), With<U>>,
+    mut query: Query<(Entity, &mut ItemID, &mut ItemAmount), With<U>>,
     mut event_reader: EventReader<T>,
     mut event_writer: EventWriter<V>,
 ) {
@@ -140,10 +149,10 @@ fn put_in_item<T: Event + ItemAndAmount, U: Component, V: Event + Default + Item
 
 fn sync_children<T: Component>(
     parent_query: Query<
-        (&Children, &ItemID, &Amount),
-        (With<T>, Or<(Changed<ItemID>, Changed<Amount>)>),
+        (&Children, &ItemID, &ItemAmount),
+        (With<T>, Or<(Changed<ItemID>, Changed<ItemAmount>)>),
     >,
-    mut child_query: Query<(&mut ItemID, &mut Amount), (With<Node>, Without<T>)>,
+    mut child_query: Query<(&mut ItemID, &mut ItemAmount), (With<Node>, Without<T>)>,
 ) {
     for (children, parent_item_id, parent_amount) in &parent_query {
         for child in children.iter() {

@@ -16,6 +16,7 @@ mod inventory;
 mod item;
 mod item_container;
 mod item_dragging;
+mod item_selecting;
 mod player;
 mod profiler;
 mod random;
@@ -53,10 +54,11 @@ fn main() {
         .add_plugins((
             ui_forcus::UIForcusPlugin,
             item_container::ItemContainerPlugin,
+            item_dragging::ItemDraggingPlugin,
+            item_selecting::ItemSelectingPlugin,
             hotbar::HotbarPlugin,
             inventory::InventoryPlugin,
             chest::ChestPlugin,
-            item_dragging::ItemDraggingPlugin,
         ))
         .add_plugins((
             camera::CameraPlugin,
