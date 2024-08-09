@@ -47,13 +47,21 @@ impl ItemAndAmount for ItemPickedUp {
     }
 }
 
+pub fn item_color(item_id: u16) -> Color {
+    let rgb = if item_id == 0 {
+        0.1
+    } else {
+        item_id as f32 * 0.02 + 0.3
+    };
+    Color::srgb(rgb, rgb, rgb)
+}
+
 fn spawn_item(mut event_reader: EventReader<ItemDropped>, mut commands: Commands) {
     for event in event_reader.read() {
-        let rgb = event.item_id as f32 * 0.2 + 0.1;
         commands.spawn((
             SpriteBundle {
                 sprite: Sprite {
-                    color: Color::srgb(rgb, rgb, rgb),
+                    color: item_color(event.item_id),
                     custom_size: Some(Vec2::new(64.0, 64.0)),
                     ..default()
                 },
@@ -98,8 +106,7 @@ fn sync_text(mut query: Query<(&ItemAmount, &mut Text), Changed<ItemAmount>>) {
 
 fn sync_image(mut query: Query<(&ItemID, &mut BackgroundColor), (With<UiImage>, Changed<ItemID>)>) {
     for (item_id, mut color) in &mut query {
-        let rgb = item_id.0 as f32 * 0.2 + 0.1;
-        color.0 = Color::srgb(rgb, rgb, rgb);
+        color.0 = item_color(item_id.0);
     }
     // TODO texture
 }

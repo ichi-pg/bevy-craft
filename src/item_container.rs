@@ -146,13 +146,14 @@ fn put_in_item<T: Event + ItemAndAmount, U: Component, V: Event + Default + Item
             },
             // Overflow
             None => {
-                let mut event: V = V::default();
-                event.set_item_id(event.item_id());
-                event.set_amount(event.amount());
-                event_writer.send(event);
+                let mut e: V = V::default();
+                e.set_item_id(event.item_id());
+                e.set_amount(event.amount());
+                event_writer.send(e);
             }
         }
     }
+    // TODO refactor V::from
     // TODO which player?
     // TODO closed chests items is hash map resource?
     // TODO using state
