@@ -31,6 +31,7 @@ fn main() {
             primary_window: Some(Window {
                 title: "Bevy Craft".into(),
                 resolution: (1920.0, 1080.0).into(),
+                position: WindowPosition::Centered(MonitorSelection::Primary),
                 ..default()
             }),
             ..default()

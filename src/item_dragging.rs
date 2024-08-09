@@ -53,7 +53,7 @@ fn drag_item(
                         0
                     };
                     commands.entity(entity).with_children(|parent| {
-                        build_item::<DragItem>(parent, item_id.0, amount.0 - remain, 0);
+                        build_item::<DragItem>(parent, item_id.0, amount.0 - remain, 0, false);
                     });
                     if remain == 0 {
                         item_id.0 = 0;

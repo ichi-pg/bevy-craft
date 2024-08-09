@@ -38,8 +38,6 @@ fn sync_selected(
             Visibility::Hidden
         }
     }
-    // TODO hidden dragging
-    // TODO when changed
 }
 
 pub struct ItemSelectingPlugin;

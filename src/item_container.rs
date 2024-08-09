@@ -13,6 +13,7 @@ pub fn build_item<T: Component + Default>(
     item_id: u16,
     amount: u16,
     index: u8,
+    selectable: bool,
 ) {
     parent
         .spawn((
@@ -36,14 +37,16 @@ pub fn build_item<T: Component + Default>(
             T::default(),
         ))
         .with_children(|parent| {
-            parent.spawn((
-                TextBundle {
-                    visibility: Visibility::Hidden,
-                    text: Text::from_section("Selected", TextStyle { ..default() }),
-                    ..default()
-                },
-                ItemIndex(index),
-            ));
+            if selectable {
+                parent.spawn((
+                    TextBundle {
+                        visibility: Visibility::Hidden,
+                        text: Text::from_section("Selected", TextStyle { ..default() }),
+                        ..default()
+                    },
+                    ItemIndex(index),
+                ));
+            }
             parent.spawn((
                 TextBundle::from_section("", TextStyle { ..default() }),
                 ItemID(item_id),
@@ -58,6 +61,7 @@ fn build_container<T: Component + Default, U: Component + Default>(
     x: u16,
     y: u16,
     visibility: Visibility,
+    selectable: bool,
 ) {
     parent
         .spawn((
@@ -82,7 +86,7 @@ fn build_container<T: Component + Default, U: Component + Default>(
         ))
         .with_children(|parent| {
             for i in 0..x * y {
-                build_item::<U>(parent, 0, 0, i as u8);
+                build_item::<U>(parent, 0, 0, i as u8, selectable);
             }
         });
 }
@@ -103,9 +107,9 @@ fn spawn_containers(mut commands: Commands) {
             ..default()
         })
         .with_children(|parent: &mut ChildBuilder| {
-            build_container::<Chest, ChestItem>(parent, 10, 4, Visibility::Hidden);
-            build_container::<Inventory, InventoryItem>(parent, 10, 4, Visibility::Hidden);
-            build_container::<Hotbar, HotbarItem>(parent, 10, 1, Visibility::Inherited);
+            build_container::<Chest, ChestItem>(parent, 10, 4, Visibility::Hidden, false);
+            build_container::<Inventory, InventoryItem>(parent, 10, 4, Visibility::Hidden, false);
+            build_container::<Hotbar, HotbarItem>(parent, 10, 1, Visibility::Inherited, true);
         });
 }
 
