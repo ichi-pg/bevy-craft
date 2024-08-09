@@ -37,6 +37,14 @@ pub fn build_item<T: Component + Default>(
         ))
         .with_children(|parent| {
             parent.spawn((
+                TextBundle {
+                    visibility: Visibility::Hidden,
+                    text: Text::from_section("Selected", TextStyle { ..default() }),
+                    ..default()
+                },
+                ItemIndex(index),
+            ));
+            parent.spawn((
                 TextBundle::from_section("", TextStyle { ..default() }),
                 ItemID(item_id),
                 ItemAmount(amount),
