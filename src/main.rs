@@ -1,8 +1,4 @@
-// use avian2d::prelude::*;
 use bevy::prelude::*;
-// use bevy_rapier2d::prelude::*;
-mod avian_level;
-mod avian_player;
 mod block;
 mod camera;
 mod chest;
@@ -20,8 +16,6 @@ mod item_selecting;
 mod player;
 mod profiler;
 mod random;
-mod rapier_level;
-mod rapier_player;
 mod rigid_body;
 mod ui_forcus;
 
@@ -36,11 +30,6 @@ fn main() {
             }),
             ..default()
         }))
-        // .add_plugins((
-        //     PhysicsPlugins::default(),
-        //     RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
-        //     RapierDebugRenderPlugin::default(),
-        // ))
         .add_plugins((
             input::InputPlugin,
             random::RandomPlugin,
