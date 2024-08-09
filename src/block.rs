@@ -1,6 +1,7 @@
 use crate::chest::*;
 use crate::click_shape::*;
 use crate::hit_test::*;
+use crate::hotbar::HotbarItem;
 use crate::inventory::*;
 use crate::item::*;
 use crate::item_container::*;
@@ -95,7 +96,7 @@ fn interact_block(
 
 fn placement_block(
     selected: Res<SelectedItem>,
-    mut query: Query<(&mut ItemID, &mut ItemAmount, &ItemIndex)>,
+    mut query: Query<(&mut ItemID, &mut ItemAmount, &ItemIndex), With<HotbarItem>>,
     mut event_reader: EventReader<EmptyClicked>,
     mut commands: Commands,
 ) {

@@ -77,7 +77,6 @@ fn spawn_item(mut event_reader: EventReader<ItemDropped>, mut commands: Commands
             ItemAmount(event.amount),
         ));
     }
-    // FIXME error color
     // TODO texture
 }
 
