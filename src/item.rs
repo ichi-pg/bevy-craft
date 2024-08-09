@@ -48,12 +48,14 @@ impl ItemAndAmount for ItemPickedUp {
 }
 
 pub fn item_color(item_id: u16) -> Color {
-    let rgb = if item_id == 0 {
-        0.1
+    if item_id == 0 {
+        Color::srgb(0.1, 0.1, 0.1)
+    } else if item_id == 20 {
+        Color::srgb(0.5, 0.4, 0.3)
     } else {
-        item_id as f32 * 0.02 + 0.3
-    };
-    Color::srgb(rgb, rgb, rgb)
+        let rgb = item_id as f32 * 0.02 + 0.3;
+        Color::srgb(rgb, rgb, rgb)
+    }
 }
 
 fn spawn_item(mut event_reader: EventReader<ItemDropped>, mut commands: Commands) {
@@ -75,6 +77,7 @@ fn spawn_item(mut event_reader: EventReader<ItemDropped>, mut commands: Commands
             ItemAmount(event.amount),
         ));
     }
+    // FIXME error color
     // TODO texture
 }
 

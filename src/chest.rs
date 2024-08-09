@@ -1,3 +1,4 @@
+use crate::input::*;
 use crate::item::*;
 use bevy::prelude::*;
 
@@ -28,12 +29,21 @@ impl ItemAndAmount for ChestOverflowed {
     }
 }
 
+fn hide_chest(mut query: Query<&mut Visibility, With<Chest>>, input: Res<Input>) {
+    if !input.tab {
+        return;
+    }
+    for mut visibility in &mut query {
+        *visibility = Visibility::Hidden;
+    }
+}
+
 pub struct ChestPlugin;
 
 impl Plugin for ChestPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ChestOverflowed>();
+        app.add_systems(Update, hide_chest);
     }
-    // TODO open chest
     // TODO background storage
 }

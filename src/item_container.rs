@@ -27,7 +27,6 @@ pub fn build_item<T: Component + Default>(
                     padding: UiRect::all(Val::Px(4.0)),
                     ..default()
                 },
-                background_color: BackgroundColor(Color::srgb(0.2, 0.2, 0.2)),
                 ..default()
             },
             Interaction::None,

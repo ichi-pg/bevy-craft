@@ -1,5 +1,7 @@
+use crate::chest::*;
 use crate::click_shape::*;
 use crate::hit_test::*;
+use crate::inventory::*;
 use crate::item::*;
 use crate::item_container::*;
 use crate::item_selecting::*;
@@ -57,7 +59,7 @@ fn spawn_blocks(mut commands: Commands, mut random: ResMut<Random>) {
 }
 
 fn destroy_block(
-    query: Query<(Entity, &Transform, &ItemID), (With<Block>, With<Clicked>)>,
+    query: Query<(Entity, &Transform, &ItemID), (With<Block>, With<LeftClicked>)>,
     mut commands: Commands,
     mut item_event_writer: EventWriter<ItemDropped>,
     mut block_event_writer: EventWriter<BlockDestroied>,
@@ -74,6 +76,21 @@ fn destroy_block(
     // TODO block hp
     // TODO pickaxe
     // TODO select item
+}
+
+fn interact_block(
+    query: Query<(Entity, &ItemID), (With<Block>, With<RightClicked>)>,
+    mut chest_query: Query<&mut Visibility, Or<(With<Inventory>, With<Chest>)>>,
+    mut commands: Commands,
+) {
+    for (entity, item_id) in &query {
+        if item_id.0 == 20 {
+            for mut visibility in &mut chest_query {
+                *visibility = Visibility::Inherited;
+            }
+        }
+        commands.entity(entity).remove::<RightClicked>();
+    }
 }
 
 fn placement_block(
@@ -111,7 +128,7 @@ impl Plugin for BlockPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<BlockDestroied>();
         app.add_systems(Startup, spawn_blocks);
-        app.add_systems(Update, placement_block);
+        app.add_systems(Update, (placement_block, interact_block));
         app.add_systems(PostUpdate, destroy_block);
     }
 }

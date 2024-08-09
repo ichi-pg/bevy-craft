@@ -5,14 +5,17 @@ use crate::ui_forcus::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
-pub struct Clicked;
+pub struct LeftClicked;
+
+#[derive(Component)]
+pub struct RightClicked;
 
 #[derive(Event)]
 pub struct EmptyClicked {
     pub pos: Vec2,
 }
 
-fn click_shape(
+fn left_click(
     query: Query<(Entity, &Transform, &Shape)>,
     input: Res<Input>,
     mut commands: Commands,
@@ -24,7 +27,7 @@ fn click_shape(
     let mut found = false;
     for (entity, transform, shape) in &query {
         if point_test(input.world_cursor, transform.translation, *shape) {
-            commands.entity(entity).insert(Clicked);
+            commands.entity(entity).insert(LeftClicked);
             found = true;
         }
     }
@@ -37,6 +40,22 @@ fn click_shape(
     // TODO chunk or sweep or tree
 }
 
+fn right_click(
+    query: Query<(Entity, &Transform, &Shape)>,
+    input: Res<Input>,
+    mut commands: Commands,
+) {
+    if !input.right_click {
+        return;
+    }
+    for (entity, transform, shape) in &query {
+        if point_test(input.world_cursor, transform.translation, *shape) {
+            commands.entity(entity).insert(RightClicked);
+        }
+    }
+    // TODO chunk or sweep or tree
+}
+
 pub struct ClickShapePlugin;
 
 impl Plugin for ClickShapePlugin {
@@ -44,9 +63,14 @@ impl Plugin for ClickShapePlugin {
         app.add_event::<EmptyClicked>();
         app.add_systems(
             Update,
-            click_shape
-                .run_if(in_state(ItemDragged::None))
-                .run_if(in_state(UIHobered::None)),
+            (
+                left_click
+                    .run_if(in_state(ItemDragged::None))
+                    .run_if(in_state(UIHobered::None)),
+                right_click
+                    .run_if(in_state(ItemDragged::None))
+                    .run_if(in_state(UIHobered::None)),
+            ),
         );
     }
 }
