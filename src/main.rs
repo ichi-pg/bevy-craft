@@ -53,6 +53,7 @@ fn main() {
         .add_plugins((
             camera::CameraPlugin,
             player::PlatformerPlayerPlugin,
+            // player::TopDownPlayerPlugin,
             block::BlockPlugin,
             item::ItemPlugin,
         ))
@@ -63,12 +64,12 @@ fn main() {
     // switch, door, ladder, rope, bomb, barrel, raft, magnetic, torch, ...
 
     // TODO tame, mount
-    // TODO weapon, tools, potion
-    // TODO hotbar, inventory, chest
+    // TODO weapon, tools, potion, equipment
     // TODO craft, enchant(job building), skill(combo building)
     // TODO farmming, industry
     // TODO rogue dungeon
     // TODO enemy
+    // TODO minimap, fast travel
 
     // TODO level generate
     // forest and ruins, submerged city,
@@ -81,4 +82,5 @@ fn main() {
 
     // TODO visual making
     // water, lighting, post effect, background layers, ...
+    // ui animation, character animation, atlas, tilemap, ...
 }

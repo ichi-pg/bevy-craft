@@ -34,4 +34,6 @@ impl Plugin for ChestPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ChestOverflowed>();
     }
+    // TODO open chest
+    // TODO background storage
 }
