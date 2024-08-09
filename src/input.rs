@@ -52,16 +52,16 @@ fn read_keyboard(mut input: ResMut<Input>, keyboard: Res<ButtonInput<KeyCode>>) 
     input.f = keyboard.just_pressed(KeyCode::KeyF);
     input.v = keyboard.just_pressed(KeyCode::KeyV);
     input.c = keyboard.just_pressed(KeyCode::KeyC);
-    input.num[0] = keyboard.just_pressed(KeyCode::Digit0);
-    input.num[1] = keyboard.just_pressed(KeyCode::Digit1);
-    input.num[2] = keyboard.just_pressed(KeyCode::Digit2);
-    input.num[3] = keyboard.just_pressed(KeyCode::Digit3);
-    input.num[4] = keyboard.just_pressed(KeyCode::Digit4);
-    input.num[5] = keyboard.just_pressed(KeyCode::Digit5);
-    input.num[6] = keyboard.just_pressed(KeyCode::Digit6);
-    input.num[7] = keyboard.just_pressed(KeyCode::Digit7);
-    input.num[8] = keyboard.just_pressed(KeyCode::Digit8);
-    input.num[9] = keyboard.just_pressed(KeyCode::Digit9);
+    input.num[0] = keyboard.just_pressed(KeyCode::Digit1);
+    input.num[1] = keyboard.just_pressed(KeyCode::Digit2);
+    input.num[2] = keyboard.just_pressed(KeyCode::Digit3);
+    input.num[3] = keyboard.just_pressed(KeyCode::Digit4);
+    input.num[4] = keyboard.just_pressed(KeyCode::Digit5);
+    input.num[5] = keyboard.just_pressed(KeyCode::Digit6);
+    input.num[6] = keyboard.just_pressed(KeyCode::Digit7);
+    input.num[7] = keyboard.just_pressed(KeyCode::Digit8);
+    input.num[8] = keyboard.just_pressed(KeyCode::Digit9);
+    input.num[9] = keyboard.just_pressed(KeyCode::Digit0);
 }
 
 fn read_mouse(mut input: ResMut<Input>, mouse: Res<ButtonInput<MouseButton>>) {
