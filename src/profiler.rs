@@ -13,4 +13,5 @@ impl Plugin for ProfilerPlugin {
             ));
         }
     }
+    // TODO draw fps, entities count on screen
 }

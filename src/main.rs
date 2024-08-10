@@ -79,6 +79,7 @@ fn main() {
     // TODO save and load
     // TODO multiplayer
     // TODO sound
+    // TODO config (fps, resolution, key config, ...)
 
     // TODO visual making
     // water, lighting, post effect, background layers, ...
