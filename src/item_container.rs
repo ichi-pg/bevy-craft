@@ -1,7 +1,9 @@
 use crate::chest::*;
 use crate::hotbar::*;
+use crate::input::*;
 use crate::inventory::*;
 use crate::item::*;
+use crate::item_dragging::*;
 use crate::ui_forcus::*;
 use bevy::prelude::*;
 
@@ -112,6 +114,26 @@ fn spawn_containers(mut commands: Commands) {
         });
 }
 
+fn sync_children<T: Component>(
+    parent_query: Query<
+        (&Children, &ItemID, &ItemAmount),
+        (With<T>, Or<(Changed<ItemID>, Changed<ItemAmount>)>),
+    >,
+    mut child_query: Query<(&mut ItemID, &mut ItemAmount), (With<Node>, Without<T>)>,
+) {
+    for (children, parent_item_id, parent_amount) in &parent_query {
+        for child in children.iter() {
+            match child_query.get_mut(*child) {
+                Ok((mut child_item_id, mut child_amount)) => {
+                    child_item_id.0 = parent_item_id.0;
+                    child_amount.0 = parent_amount.0;
+                }
+                Err(_) => continue,
+            }
+        }
+    }
+}
+
 fn put_in_item<T: Event + ItemAndAmount, U: Component, V: Event + Default + ItemAndAmount>(
     mut query: Query<(Entity, &mut ItemID, &mut ItemAmount), With<U>>,
     mut event_reader: EventReader<T>,
@@ -158,22 +180,29 @@ fn put_in_item<T: Event + ItemAndAmount, U: Component, V: Event + Default + Item
     // TODO using state
 }
 
-fn sync_children<T: Component>(
-    parent_query: Query<
-        (&Children, &ItemID, &ItemAmount),
-        (With<T>, Or<(Changed<ItemID>, Changed<ItemAmount>)>),
-    >,
-    mut child_query: Query<(&mut ItemID, &mut ItemAmount), (With<Node>, Without<T>)>,
+fn push_out_item<T: Component, U: Event + Default + ItemAndAmount>(
+    mut query: Query<(&Interaction, &mut ItemID, &mut ItemAmount), (With<T>, Changed<Interaction>)>,
+    input: Res<Input>,
+    mut event_writer: EventWriter<U>,
 ) {
-    for (children, parent_item_id, parent_amount) in &parent_query {
-        for child in children.iter() {
-            match child_query.get_mut(*child) {
-                Ok((mut child_item_id, mut child_amount)) => {
-                    child_item_id.0 = parent_item_id.0;
-                    child_amount.0 = parent_amount.0;
-                }
-                Err(_) => continue,
+    if !input.shift_pressed {
+        return;
+    }
+    for (intersection, mut item_id, mut amount) in &mut query {
+        if item_id.0 == 0 {
+            continue;
+        }
+        match intersection {
+            Interaction::Pressed => {
+                let mut e: U = U::default();
+                e.set_item_id(item_id.0);
+                e.set_amount(amount.0);
+                event_writer.send(e);
+                item_id.0 = 0;
+                amount.0 = 0;
             }
+            Interaction::Hovered => continue,
+            Interaction::None => continue,
         }
     }
 }
@@ -186,11 +215,22 @@ impl Plugin for ItemContainerPlugin {
         app.add_systems(
             Update,
             (
+                sync_children::<UiImage>,
                 put_in_item::<ItemPickedUp, HotbarItem, HotbarOverflowed>,
                 put_in_item::<HotbarOverflowed, InventoryItem, InventoryOverflowed>,
                 put_in_item::<ChestOverflowed, InventoryItem, InventoryOverflowed>,
-                sync_children::<UiImage>,
-                // TODO item push
+                put_in_item::<HotbarPushedOut, ChestItem, ChestOverflowed>
+                    .run_if(in_state(ChestOpened::Opened)),
+                put_in_item::<InventoryPushedOut, ChestItem, ChestOverflowed>
+                    .run_if(in_state(ChestOpened::Opened)),
+                put_in_item::<HotbarPushedOut, InventoryItem, InventoryOverflowed>
+                    .run_if(in_state(ChestOpened::None)),
+                put_in_item::<InventoryPushedOut, HotbarItem, HotbarOverflowed>
+                    .run_if(in_state(ChestOpened::None)),
+                push_out_item::<HotbarItem, HotbarPushedOut>.run_if(in_state(ItemDragged::None)),
+                push_out_item::<InventoryItem, InventoryPushedOut>
+                    .run_if(in_state(ItemDragged::None)),
+                push_out_item::<ChestItem, ChestOverflowed>.run_if(in_state(ItemDragged::None)),
                 // TODO spawn item when inventory overflowed
             ),
         );

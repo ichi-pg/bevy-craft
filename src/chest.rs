@@ -18,6 +18,12 @@ pub struct ChestClicked {
     pub block_id: u64,
 }
 
+#[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
+pub enum ChestOpened {
+    None,
+    Opened,
+}
+
 #[derive(Event, Default)]
 pub struct ChestOverflowed {
     pub item_id: u16,
@@ -48,19 +54,12 @@ fn open_chest(
     >,
     mut event_reader: EventReader<ChestClicked>,
     mut commands: Commands,
+    mut next_state: ResMut<NextState<ChestOpened>>,
 ) {
     for event in event_reader.read() {
-        let mut found = false;
         for (entity, mut visibility) in &mut chest_query {
-            if *visibility == Visibility::Inherited {
-                found = true;
-                continue;
-            }
             *visibility = Visibility::Inherited;
             commands.entity(entity).insert(BlockID(event.block_id));
-        }
-        if found {
-            continue;
         }
         let mut iter = item_query.iter_mut();
         for (background_item_id, background_amount, block_id) in &background_query {
@@ -79,6 +78,7 @@ fn open_chest(
             item_id.0 = 0;
             amount.0 = 0;
         }
+        next_state.set(ChestOpened::Opened);
     }
     // TODO openable when already opened
     // TODO efficient background query
@@ -93,14 +93,12 @@ fn close_chest(
     >,
     mut commands: Commands,
     input: Res<Input>,
+    mut next_state: ResMut<NextState<ChestOpened>>,
 ) {
     if !input.tab {
         return;
     }
     for (mut visibility, chest_block_id) in &mut chest_query {
-        if *visibility == Visibility::Hidden {
-            continue;
-        }
         *visibility = Visibility::Hidden;
         let mut iter = item_query.iter();
         for (mut background_item_id, mut background_amount, block_id) in &mut background_query {
@@ -123,6 +121,7 @@ fn close_chest(
                 ItemAmount(amount.0),
             ));
         }
+        next_state.set(ChestOpened::None);
     }
 }
 
@@ -147,16 +146,23 @@ fn destroy_chest(
             commands.entity(entity).despawn();
         }
     }
+    // FIXME destroy when opened
 }
 
 pub struct ChestPlugin;
 
 impl Plugin for ChestPlugin {
     fn build(&self, app: &mut App) {
+        app.insert_state(ChestOpened::None);
         app.add_event::<ChestOverflowed>();
         app.add_event::<ChestClicked>();
-        app.add_systems(Update, (open_chest, close_chest));
+        app.add_systems(
+            Update,
+            (
+                open_chest.run_if(in_state(ChestOpened::None)),
+                close_chest.run_if(in_state(ChestOpened::Opened)),
+            ),
+        );
         app.add_systems(PostUpdate, destroy_chest);
     }
-    // TODO can change open state
 }

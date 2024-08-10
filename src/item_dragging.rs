@@ -40,6 +40,9 @@ fn drag_item(
     mut commands: Commands,
     input: Res<Input>,
 ) {
+    if input.shift_pressed {
+        return;
+    }
     for entity in &area_query {
         for (intersection, mut item_id, mut amount) in &mut query {
             if item_id.0 == 0 {
@@ -109,7 +112,7 @@ fn put_in_item(
             Interaction::None => continue,
         }
     }
-    // FIXME b0003 when into chest
+    // FIXME b0003 when into other container
 }
 
 fn drop_item(
