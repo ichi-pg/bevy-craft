@@ -63,14 +63,9 @@ impl Plugin for ClickShapePlugin {
         app.add_event::<EmptyClicked>();
         app.add_systems(
             Update,
-            (
-                left_click
-                    .run_if(in_state(ItemDragged::None))
-                    .run_if(in_state(UIHobered::None)),
-                right_click
-                    .run_if(in_state(ItemDragged::None))
-                    .run_if(in_state(UIHobered::None)),
-            ),
+            (left_click, right_click)
+                .run_if(in_state(ItemDragged::None))
+                .run_if(in_state(UIHobered::None)),
         );
     }
 }

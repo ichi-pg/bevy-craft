@@ -219,18 +219,22 @@ impl Plugin for ItemContainerPlugin {
                 put_in_item::<ItemPickedUp, HotbarItem, HotbarOverflowed>,
                 put_in_item::<HotbarOverflowed, InventoryItem, InventoryOverflowed>,
                 put_in_item::<ChestOverflowed, InventoryItem, InventoryOverflowed>,
-                put_in_item::<HotbarPushedOut, ChestItem, ChestOverflowed>
+                (
+                    put_in_item::<HotbarPushedOut, ChestItem, ChestOverflowed>,
+                    put_in_item::<InventoryPushedOut, ChestItem, ChestOverflowed>,
+                )
                     .run_if(in_state(ChestOpened::Opened)),
-                put_in_item::<InventoryPushedOut, ChestItem, ChestOverflowed>
-                    .run_if(in_state(ChestOpened::Opened)),
-                put_in_item::<HotbarPushedOut, InventoryItem, InventoryOverflowed>
+                (
+                    put_in_item::<HotbarPushedOut, InventoryItem, InventoryOverflowed>,
+                    put_in_item::<InventoryPushedOut, HotbarItem, HotbarOverflowed>,
+                )
                     .run_if(in_state(ChestOpened::None)),
-                put_in_item::<InventoryPushedOut, HotbarItem, HotbarOverflowed>
-                    .run_if(in_state(ChestOpened::None)),
-                push_out_item::<HotbarItem, HotbarPushedOut>.run_if(in_state(ItemDragged::None)),
-                push_out_item::<InventoryItem, InventoryPushedOut>
+                (
+                    push_out_item::<HotbarItem, HotbarPushedOut>,
+                    push_out_item::<InventoryItem, InventoryPushedOut>,
+                    push_out_item::<ChestItem, ChestOverflowed>,
+                )
                     .run_if(in_state(ItemDragged::None)),
-                push_out_item::<ChestItem, ChestOverflowed>.run_if(in_state(ItemDragged::None)),
                 // TODO spawn item when inventory overflowed
             ),
         );
