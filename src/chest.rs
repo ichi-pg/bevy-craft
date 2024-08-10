@@ -50,9 +50,17 @@ fn open_chest(
     mut commands: Commands,
 ) {
     for event in event_reader.read() {
+        let mut found = false;
         for (entity, mut visibility) in &mut chest_query {
+            if *visibility == Visibility::Inherited {
+                found = true;
+                continue;
+            }
             *visibility = Visibility::Inherited;
             commands.entity(entity).insert(BlockID(event.block_id));
+        }
+        if found {
+            continue;
         }
         let mut iter = item_query.iter_mut();
         for (background_item_id, background_amount, block_id) in &background_query {
@@ -72,7 +80,7 @@ fn open_chest(
             amount.0 = 0;
         }
     }
-    // FIXME when yet closed
+    // TODO openable when already opened
     // TODO efficient background query
 }
 
@@ -90,6 +98,9 @@ fn close_chest(
         return;
     }
     for (mut visibility, chest_block_id) in &mut chest_query {
+        if *visibility == Visibility::Hidden {
+            continue;
+        }
         *visibility = Visibility::Hidden;
         let mut iter = item_query.iter();
         for (mut background_item_id, mut background_amount, block_id) in &mut background_query {
