@@ -18,7 +18,10 @@ pub struct Block;
 pub struct BlockID(pub u64);
 
 #[derive(Event)]
-pub struct BlockDestroied;
+pub struct BlockDestroied {
+    pub translation: Vec3,
+    pub block_id: u64,
+}
 
 fn block_bundle(
     item_id: u16,
@@ -66,21 +69,23 @@ fn spawn_blocks(mut commands: Commands, mut random: ResMut<Random>) {
 }
 
 fn destroy_block(
-    query: Query<(Entity, &Transform, &ItemID), (With<Block>, With<LeftClicked>)>,
+    query: Query<(Entity, &Transform, &ItemID, &BlockID), (With<Block>, With<LeftClicked>)>,
     mut commands: Commands,
     mut item_event_writer: EventWriter<ItemDropped>,
     mut block_event_writer: EventWriter<BlockDestroied>,
 ) {
-    for (entity, transform, item_id) in &query {
+    for (entity, transform, item_id, block_id) in &query {
         commands.entity(entity).despawn();
-        block_event_writer.send(BlockDestroied);
+        block_event_writer.send(BlockDestroied {
+            translation: transform.translation,
+            block_id: block_id.0,
+        });
         item_event_writer.send(ItemDropped {
             translation: transform.translation,
             item_id: item_id.0,
             amount: 1,
         });
     }
-    // TODO despawn background items
     // TODO block hp
     // TODO pickaxe
     // TODO select item

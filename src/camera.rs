@@ -6,13 +6,13 @@ fn spawn_camera(mut commands: Commands) {
 }
 
 fn move_camera(
-    mut cameras: Query<&mut Transform, With<Camera>>,
-    players: Query<&Transform, (With<PlayerController>, Without<Camera>)>,
+    mut query: Query<&mut Transform, With<Camera>>,
+    player_query: Query<&Transform, (With<PlayerController>, Without<Camera>)>,
 ) {
-    for mut camera in &mut cameras {
-        for player in &players {
-            camera.translation.x = player.translation.x;
-            camera.translation.y = player.translation.y;
+    for mut transform in &mut query {
+        for player_transform in &player_query {
+            transform.translation.x = player_transform.translation.x;
+            transform.translation.y = player_transform.translation.y;
         }
     }
 }

@@ -126,6 +126,29 @@ fn close_chest(
     }
 }
 
+fn destroy_chest(
+    mut query: Query<(Entity, &ItemID, &ItemAmount, &BlockID), With<BackgroundItem>>,
+    mut event_reader: EventReader<BlockDestroied>,
+    mut event_writer: EventWriter<ItemDropped>,
+    mut commands: Commands,
+) {
+    for event in event_reader.read() {
+        for (entity, item_id, amount, block_id) in &mut query {
+            if block_id.0 != event.block_id {
+                continue;
+            }
+            if item_id.0 != 0 {
+                event_writer.send(ItemDropped {
+                    translation: event.translation,
+                    item_id: item_id.0,
+                    amount: amount.0,
+                });
+            }
+            commands.entity(entity).despawn();
+        }
+    }
+}
+
 pub struct ChestPlugin;
 
 impl Plugin for ChestPlugin {
@@ -133,5 +156,7 @@ impl Plugin for ChestPlugin {
         app.add_event::<ChestOverflowed>();
         app.add_event::<ChestClicked>();
         app.add_systems(Update, (open_chest, close_chest));
+        app.add_systems(PostUpdate, destroy_chest);
     }
+    // TODO can change open state
 }
