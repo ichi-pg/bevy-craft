@@ -1,12 +1,22 @@
+use crate::block::*;
 use crate::input::*;
+use crate::inventory::*;
 use crate::item::*;
 use bevy::prelude::*;
+
+#[derive(Component)]
+struct BackgroundItem;
 
 #[derive(Component, Default)]
 pub struct Chest;
 
 #[derive(Component, Default)]
 pub struct ChestItem;
+
+#[derive(Event)]
+pub struct ChestClicked {
+    pub block_id: u64,
+}
 
 #[derive(Event, Default)]
 pub struct ChestOverflowed {
@@ -29,12 +39,79 @@ impl ItemAndAmount for ChestOverflowed {
     }
 }
 
-fn hide_chest(mut query: Query<&mut Visibility, With<Chest>>, input: Res<Input>) {
+fn open_chest(
+    mut chest_query: Query<(Entity, &mut Visibility), Or<(With<Inventory>, With<Chest>)>>,
+    mut item_query: Query<(&mut ItemID, &mut ItemAmount), With<ChestItem>>,
+    background_query: Query<
+        (&ItemID, &ItemAmount, &BlockID),
+        (With<BackgroundItem>, Without<ChestItem>),
+    >,
+    mut event_reader: EventReader<ChestClicked>,
+    mut commands: Commands,
+) {
+    for event in event_reader.read() {
+        for (entity, mut visibility) in &mut chest_query {
+            *visibility = Visibility::Inherited;
+            commands.entity(entity).insert(BlockID(event.block_id));
+        }
+        let mut iter = item_query.iter_mut();
+        for (background_item_id, background_amount, block_id) in &background_query {
+            if block_id.0 != event.block_id {
+                continue;
+            }
+            match iter.next() {
+                Some((mut item_id, mut amount)) => {
+                    item_id.0 = background_item_id.0;
+                    amount.0 = background_amount.0;
+                }
+                None => todo!(),
+            }
+        }
+        for (mut item_id, mut amount) in iter {
+            item_id.0 = 0;
+            amount.0 = 0;
+        }
+    }
+    // FIXME when yet closed
+    // TODO efficient background query
+}
+
+fn close_chest(
+    mut chest_query: Query<(&mut Visibility, &BlockID), With<Chest>>,
+    item_query: Query<(&ItemID, &ItemAmount), With<ChestItem>>,
+    mut background_query: Query<
+        (&mut ItemID, &mut ItemAmount, &BlockID),
+        (With<BackgroundItem>, Without<ChestItem>),
+    >,
+    mut commands: Commands,
+    input: Res<Input>,
+) {
     if !input.tab {
         return;
     }
-    for mut visibility in &mut query {
+    for (mut visibility, chest_block_id) in &mut chest_query {
         *visibility = Visibility::Hidden;
+        let mut iter = item_query.iter();
+        for (mut background_item_id, mut background_amount, block_id) in &mut background_query {
+            if block_id.0 != chest_block_id.0 {
+                continue;
+            }
+            match iter.next() {
+                Some((item_id, amount)) => {
+                    background_item_id.0 = item_id.0;
+                    background_amount.0 = amount.0;
+                }
+                None => todo!(),
+            }
+        }
+        for (item_id, amount) in iter {
+            commands.spawn((
+                BackgroundItem,
+                BlockID(chest_block_id.0),
+                ItemID(item_id.0),
+                ItemAmount(amount.0),
+            ));
+        }
     }
 }
 
@@ -43,7 +120,7 @@ pub struct ChestPlugin;
 impl Plugin for ChestPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ChestOverflowed>();
-        app.add_systems(Update, hide_chest);
+        app.add_event::<ChestClicked>();
+        app.add_systems(Update, (open_chest, close_chest));
     }
-    // TODO background storage
 }

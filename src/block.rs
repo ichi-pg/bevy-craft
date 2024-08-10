@@ -1,8 +1,7 @@
 use crate::chest::*;
 use crate::click_shape::*;
 use crate::hit_test::*;
-use crate::hotbar::HotbarItem;
-use crate::inventory::*;
+use crate::hotbar::*;
 use crate::item::*;
 use crate::item_container::*;
 use crate::item_selecting::*;
@@ -15,6 +14,9 @@ const BLOCK_SIZE: f32 = 128.0;
 #[derive(Component)]
 pub struct Block;
 
+#[derive(Component)]
+pub struct BlockID(pub u64);
+
 #[derive(Event)]
 pub struct BlockDestroied;
 
@@ -23,7 +25,8 @@ fn block_bundle(
     x: f32,
     y: f32,
     color: Color,
-) -> (SpriteBundle, Shape, Block, ItemID) {
+    block_id: u64,
+) -> (SpriteBundle, Shape, Block, BlockID, ItemID) {
     (
         SpriteBundle {
             sprite: Sprite {
@@ -36,8 +39,10 @@ fn block_bundle(
         },
         Shape::Rect(Vec2::new(BLOCK_SIZE * 0.5, BLOCK_SIZE * 0.5)),
         Block,
+        BlockID(block_id),
         ItemID(item_id),
     )
+    // TODO not overlap block id
 }
 
 fn spawn_blocks(mut commands: Commands, mut random: ResMut<Random>) {
@@ -52,6 +57,7 @@ fn spawn_blocks(mut commands: Commands, mut random: ResMut<Random>) {
                 x as f32 * BLOCK_SIZE,
                 y as f32 * BLOCK_SIZE,
                 item_color(item_id),
+                random.next_u64(),
             ));
         }
     }
@@ -74,22 +80,26 @@ fn destroy_block(
             amount: 1,
         });
     }
+    // TODO despawn background items
     // TODO block hp
     // TODO pickaxe
     // TODO select item
 }
 
 fn interact_block(
-    query: Query<(Entity, &ItemID), (With<Block>, With<RightClicked>)>,
-    mut chest_query: Query<&mut Visibility, Or<(With<Inventory>, With<Chest>)>>,
+    query: Query<(Entity, &ItemID, &BlockID), (With<Block>, With<RightClicked>)>,
     mut commands: Commands,
+    mut chest_event_writer: EventWriter<ChestClicked>,
 ) {
-    for (entity, item_id) in &query {
-        if item_id.0 == 20 {
-            for mut visibility in &mut chest_query {
-                *visibility = Visibility::Inherited;
+    for (entity, item_id, block_id) in &query {
+        match item_id.0 {
+            1 => {
+                chest_event_writer.send(ChestClicked {
+                    block_id: block_id.0,
+                });
             }
-        }
+            _ => {}
+        };
         commands.entity(entity).remove::<RightClicked>();
     }
 }
@@ -99,6 +109,7 @@ fn placement_block(
     mut query: Query<(&mut ItemID, &mut ItemAmount, &ItemIndex), With<HotbarItem>>,
     mut event_reader: EventReader<EmptyClicked>,
     mut commands: Commands,
+    mut random: ResMut<Random>,
 ) {
     for event in event_reader.read() {
         for (mut item_id, mut amount, index) in &mut query {
@@ -113,6 +124,7 @@ fn placement_block(
                 ((event.pos.x + BLOCK_SIZE * 0.5) / BLOCK_SIZE).floor() * BLOCK_SIZE,
                 ((event.pos.y + BLOCK_SIZE * 0.5) / BLOCK_SIZE).floor() * BLOCK_SIZE,
                 item_color(item_id.0),
+                random.next_u64(),
             ));
             amount.0 -= 1;
             if amount.0 == 0 {

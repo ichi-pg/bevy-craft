@@ -50,7 +50,7 @@ impl ItemAndAmount for ItemPickedUp {
 pub fn item_color(item_id: u16) -> Color {
     if item_id == 0 {
         Color::srgb(0.1, 0.1, 0.1)
-    } else if item_id == 20 {
+    } else if item_id == 1 {
         Color::srgb(0.5, 0.4, 0.3)
     } else {
         let rgb = item_id as f32 * 0.02 + 0.3;
