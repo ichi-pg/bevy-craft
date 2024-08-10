@@ -109,6 +109,7 @@ fn put_in_item(
             Interaction::None => continue,
         }
     }
+    // FIXME b0003 when into chest
 }
 
 fn drop_item(
