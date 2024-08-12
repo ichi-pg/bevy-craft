@@ -64,12 +64,15 @@ fn main() {
     // switch, door, ladder, rope, bomb, barrel, raft, magnetic, torch, ...
 
     // TODO tame, mount
-    // TODO weapon, tools, potion, equipment
+    // TODO tools, potion, equipment
     // TODO craft, enchant(job building), skill(combo building)
     // TODO farmming, industry
     // TODO rogue dungeon
     // TODO enemy
     // TODO minimap, fast travel
+
+    // TODO weapon
+    // sword, arrow, drone, ...
 
     // TODO level generate
     // forest and ruins, submerged city,
