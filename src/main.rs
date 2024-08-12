@@ -12,6 +12,7 @@ mod inventory;
 mod item;
 mod item_container;
 mod item_dragging;
+mod item_putting;
 mod item_selecting;
 mod player;
 mod profiler;
@@ -44,6 +45,7 @@ fn main() {
         .add_plugins((
             ui_forcus::UIForcusPlugin,
             item_container::ItemContainerPlugin,
+            item_putting::ItemPuttingPlugin,
             item_dragging::ItemDraggingPlugin,
             item_selecting::ItemSelectingPlugin,
             hotbar::HotbarPlugin,
