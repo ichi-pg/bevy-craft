@@ -8,6 +8,12 @@ pub struct Inventory;
 #[derive(Component, Default)]
 pub struct InventoryItem;
 
+#[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
+pub enum InventoryOpened {
+    None,
+    Opened,
+}
+
 #[derive(Event, Default)]
 pub struct InventoryOverflowed {
     pub item_id: u16,
@@ -63,12 +69,26 @@ fn toggle_inventory(mut query: Query<&mut Visibility, With<Inventory>>, input: R
     }
 }
 
+fn sync_state(
+    query: Query<&Visibility, (With<Inventory>, Changed<Visibility>)>,
+    mut next_state: ResMut<NextState<InventoryOpened>>,
+) {
+    for visibility in &query {
+        match *visibility {
+            Visibility::Inherited => next_state.set(InventoryOpened::Opened),
+            Visibility::Hidden => next_state.set(InventoryOpened::None),
+            Visibility::Visible => todo!(),
+        };
+    }
+}
+
 pub struct InventoryPlugin;
 
 impl Plugin for InventoryPlugin {
     fn build(&self, app: &mut App) {
+        app.insert_state(InventoryOpened::None);
         app.add_event::<InventoryOverflowed>();
         app.add_event::<InventoryPushedOut>();
-        app.add_systems(Update, toggle_inventory);
+        app.add_systems(Update, (toggle_inventory, sync_state));
     }
 }

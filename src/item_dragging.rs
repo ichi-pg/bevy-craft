@@ -35,7 +35,10 @@ fn spawn_drag_area(mut commands: Commands) {
 
 fn drag_item(
     area_query: Query<Entity, With<DragArea>>,
-    mut query: Query<(&Interaction, &mut ItemID, &mut ItemAmount), Changed<Interaction>>,
+    mut query: Query<
+        (&Interaction, &mut ItemID, &mut ItemAmount),
+        (With<ItemSlot>, Changed<Interaction>),
+    >,
     mut next_state: ResMut<NextState<ItemDragged>>,
     mut commands: Commands,
     input: Res<Input>,
@@ -81,7 +84,7 @@ fn dragging_item(mut query: Query<&mut Style, With<DragItem>>, input: Res<Input>
 fn put_in_item(
     mut slot_query: Query<
         (&Interaction, &mut ItemID, &mut ItemAmount),
-        (Without<DragItem>, Changed<Interaction>),
+        (With<ItemSlot>, Without<DragItem>, Changed<Interaction>),
     >,
     mut drag_query: Query<(Entity, &mut ItemID, &mut ItemAmount), With<DragItem>>,
     mut next_state: ResMut<NextState<ItemDragged>>,

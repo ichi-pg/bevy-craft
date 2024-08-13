@@ -4,6 +4,7 @@ mod camera;
 mod chest;
 mod click_shape;
 mod collision;
+mod craft;
 mod framerate;
 mod gravity;
 mod hit_test;
@@ -40,6 +41,7 @@ fn main() {
             window::WindowPlugin,
             profiler::ProfilerPlugin,
             framerate::FrameratePlugin,
+            ui_forcus::UIForcusPlugin,
         ))
         .add_plugins((
             collision::CollisionPlugin,
@@ -48,7 +50,6 @@ fn main() {
             click_shape::ClickShapePlugin,
         ))
         .add_plugins((
-            ui_forcus::UIForcusPlugin,
             item_container::ItemContainerPlugin,
             item_putting::ItemPuttingPlugin,
             item_dragging::ItemDraggingPlugin,
@@ -56,6 +57,7 @@ fn main() {
             hotbar::HotbarPlugin,
             inventory::InventoryPlugin,
             chest::ChestPlugin,
+            craft::CraftPlugin,
         ))
         .add_plugins((
             camera::CameraPlugin,

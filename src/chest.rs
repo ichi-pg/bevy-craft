@@ -58,7 +58,6 @@ fn open_chest(
     >,
     mut event_reader: EventReader<ChestClicked>,
     mut chest_block_id: ResMut<ChestBlockID>,
-    mut next_state: ResMut<NextState<ChestOpened>>,
 ) {
     for event in event_reader.read() {
         // Items
@@ -84,7 +83,6 @@ fn open_chest(
             *visibility = Visibility::Inherited;
         }
         chest_block_id.0 = event.block_id;
-        next_state.set(ChestOpened::Opened);
     }
     // TODO openable when already opened
     // TODO optimize search background item
@@ -143,7 +141,6 @@ fn close_chest(
     mut chest_query: Query<&mut Visibility, With<Chest>>,
     input: Res<Input>,
     mut chest_block_id: ResMut<ChestBlockID>,
-    mut next_state: ResMut<NextState<ChestOpened>>,
 ) {
     if !input.tab {
         return;
@@ -152,7 +149,6 @@ fn close_chest(
         *visibility = Visibility::Hidden;
     }
     chest_block_id.0 = 0;
-    next_state.set(ChestOpened::None);
 }
 
 fn destroy_chest(
@@ -162,7 +158,6 @@ fn destroy_chest(
     mut event_writer: EventWriter<ItemDropped>,
     mut commands: Commands,
     mut chest_block_id: ResMut<ChestBlockID>,
-    mut next_state: ResMut<NextState<ChestOpened>>,
 ) {
     for event in event_reader.read() {
         // Items
@@ -185,10 +180,22 @@ fn destroy_chest(
                 *visibility = Visibility::Hidden;
             }
             chest_block_id.0 = 0;
-            next_state.set(ChestOpened::None);
         }
     }
     // TODO optimize event depends
+}
+
+fn sync_state(
+    query: Query<&Visibility, (With<Chest>, Changed<Visibility>)>,
+    mut next_state: ResMut<NextState<ChestOpened>>,
+) {
+    for visibility in &query {
+        match *visibility {
+            Visibility::Inherited => next_state.set(ChestOpened::Opened),
+            Visibility::Hidden => next_state.set(ChestOpened::None),
+            Visibility::Visible => todo!(),
+        };
+    }
 }
 
 pub struct ChestPlugin;
@@ -205,6 +212,7 @@ impl Plugin for ChestPlugin {
                 open_chest.run_if(in_state(ChestOpened::None)),
                 sync_items.run_if(in_state(ChestOpened::Opened)),
                 close_chest.run_if(in_state(ChestOpened::Opened)),
+                sync_state,
             ),
         );
         app.add_systems(Last, destroy_chest);

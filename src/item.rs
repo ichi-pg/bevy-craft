@@ -98,13 +98,13 @@ fn pick_up_item(
     }
 }
 
-fn sync_text(mut query: Query<(&ItemAmount, &mut Text), Changed<ItemAmount>>) {
-    for (amount, mut text) in &mut query {
+fn sync_text(mut query: Query<(&ItemID, &ItemAmount, &mut Text), Changed<ItemAmount>>) {
+    for (item_id, amount, mut text) in &mut query {
         for section in &mut text.sections {
             section.value = if amount.0 == 0 {
                 String::new()
             } else {
-                format!("{}", amount.0)
+                format!("{} x{}", item_id.0, amount.0)
             };
         }
     }

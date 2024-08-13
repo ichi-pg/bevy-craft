@@ -8,6 +8,9 @@ use bevy::prelude::*;
 #[derive(Component)]
 pub struct ItemIndex(pub u8);
 
+#[derive(Component)]
+pub struct ItemSlot;
+
 pub fn build_item<T: Component + Default>(
     parent: &mut ChildBuilder,
     item_id: u16,
@@ -30,6 +33,7 @@ pub fn build_item<T: Component + Default>(
                 ..default()
             },
             Interaction::None,
+            ItemSlot,
             ItemID(item_id),
             ItemAmount(amount),
             ItemIndex(index),
@@ -137,7 +141,7 @@ pub struct ItemContainerPlugin;
 impl Plugin for ItemContainerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_containers);
-        app.add_systems(Update, sync_children::<UiImage>);
+        app.add_systems(Update, sync_children::<ItemSlot>);
     }
     // TODO spawn item when inventory overflowed
 }

@@ -104,7 +104,8 @@ impl Plugin for ItemPuttingPlugin {
                     push_out_item::<InventoryItem, InventoryPushedOut>,
                     push_out_item::<ChestItem, ChestOverflowed>,
                 )
-                    .run_if(in_state(ItemDragged::None)),
+                    .run_if(in_state(ItemDragged::None))
+                    .run_if(in_state(InventoryOpened::Opened)),
             ),
         );
     }

@@ -53,7 +53,6 @@ fn right_click(
             commands.entity(entity).insert(RightClicked);
         }
     }
-    // TODO chunk or sweep or tree
 }
 
 pub struct ClickShapePlugin;

@@ -39,7 +39,6 @@ fn notify_collision<T: Component, U: Component>(
             commands.entity(entity).insert(Collided);
         }
     }
-    // TODO chunk or sweep or tree
 }
 
 fn dynamics_collision<T: Component, U: Component>(
