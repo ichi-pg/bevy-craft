@@ -88,7 +88,6 @@ fn destroy_block(
     }
     // TODO block hp
     // TODO pickaxe
-    // TODO select item
 }
 
 fn interact_block(
