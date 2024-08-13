@@ -4,6 +4,7 @@ mod camera;
 mod chest;
 mod click_shape;
 mod collision;
+mod framerate;
 mod gravity;
 mod hit_test;
 mod hotbar;
@@ -38,6 +39,7 @@ fn main() {
             random::RandomPlugin,
             window::WindowPlugin,
             profiler::ProfilerPlugin,
+            framerate::FrameratePlugin,
         ))
         .add_plugins((
             collision::CollisionPlugin,
