@@ -37,7 +37,7 @@ fn main() {
             input::InputPlugin,
             random::RandomPlugin,
             window::WindowPlugin,
-            // profiler::ProfilerPlugin,
+            profiler::ProfilerPlugin,
         ))
         .add_plugins((
             collision::CollisionPlugin,
@@ -58,7 +58,6 @@ fn main() {
         .add_plugins((
             camera::CameraPlugin,
             player::PlatformerPlayerPlugin,
-            // player::TopDownPlayerPlugin,
             block::BlockPlugin,
             item::ItemPlugin,
         ))

@@ -1,5 +1,11 @@
 use bevy::diagnostic::*;
 use bevy::prelude::*;
+use iyes_perf_ui::entries::*;
+use iyes_perf_ui::*;
+
+fn spawn_profiler(mut commands: Commands) {
+    commands.spawn(PerfUiBundle::default());
+}
 
 pub struct ProfilerPlugin;
 
@@ -8,10 +14,13 @@ impl Plugin for ProfilerPlugin {
         #[cfg(debug_assertions)]
         {
             app.add_plugins((
-                FrameTimeDiagnosticsPlugin::default(),
-                LogDiagnosticsPlugin::default(),
+                FrameTimeDiagnosticsPlugin,
+                EntityCountDiagnosticsPlugin,
+                SystemInformationDiagnosticsPlugin,
+                PerfUiPlugin,
             ));
+            app.add_systems(Startup, spawn_profiler);
         }
     }
-    // TODO draw fps, entities count on screen
+    // TODO performance of each system
 }
