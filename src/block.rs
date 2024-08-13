@@ -147,6 +147,6 @@ impl Plugin for BlockPlugin {
         app.add_event::<BlockDestroied>();
         app.add_systems(Startup, spawn_blocks);
         app.add_systems(Update, (placement_block, interact_block));
-        app.add_systems(PostUpdate, destroy_block);
+        app.add_systems(Last, destroy_block);
     }
 }

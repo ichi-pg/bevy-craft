@@ -207,6 +207,6 @@ impl Plugin for ChestPlugin {
                 close_chest.run_if(in_state(ChestOpened::Opened)),
             ),
         );
-        app.add_systems(PostUpdate, destroy_chest);
+        app.add_systems(Last, destroy_chest);
     }
 }
