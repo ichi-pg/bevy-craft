@@ -57,14 +57,14 @@ fn open_chest(
         (With<BackgroundItem>, Without<ChestItem>),
     >,
     mut event_reader: EventReader<ChestClicked>,
-    mut commands: Commands,
     mut chest_block_id: ResMut<ChestBlockID>,
     mut next_state: ResMut<NextState<ChestOpened>>,
 ) {
     for event in event_reader.read() {
-        // Restore
-        let mut found = false;
+        // Items
         for (mut item_id, mut amount, index) in &mut item_query {
+            item_id.0 = 0;
+            amount.0 = 0;
             for (background_item_id, background_amount, background_index, block_id) in
                 &background_query
             {
@@ -76,21 +76,7 @@ fn open_chest(
                 }
                 item_id.0 = background_item_id.0;
                 amount.0 = background_amount.0;
-                found = true;
-            }
-        }
-        // Init
-        if !found {
-            for (mut item_id, mut amount, index) in &mut item_query {
-                commands.spawn((
-                    BackgroundItem,
-                    BlockID(event.block_id),
-                    ItemID(0),
-                    ItemAmount(0),
-                    ItemIndex(index.0),
-                ));
-                item_id.0 = 0;
-                amount.0 = 0;
+                break;
             }
         }
         // States
@@ -101,9 +87,7 @@ fn open_chest(
         next_state.set(ChestOpened::Opened);
     }
     // TODO openable when already opened
-    // TODO optimize empty slots
-    // TODO optimize search index
-    // TODO optimize search background
+    // TODO optimize search background item
     // TODO spawn when world initialized
 }
 
@@ -113,13 +97,15 @@ fn sync_items(
         (With<ChestItem>, Or<(Changed<ItemID>, Changed<ItemAmount>)>),
     >,
     mut background_query: Query<
-        (&mut ItemID, &mut ItemAmount, &ItemIndex, &BlockID),
+        (Entity, &mut ItemID, &mut ItemAmount, &ItemIndex, &BlockID),
         (With<BackgroundItem>, Without<ChestItem>),
     >,
+    mut commands: Commands,
     chest_block_id: Res<ChestBlockID>,
 ) {
     for (item_id, amount, index) in &item_query {
-        for (mut background_item_id, mut background_amount, background_index, block_id) in
+        let mut found = false;
+        for (entity, mut background_item_id, mut background_amount, background_index, block_id) in
             &mut background_query
         {
             if block_id.0 != chest_block_id.0 {
@@ -128,9 +114,28 @@ fn sync_items(
             if index.0 != background_index.0 {
                 continue;
             }
-            background_item_id.0 = item_id.0;
-            background_amount.0 = amount.0;
+            if item_id.0 == 0 {
+                commands.entity(entity).despawn();
+            } else {
+                background_item_id.0 = item_id.0;
+                background_amount.0 = amount.0;
+            }
+            found = true;
+            break;
         }
+        if found {
+            continue;
+        }
+        if item_id.0 == 0 {
+            continue;
+        }
+        commands.spawn((
+            BackgroundItem,
+            BlockID(chest_block_id.0),
+            ItemID(item_id.0),
+            ItemAmount(amount.0),
+            ItemIndex(index.0),
+        ));
     }
 }
 
