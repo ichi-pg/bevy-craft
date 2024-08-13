@@ -68,7 +68,7 @@ fn main() {
     // TODO tame, mount
     // TODO tools, potion, equipment
     // TODO craft, enchant(job building), skill(combo building)
-    // TODO farmming, industry
+    // TODO housing, farmming, industry
     // TODO rogue dungeon
     // TODO enemy
     // TODO minimap, fast travel
