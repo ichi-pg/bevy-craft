@@ -113,7 +113,7 @@ pub struct CollisionPlugin;
 impl Plugin for CollisionPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            Update,
+            PostUpdate,
             (
                 notify_collision::<Player, Item>,
                 dynamics_collision::<Player, Block>,

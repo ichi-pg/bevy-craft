@@ -12,5 +12,4 @@ impl Plugin for FrameratePlugin {
         app.add_plugins(FramepacePlugin);
         app.add_systems(Startup, limit_framerate);
     }
-    // TODO optimize process on one frame
 }
