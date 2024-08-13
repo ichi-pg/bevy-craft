@@ -7,9 +7,9 @@ struct CraftRecipe;
 
 fn spawn_recipes(mut commands: Commands) {
     for i in [
-        ((101, 1), vec![(2, 1), (3, 1)]),
-        ((102, 1), vec![(101, 1), (4, 1)]),
-        ((103, 1), vec![(101, 1), (5, 1), (6, 1)]),
+        ((101, 1), vec![(11, 1), (12, 1)]),
+        ((102, 1), vec![(101, 1), (13, 1)]),
+        ((103, 1), vec![(101, 1), (14, 1), (15, 1)]),
     ] {
         commands
             .spawn((CraftRecipe, ItemID(i.0 .0), ItemAmount(i.0 .1)))
