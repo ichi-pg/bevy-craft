@@ -82,6 +82,7 @@ fn open_chest(
     }
     // TODO openable when already opened
     // TODO efficient background query
+    // TODO optimize empty slots
 }
 
 fn close_chest(
