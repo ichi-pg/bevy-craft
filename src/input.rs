@@ -1,8 +1,6 @@
-use bevy::{
-    input::mouse::{MouseScrollUnit, MouseWheel},
-    prelude::*,
-    window::PrimaryWindow,
-};
+use bevy::input::mouse::*;
+use bevy::prelude::*;
+use bevy::window::*;
 
 #[derive(Resource, Default)]
 pub struct Input {
@@ -15,6 +13,8 @@ pub struct Input {
     pub right_click: bool,
     pub escape: bool,
     pub tab: bool,
+    pub enter: bool,
+    pub alt_pressed: bool,
     pub shift_pressed: bool,
     pub ctrl_pressed: bool,
     pub space_pressed: bool,
@@ -43,6 +43,8 @@ fn read_keyboard(mut input: ResMut<Input>, keyboard: Res<ButtonInput<KeyCode>>) 
     }
     input.escape = keyboard.just_pressed(KeyCode::Escape) && !input.escape;
     input.tab = keyboard.just_pressed(KeyCode::Tab) && !input.tab;
+    input.enter = keyboard.just_pressed(KeyCode::Enter) && !input.enter;
+    input.alt_pressed = keyboard.pressed(KeyCode::AltLeft) || keyboard.pressed(KeyCode::AltRight);
     input.shift_pressed = keyboard.pressed(KeyCode::ShiftLeft);
     input.ctrl_pressed = keyboard.pressed(KeyCode::ControlLeft);
     input.space_pressed = keyboard.pressed(KeyCode::Space);

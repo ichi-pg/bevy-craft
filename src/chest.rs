@@ -2,7 +2,7 @@ use crate::block::*;
 use crate::input::*;
 use crate::inventory::*;
 use crate::item::*;
-use crate::item_container::ItemIndex;
+use crate::item_container::*;
 use bevy::prelude::*;
 
 #[derive(Component)]

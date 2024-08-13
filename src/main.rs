@@ -19,6 +19,7 @@ mod profiler;
 mod random;
 mod ui_forcus;
 mod velocity;
+mod window;
 
 fn main() {
     App::new()
@@ -27,6 +28,7 @@ fn main() {
                 title: "Bevy Craft".into(),
                 resolution: (1920.0, 1080.0).into(),
                 position: WindowPosition::Centered(MonitorSelection::Primary),
+                resizable: false,
                 ..default()
             }),
             ..default()
@@ -34,6 +36,7 @@ fn main() {
         .add_plugins((
             input::InputPlugin,
             random::RandomPlugin,
+            window::WindowPlugin,
             // profiler::ProfilerPlugin,
         ))
         .add_plugins((
