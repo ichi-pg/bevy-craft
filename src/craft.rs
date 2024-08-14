@@ -1,4 +1,7 @@
+use crate::input::*;
 use crate::item::*;
+use crate::item_container::*;
+use crate::ui_parts::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -27,9 +30,35 @@ fn spawn_recipes(mut commands: Commands) {
     // TODO workbench
 }
 
-fn spawn_nodes() {}
+fn spawn_nodes(mut commands: Commands) {
+    commands
+        .spawn(screen_node(600.0))
+        .with_children(|parent: &mut ChildBuilder| {
+            parent
+                .spawn(colored_grid::<CraftUI>(10, 4, Visibility::Hidden))
+                .with_children(|parent| {
+                    build_item::<CraftItem>(parent, 101, 1, 0, false);
+                    build_item::<CraftItem>(parent, 102, 1, 1, false);
+                    build_item::<CraftItem>(parent, 103, 1, 2, false);
+                });
+        });
+}
 
-fn open_recipes() {}
+fn open_recipes(
+    mut query: Query<&mut Visibility, With<CraftUI>>,
+    input: Res<Input>,
+) {
+    if !input.v {
+        return;
+    }
+    for mut visibility in &mut query {
+        *visibility = match *visibility {
+            Visibility::Inherited => Visibility::Hidden,
+            Visibility::Hidden => Visibility::Inherited,
+            Visibility::Visible => todo!(),
+        }
+    }
+}
 
 fn close_recipes() {}
 

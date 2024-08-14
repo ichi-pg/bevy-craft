@@ -2,7 +2,7 @@ use crate::chest::*;
 use crate::hotbar::*;
 use crate::inventory::*;
 use crate::item::*;
-use crate::ui_forcus::*;
+use crate::ui_parts::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -63,26 +63,7 @@ fn build_container<T: Component + Default, U: Component + Default>(
     selectable: bool,
 ) {
     parent
-        .spawn((
-            NodeBundle {
-                style: Style {
-                    width: Val::Px((x * 110 + 10) as f32),
-                    height: Val::Px((y * 110 + 10) as f32),
-                    display: Display::Grid,
-                    grid_template_columns: RepeatedGridTrack::flex(x, 1.0),
-                    row_gap: Val::Px(10.0),
-                    column_gap: Val::Px(10.0),
-                    padding: UiRect::all(Val::Px(10.0)),
-                    ..default()
-                },
-                background_color: BackgroundColor(Color::srgb(0.2, 0.2, 0.2)),
-                visibility,
-                ..default()
-            },
-            Interaction::None,
-            UI,
-            T::default(),
-        ))
+        .spawn(colored_grid::<T>(x, y, visibility))
         .with_children(|parent| {
             for i in 0..x * y {
                 build_item::<U>(parent, 0, 0, i as u8, selectable);
@@ -92,19 +73,7 @@ fn build_container<T: Component + Default, U: Component + Default>(
 
 fn spawn_containers(mut commands: Commands) {
     commands
-        .spawn(NodeBundle {
-            style: Style {
-                width: Val::Percent(100.0),
-                height: Val::Percent(100.0),
-                flex_direction: FlexDirection::Column,
-                justify_content: JustifyContent::End,
-                align_items: AlignItems::Center,
-                row_gap: Val::Px(10.0),
-                padding: UiRect::all(Val::Px(10.0)),
-                ..default()
-            },
-            ..default()
-        })
+        .spawn(screen_node(10.0))
         .with_children(|parent: &mut ChildBuilder| {
             build_container::<Chest, ChestItem>(parent, 10, 4, Visibility::Hidden, false);
             build_container::<Inventory, InventoryItem>(parent, 10, 4, Visibility::Hidden, false);

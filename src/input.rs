@@ -22,8 +22,10 @@ pub struct Input {
     pub e: bool,
     pub r: bool,
     pub f: bool,
-    pub v: bool,
     pub c: bool,
+    pub v: bool,
+    pub b: bool,
+    pub m: bool,
     pub num: [bool; 10],
 }
 
@@ -52,8 +54,10 @@ fn read_keyboard(mut input: ResMut<Input>, keyboard: Res<ButtonInput<KeyCode>>) 
     input.e = keyboard.just_pressed(KeyCode::KeyE) && !input.e;
     input.r = keyboard.just_pressed(KeyCode::KeyR) && !input.r;
     input.f = keyboard.just_pressed(KeyCode::KeyF) && !input.f;
-    input.v = keyboard.just_pressed(KeyCode::KeyV) && !input.v;
     input.c = keyboard.just_pressed(KeyCode::KeyC) && !input.c;
+    input.v = keyboard.just_pressed(KeyCode::KeyV) && !input.v;
+    input.b = keyboard.just_pressed(KeyCode::KeyB) && !input.b;
+    input.m = keyboard.just_pressed(KeyCode::KeyM) && !input.m;
     input.num[0] = keyboard.just_pressed(KeyCode::Digit1) && !input.num[0];
     input.num[1] = keyboard.just_pressed(KeyCode::Digit2) && !input.num[1];
     input.num[2] = keyboard.just_pressed(KeyCode::Digit3) && !input.num[2];

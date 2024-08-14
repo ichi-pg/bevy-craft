@@ -20,6 +20,7 @@ mod player;
 mod profiler;
 mod random;
 mod ui_forcus;
+mod ui_parts;
 mod velocity;
 mod window;
 
