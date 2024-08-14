@@ -1,4 +1,7 @@
+use crate::chest::*;
+use crate::hotbar::*;
 use crate::input::*;
+use crate::inventory::*;
 use crate::item::*;
 use crate::item_container::*;
 use crate::player::*;
@@ -33,12 +36,9 @@ fn spawn_drag_area(mut commands: Commands) {
     ));
 }
 
-fn drag_item(
+fn drag_item<T: Component>(
     area_query: Query<Entity, With<DragArea>>,
-    mut query: Query<
-        (&Interaction, &mut ItemID, &mut ItemAmount),
-        (With<ItemSlot>, Changed<Interaction>),
-    >,
+    mut query: Query<(&Interaction, &mut ItemID, &mut ItemAmount), (With<T>, Changed<Interaction>)>,
     mut next_state: ResMut<NextState<ItemDragged>>,
     mut commands: Commands,
     input: Res<Input>,
@@ -81,10 +81,10 @@ fn dragging_item(mut query: Query<&mut Style, With<DragItem>>, input: Res<Input>
     }
 }
 
-fn put_in_item(
+fn put_in_item<T: Component>(
     mut slot_query: Query<
         (&Interaction, &mut ItemID, &mut ItemAmount),
-        (With<ItemSlot>, Without<DragItem>, Changed<Interaction>),
+        (With<T>, Without<DragItem>, Changed<Interaction>),
     >,
     mut drag_query: Query<(Entity, &mut ItemID, &mut ItemAmount), With<DragItem>>,
     mut next_state: ResMut<NextState<ItemDragged>>,
@@ -116,6 +116,8 @@ fn put_in_item(
         }
     }
     // FIXME b0003 when into other container
+    // FIXME sometimes item is dropped when after pushed out
+    // FIXME sometimes item is placed
 }
 
 fn drop_item(
@@ -162,9 +164,16 @@ impl Plugin for ItemDraggingPlugin {
         app.add_systems(
             Update,
             (
-                drag_item.run_if(in_state(ItemDragged::None)),
+                (
+                    drag_item::<HotbarItem>,
+                    drag_item::<InventoryItem>,
+                    drag_item::<ChestItem>,
+                )
+                    .run_if(in_state(ItemDragged::None)),
                 dragging_item,
-                put_in_item,
+                put_in_item::<HotbarItem>,
+                put_in_item::<InventoryItem>,
+                put_in_item::<ChestItem>,
                 drop_item.run_if(in_state(UIHobered::None)),
                 proc_pre_none.run_if(in_state(ItemDragged::PreNone)),
             ),

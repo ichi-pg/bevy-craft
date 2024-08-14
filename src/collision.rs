@@ -101,6 +101,7 @@ fn dynamics_collision<T: Component, U: Component>(
         }
     }
     // FIXME jump out when placement block to player position
+    // FIXME sometimes player dont sleep on wall
     // TODO chunk or sweep or tree
     // TODO refactor velocity, grounded, and hit head.
     // TODO dynamics gizmo
