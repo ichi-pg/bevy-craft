@@ -8,10 +8,11 @@ pub enum UIStates {
     Craft,
 }
 
-pub struct UIConstrollerPlugin;
+pub struct UIStatusPlugin;
 
-impl Plugin for UIConstrollerPlugin {
+impl Plugin for UIStatusPlugin {
     fn build(&self, app: &mut App) {
         app.insert_state(UIStates::None);
     }
+    // TODO can open when other opened
 }

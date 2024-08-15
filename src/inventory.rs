@@ -1,5 +1,6 @@
 use crate::input::*;
 use crate::item::*;
+use crate::ui_states::*;
 use bevy::prelude::*;
 
 #[derive(Component, Default)]
@@ -7,12 +8,6 @@ pub struct Inventory;
 
 #[derive(Component, Default)]
 pub struct InventoryItem;
-
-#[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
-pub enum InventoryOpened {
-    None,
-    Opened,
-}
 
 #[derive(Event, Default)]
 pub struct InventoryOverflowed {
@@ -56,42 +51,46 @@ impl ItemAndAmount for InventoryPushedOut {
     }
 }
 
-fn toggle_inventory(mut query: Query<&mut Visibility, With<Inventory>>, input: Res<Input>) {
-    if input.tab || input.c {
-        for mut visibility in &mut query {
-            *visibility = match *visibility {
-                Visibility::Inherited => Visibility::Hidden,
-                Visibility::Hidden => Visibility::Inherited,
-                Visibility::Visible => todo!(),
-            };
-        }
-    } else if input.escape {
-        for mut visibility in &mut query {
-            *visibility = Visibility::Hidden;
-        }
+fn open_inventory(
+    mut query: Query<&mut Visibility, With<Inventory>>,
+    input: Res<Input>,
+    mut next_state: ResMut<NextState<UIStates>>,
+) {
+    if !input.tab {
+        return;
     }
+    for mut visibility in &mut query {
+        *visibility = Visibility::Inherited;
+    }
+    next_state.set(UIStates::Inventory);
 }
 
-fn sync_state(
-    query: Query<&Visibility, (With<Inventory>, Changed<Visibility>)>,
-    mut next_state: ResMut<NextState<InventoryOpened>>,
+fn close_inventory(
+    mut query: Query<&mut Visibility, With<Inventory>>,
+    input: Res<Input>,
+    mut next_state: ResMut<NextState<UIStates>>,
 ) {
-    for visibility in &query {
-        match *visibility {
-            Visibility::Inherited => next_state.set(InventoryOpened::Opened),
-            Visibility::Hidden => next_state.set(InventoryOpened::None),
-            Visibility::Visible => todo!(),
-        };
+    if !input.tab && !input.escape {
+        return;
     }
+    for mut visibility in &mut query {
+        *visibility = Visibility::Hidden;
+    }
+    next_state.set(UIStates::None);
 }
 
 pub struct InventoryPlugin;
 
 impl Plugin for InventoryPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_state(InventoryOpened::None);
         app.add_event::<InventoryOverflowed>();
         app.add_event::<InventoryPushedOut>();
-        app.add_systems(Update, (toggle_inventory, sync_state));
+        app.add_systems(
+            Update,
+            (
+                open_inventory.run_if(in_state(UIStates::None)),
+                close_inventory.run_if(in_state(UIStates::Inventory)),
+            ),
+        );
     }
 }

@@ -1,7 +1,9 @@
 use crate::input::*;
+use crate::inventory::*;
 use crate::item::*;
 use crate::item_container::*;
 use crate::ui_parts::*;
+use crate::ui_states::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -46,29 +48,32 @@ fn spawn_nodes(query: Query<(&ItemID, &ItemAmount), With<CraftRecipe>>, mut comm
         });
 }
 
-fn toggle_recipes(mut query: Query<&mut Visibility, With<CraftUI>>, input: Res<Input>) {
-    if input.c {
-        for mut visibility in &mut query {
-            *visibility = match *visibility {
-                Visibility::Inherited => Visibility::Hidden,
-                Visibility::Hidden => Visibility::Inherited,
-                Visibility::Visible => todo!(),
-            }
-        }
-    } else if input.escape {
-        for mut visibility in &mut query {
-            *visibility = Visibility::Hidden;
-        }
+fn open_recipes(
+    mut query: Query<&mut Visibility, Or<(With<CraftUI>, With<Inventory>)>>,
+    input: Res<Input>,
+    mut next_state: ResMut<NextState<UIStates>>,
+) {
+    if !input.c {
+        return;
     }
+    for mut visibility in &mut query {
+        *visibility = Visibility::Inherited;
+    }
+    next_state.set(UIStates::Craft);
 }
 
-fn close_recipes(mut storage_query: Query<&mut Visibility, With<CraftUI>>, input: Res<Input>) {
-    if !input.tab {
+fn close_recipes(
+    mut storage_query: Query<&mut Visibility, Or<(With<CraftUI>, With<Inventory>)>>,
+    input: Res<Input>,
+    mut next_state: ResMut<NextState<UIStates>>,
+) {
+    if !input.c && !input.tab && !input.escape {
         return;
     }
     for mut visibility in &mut storage_query {
         *visibility = Visibility::Hidden;
     }
+    next_state.set(UIStates::None);
 }
 
 pub struct CraftPlugin;
@@ -76,6 +81,12 @@ pub struct CraftPlugin;
 impl Plugin for CraftPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, (spawn_recipes, spawn_nodes).chain());
-        app.add_systems(Update, (toggle_recipes, close_recipes));
+        app.add_systems(
+            Update,
+            (
+                open_recipes.run_if(in_state(UIStates::None)),
+                close_recipes.run_if(in_state(UIStates::Craft)),
+            ),
+        );
     }
 }

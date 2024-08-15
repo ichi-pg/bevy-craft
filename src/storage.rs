@@ -3,6 +3,7 @@ use crate::input::*;
 use crate::inventory::*;
 use crate::item::*;
 use crate::item_container::*;
+use crate::ui_states::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -16,12 +17,6 @@ pub struct StorageItem;
 
 #[derive(Resource)]
 struct StorageBlockID(u64);
-
-#[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
-pub enum StorageOpened {
-    None,
-    Opened,
-}
 
 #[derive(Event)]
 pub struct StorageClicked {
@@ -58,6 +53,7 @@ fn open_storage(
     >,
     mut event_reader: EventReader<StorageClicked>,
     mut storage_block_id: ResMut<StorageBlockID>,
+    mut next_state: ResMut<NextState<UIStates>>,
 ) {
     for event in event_reader.read() {
         // Items
@@ -83,6 +79,7 @@ fn open_storage(
             *visibility = Visibility::Inherited;
         }
         storage_block_id.0 = event.block_id;
+        next_state.set(UIStates::Storage);
     }
     // TODO openable when already opened
     // TODO optimize search background item
@@ -141,9 +138,10 @@ fn sync_items(
 }
 
 fn close_storage(
-    mut storage_query: Query<&mut Visibility, With<Storage>>,
+    mut storage_query: Query<&mut Visibility, Or<(With<Storage>, With<Inventory>)>>,
     input: Res<Input>,
     mut storage_block_id: ResMut<StorageBlockID>,
+    mut next_state: ResMut<NextState<UIStates>>,
 ) {
     if !input.tab && !input.escape {
         return;
@@ -152,6 +150,7 @@ fn close_storage(
         *visibility = Visibility::Hidden;
     }
     storage_block_id.0 = 0;
+    next_state.set(UIStates::None);
 }
 
 fn destroy_storage(
@@ -188,34 +187,19 @@ fn destroy_storage(
     // TODO optimize event depends
 }
 
-fn sync_state(
-    query: Query<&Visibility, (With<Storage>, Changed<Visibility>)>,
-    mut next_state: ResMut<NextState<StorageOpened>>,
-) {
-    for visibility in &query {
-        match *visibility {
-            Visibility::Inherited => next_state.set(StorageOpened::Opened),
-            Visibility::Hidden => next_state.set(StorageOpened::None),
-            Visibility::Visible => todo!(),
-        };
-    }
-}
-
 pub struct StoragePlugin;
 
 impl Plugin for StoragePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(StorageBlockID(0));
-        app.insert_state(StorageOpened::None);
         app.add_event::<StorageOverflowed>();
         app.add_event::<StorageClicked>();
         app.add_systems(
             Update,
             (
-                open_storage.run_if(in_state(StorageOpened::None)),
-                sync_items.run_if(in_state(StorageOpened::Opened)),
-                close_storage.run_if(in_state(StorageOpened::Opened)),
-                sync_state,
+                open_storage.run_if(in_state(UIStates::None)),
+                sync_items.run_if(in_state(UIStates::Storage)),
+                close_storage.run_if(in_state(UIStates::Storage)),
             ),
         );
         app.add_systems(Last, destroy_storage);

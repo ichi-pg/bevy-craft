@@ -44,6 +44,7 @@ fn main() {
             profiler::ProfilerPlugin,
             framerate::FrameratePlugin,
             ui_forcus::UIForcusPlugin,
+            ui_states::UIStatusPlugin,
         ))
         .add_plugins((
             collision::CollisionPlugin,
