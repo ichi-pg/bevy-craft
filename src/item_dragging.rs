@@ -1,10 +1,10 @@
-use crate::chest::*;
 use crate::hotbar::*;
 use crate::input::*;
 use crate::inventory::*;
 use crate::item::*;
 use crate::item_container::*;
 use crate::player::*;
+use crate::storage::*;
 use crate::ui_forcus::*;
 use bevy::prelude::*;
 
@@ -167,13 +167,13 @@ impl Plugin for ItemDraggingPlugin {
                 (
                     drag_item::<HotbarItem>,
                     drag_item::<InventoryItem>,
-                    drag_item::<ChestItem>,
+                    drag_item::<StorageItem>,
                 )
                     .run_if(in_state(ItemDragged::None)),
                 dragging_item,
                 put_in_item::<HotbarItem>,
                 put_in_item::<InventoryItem>,
-                put_in_item::<ChestItem>,
+                put_in_item::<StorageItem>,
                 drop_item.run_if(in_state(UIHobered::None)),
                 proc_pre_none.run_if(in_state(ItemDragged::PreNone)),
             ),

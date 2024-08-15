@@ -9,32 +9,32 @@ use bevy::prelude::*;
 struct BackgroundItem;
 
 #[derive(Component, Default)]
-pub struct Chest;
+pub struct Storage;
 
 #[derive(Component, Default)]
-pub struct ChestItem;
+pub struct StorageItem;
 
 #[derive(Resource)]
-struct ChestBlockID(u64);
+struct StorageBlockID(u64);
 
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ChestOpened {
+pub enum StorageOpened {
     None,
     Opened,
 }
 
 #[derive(Event)]
-pub struct ChestClicked {
+pub struct StorageClicked {
     pub block_id: u64,
 }
 
 #[derive(Event, Default)]
-pub struct ChestOverflowed {
+pub struct StorageOverflowed {
     pub item_id: u16,
     pub amount: u16,
 }
 
-impl ItemAndAmount for ChestOverflowed {
+impl ItemAndAmount for StorageOverflowed {
     fn item_id(&self) -> u16 {
         self.item_id
     }
@@ -49,15 +49,15 @@ impl ItemAndAmount for ChestOverflowed {
     }
 }
 
-fn open_chest(
-    mut chest_query: Query<&mut Visibility, Or<(With<Inventory>, With<Chest>)>>,
-    mut item_query: Query<(&mut ItemID, &mut ItemAmount, &ItemIndex), With<ChestItem>>,
+fn open_storage(
+    mut storage_query: Query<&mut Visibility, Or<(With<Inventory>, With<Storage>)>>,
+    mut item_query: Query<(&mut ItemID, &mut ItemAmount, &ItemIndex), With<StorageItem>>,
     background_query: Query<
         (&ItemID, &ItemAmount, &ItemIndex, &BlockID),
-        (With<BackgroundItem>, Without<ChestItem>),
+        (With<BackgroundItem>, Without<StorageItem>),
     >,
-    mut event_reader: EventReader<ChestClicked>,
-    mut chest_block_id: ResMut<ChestBlockID>,
+    mut event_reader: EventReader<StorageClicked>,
+    mut storage_block_id: ResMut<StorageBlockID>,
 ) {
     for event in event_reader.read() {
         // Items
@@ -79,10 +79,10 @@ fn open_chest(
             }
         }
         // States
-        for mut visibility in &mut chest_query {
+        for mut visibility in &mut storage_query {
             *visibility = Visibility::Inherited;
         }
-        chest_block_id.0 = event.block_id;
+        storage_block_id.0 = event.block_id;
     }
     // TODO openable when already opened
     // TODO optimize search background item
@@ -92,21 +92,24 @@ fn open_chest(
 fn sync_items(
     item_query: Query<
         (&ItemID, &ItemAmount, &ItemIndex),
-        (With<ChestItem>, Or<(Changed<ItemID>, Changed<ItemAmount>)>),
+        (
+            With<StorageItem>,
+            Or<(Changed<ItemID>, Changed<ItemAmount>)>,
+        ),
     >,
     mut background_query: Query<
         (Entity, &mut ItemID, &mut ItemAmount, &ItemIndex, &BlockID),
-        (With<BackgroundItem>, Without<ChestItem>),
+        (With<BackgroundItem>, Without<StorageItem>),
     >,
     mut commands: Commands,
-    chest_block_id: Res<ChestBlockID>,
+    storage_block_id: Res<StorageBlockID>,
 ) {
     for (item_id, amount, index) in &item_query {
         let mut found = false;
         for (entity, mut background_item_id, mut background_amount, background_index, block_id) in
             &mut background_query
         {
-            if block_id.0 != chest_block_id.0 {
+            if block_id.0 != storage_block_id.0 {
                 continue;
             }
             if index.0 != background_index.0 {
@@ -129,7 +132,7 @@ fn sync_items(
         }
         commands.spawn((
             BackgroundItem,
-            BlockID(chest_block_id.0),
+            BlockID(storage_block_id.0),
             ItemID(item_id.0),
             ItemAmount(amount.0),
             ItemIndex(index.0),
@@ -137,27 +140,27 @@ fn sync_items(
     }
 }
 
-fn close_chest(
-    mut chest_query: Query<&mut Visibility, With<Chest>>,
+fn close_storage(
+    mut storage_query: Query<&mut Visibility, With<Storage>>,
     input: Res<Input>,
-    mut chest_block_id: ResMut<ChestBlockID>,
+    mut storage_block_id: ResMut<StorageBlockID>,
 ) {
-    if !input.tab {
+    if !input.tab && !input.escape {
         return;
     }
-    for mut visibility in &mut chest_query {
+    for mut visibility in &mut storage_query {
         *visibility = Visibility::Hidden;
     }
-    chest_block_id.0 = 0;
+    storage_block_id.0 = 0;
 }
 
-fn destroy_chest(
-    mut chest_query: Query<&mut Visibility, Or<(With<Inventory>, With<Chest>)>>,
+fn destroy_storage(
+    mut storage_query: Query<&mut Visibility, Or<(With<Inventory>, With<Storage>)>>,
     background_query: Query<(Entity, &ItemID, &ItemAmount, &BlockID), With<BackgroundItem>>,
     mut event_reader: EventReader<BlockDestroied>,
     mut event_writer: EventWriter<ItemDropped>,
     mut commands: Commands,
-    mut chest_block_id: ResMut<ChestBlockID>,
+    mut storage_block_id: ResMut<StorageBlockID>,
 ) {
     for event in event_reader.read() {
         // Items
@@ -175,46 +178,46 @@ fn destroy_chest(
             commands.entity(entity).despawn();
         }
         // States
-        if chest_block_id.0 == event.block_id {
-            for mut visibility in &mut chest_query {
+        if storage_block_id.0 == event.block_id {
+            for mut visibility in &mut storage_query {
                 *visibility = Visibility::Hidden;
             }
-            chest_block_id.0 = 0;
+            storage_block_id.0 = 0;
         }
     }
     // TODO optimize event depends
 }
 
 fn sync_state(
-    query: Query<&Visibility, (With<Chest>, Changed<Visibility>)>,
-    mut next_state: ResMut<NextState<ChestOpened>>,
+    query: Query<&Visibility, (With<Storage>, Changed<Visibility>)>,
+    mut next_state: ResMut<NextState<StorageOpened>>,
 ) {
     for visibility in &query {
         match *visibility {
-            Visibility::Inherited => next_state.set(ChestOpened::Opened),
-            Visibility::Hidden => next_state.set(ChestOpened::None),
+            Visibility::Inherited => next_state.set(StorageOpened::Opened),
+            Visibility::Hidden => next_state.set(StorageOpened::None),
             Visibility::Visible => todo!(),
         };
     }
 }
 
-pub struct ChestPlugin;
+pub struct StoragePlugin;
 
-impl Plugin for ChestPlugin {
+impl Plugin for StoragePlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(ChestBlockID(0));
-        app.insert_state(ChestOpened::None);
-        app.add_event::<ChestOverflowed>();
-        app.add_event::<ChestClicked>();
+        app.insert_resource(StorageBlockID(0));
+        app.insert_state(StorageOpened::None);
+        app.add_event::<StorageOverflowed>();
+        app.add_event::<StorageClicked>();
         app.add_systems(
             Update,
             (
-                open_chest.run_if(in_state(ChestOpened::None)),
-                sync_items.run_if(in_state(ChestOpened::Opened)),
-                close_chest.run_if(in_state(ChestOpened::Opened)),
+                open_storage.run_if(in_state(StorageOpened::None)),
+                sync_items.run_if(in_state(StorageOpened::Opened)),
+                close_storage.run_if(in_state(StorageOpened::Opened)),
                 sync_state,
             ),
         );
-        app.add_systems(Last, destroy_chest);
+        app.add_systems(Last, destroy_storage);
     }
 }

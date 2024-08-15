@@ -1,4 +1,3 @@
-use crate::chest::*;
 use crate::click_shape::*;
 use crate::hit_test::*;
 use crate::hotbar::*;
@@ -6,6 +5,7 @@ use crate::item::*;
 use crate::item_container::*;
 use crate::item_selecting::*;
 use crate::random::*;
+use crate::storage::*;
 use bevy::prelude::*;
 use rand::RngCore;
 
@@ -93,12 +93,12 @@ fn destroy_block(
 fn interact_block(
     query: Query<(Entity, &ItemID, &BlockID), (With<Block>, With<RightClicked>)>,
     mut commands: Commands,
-    mut chest_event_writer: EventWriter<ChestClicked>,
+    mut storage_event_writer: EventWriter<StorageClicked>,
 ) {
     for (entity, item_id, block_id) in &query {
         match item_id.0 {
             1 => {
-                chest_event_writer.send(ChestClicked {
+                storage_event_writer.send(StorageClicked {
                     block_id: block_id.0,
                 });
             }

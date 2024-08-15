@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 mod block;
 mod camera;
-mod chest;
 mod click_shape;
 mod collision;
 mod craft;
@@ -19,8 +18,10 @@ mod item_selecting;
 mod player;
 mod profiler;
 mod random;
+mod storage;
 mod ui_forcus;
 mod ui_parts;
+mod ui_states;
 mod velocity;
 mod window;
 
@@ -57,7 +58,7 @@ fn main() {
             item_selecting::ItemSelectingPlugin,
             hotbar::HotbarPlugin,
             inventory::InventoryPlugin,
-            chest::ChestPlugin,
+            storage::StoragePlugin,
             craft::CraftPlugin,
         ))
         .add_plugins((

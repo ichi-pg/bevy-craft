@@ -57,15 +57,18 @@ impl ItemAndAmount for InventoryPushedOut {
 }
 
 fn toggle_inventory(mut query: Query<&mut Visibility, With<Inventory>>, input: Res<Input>) {
-    if !input.tab {
-        return;
-    }
-    for mut visibility in &mut query {
-        *visibility = match *visibility {
-            Visibility::Inherited => Visibility::Hidden,
-            Visibility::Hidden => Visibility::Inherited,
-            Visibility::Visible => todo!(),
-        };
+    if input.tab || input.c {
+        for mut visibility in &mut query {
+            *visibility = match *visibility {
+                Visibility::Inherited => Visibility::Hidden,
+                Visibility::Hidden => Visibility::Inherited,
+                Visibility::Visible => todo!(),
+            };
+        }
+    } else if input.escape {
+        for mut visibility in &mut query {
+            *visibility = Visibility::Hidden;
+        }
     }
 }
 

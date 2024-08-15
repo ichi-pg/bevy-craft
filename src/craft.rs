@@ -30,43 +30,52 @@ fn spawn_recipes(mut commands: Commands) {
     // TODO workbench
 }
 
-fn spawn_nodes(mut commands: Commands) {
+fn spawn_nodes(query: Query<(&ItemID, &ItemAmount), With<CraftRecipe>>, mut commands: Commands) {
     commands
         .spawn(screen_node(600.0))
         .with_children(|parent: &mut ChildBuilder| {
             parent
                 .spawn(colored_grid::<CraftUI>(10, 4, Visibility::Hidden))
                 .with_children(|parent| {
-                    build_item::<CraftItem>(parent, 101, 1, 0, false);
-                    build_item::<CraftItem>(parent, 102, 1, 1, false);
-                    build_item::<CraftItem>(parent, 103, 1, 2, false);
+                    let mut index = 0;
+                    for (item_id, amount) in &query {
+                        build_item::<CraftItem>(parent, item_id.0, amount.0, index, false);
+                        index += 1;
+                    }
                 });
         });
 }
 
-fn open_recipes(
-    mut query: Query<&mut Visibility, With<CraftUI>>,
-    input: Res<Input>,
-) {
-    if !input.v {
-        return;
-    }
-    for mut visibility in &mut query {
-        *visibility = match *visibility {
-            Visibility::Inherited => Visibility::Hidden,
-            Visibility::Hidden => Visibility::Inherited,
-            Visibility::Visible => todo!(),
+fn toggle_recipes(mut query: Query<&mut Visibility, With<CraftUI>>, input: Res<Input>) {
+    if input.c {
+        for mut visibility in &mut query {
+            *visibility = match *visibility {
+                Visibility::Inherited => Visibility::Hidden,
+                Visibility::Hidden => Visibility::Inherited,
+                Visibility::Visible => todo!(),
+            }
+        }
+    } else if input.escape {
+        for mut visibility in &mut query {
+            *visibility = Visibility::Hidden;
         }
     }
 }
 
-fn close_recipes() {}
+fn close_recipes(mut storage_query: Query<&mut Visibility, With<CraftUI>>, input: Res<Input>) {
+    if !input.tab {
+        return;
+    }
+    for mut visibility in &mut storage_query {
+        *visibility = Visibility::Hidden;
+    }
+}
 
 pub struct CraftPlugin;
 
 impl Plugin for CraftPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (spawn_recipes, spawn_nodes));
-        app.add_systems(Update, (open_recipes, close_recipes));
+        app.add_systems(Startup, (spawn_recipes, spawn_nodes).chain());
+        app.add_systems(Update, (toggle_recipes, close_recipes));
     }
 }

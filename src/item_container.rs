@@ -1,7 +1,7 @@
-use crate::chest::*;
 use crate::hotbar::*;
 use crate::inventory::*;
 use crate::item::*;
+use crate::storage::*;
 use crate::ui_parts::*;
 use bevy::prelude::*;
 
@@ -75,7 +75,7 @@ fn spawn_containers(mut commands: Commands) {
     commands
         .spawn(screen_node(10.0))
         .with_children(|parent: &mut ChildBuilder| {
-            build_container::<Chest, ChestItem>(parent, 10, 4, Visibility::Hidden, false);
+            build_container::<Storage, StorageItem>(parent, 10, 4, Visibility::Hidden, false);
             build_container::<Inventory, InventoryItem>(parent, 10, 4, Visibility::Hidden, false);
             build_container::<Hotbar, HotbarItem>(parent, 10, 1, Visibility::Inherited, true);
         });
@@ -111,7 +111,7 @@ impl Plugin for ItemContainerPlugin {
             (
                 sync_children::<HotbarItem>,
                 sync_children::<InventoryItem>,
-                sync_children::<ChestItem>,
+                sync_children::<StorageItem>,
             ),
         );
     }
