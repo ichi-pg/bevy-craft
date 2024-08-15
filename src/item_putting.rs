@@ -4,7 +4,7 @@ use crate::inventory::*;
 use crate::item::*;
 use crate::item_dragging::*;
 use crate::storage::*;
-use crate::ui_states::UIStates;
+use crate::ui_states::*;
 use bevy::prelude::*;
 
 fn put_in_item<T: Event + ItemAndAmount, U: Component, V: Event + Default + ItemAndAmount>(
@@ -99,14 +99,14 @@ impl Plugin for ItemPuttingPlugin {
                     put_in_item::<HotbarPushedOut, InventoryItem, InventoryOverflowed>,
                     put_in_item::<InventoryPushedOut, HotbarItem, HotbarOverflowed>,
                 )
-                    .run_if(in_state(UIStates::Inventory)),
+                    .run_if(not(in_state(UIStates::Storage))),
                 (
                     push_out_item::<HotbarItem, HotbarPushedOut>,
                     push_out_item::<InventoryItem, InventoryPushedOut>,
                     push_out_item::<StorageItem, StorageOverflowed>,
                 )
                     .run_if(in_state(ItemDragged::None))
-                    .run_if(in_state(UIStates::Inventory).or_else(in_state(UIStates::Storage))),
+                    .run_if(in_state(InventoryOpened::Opened)),
             ),
         );
     }

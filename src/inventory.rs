@@ -51,46 +51,67 @@ impl ItemAndAmount for InventoryPushedOut {
     }
 }
 
-fn open_inventory(
-    mut query: Query<&mut Visibility, With<Inventory>>,
-    input: Res<Input>,
-    mut next_state: ResMut<NextState<UIStates>>,
-) {
+#[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
+pub enum InventoryOpened {
+    None,
+    Opened,
+}
+
+fn open_inventory(input: Res<Input>, mut next_state: ResMut<NextState<UIStates>>) {
     if !input.tab {
         return;
-    }
-    for mut visibility in &mut query {
-        *visibility = Visibility::Inherited;
     }
     next_state.set(UIStates::Inventory);
 }
 
-fn close_inventory(
-    mut query: Query<&mut Visibility, With<Inventory>>,
-    input: Res<Input>,
-    mut next_state: ResMut<NextState<UIStates>>,
-) {
-    if !input.tab && !input.escape {
+fn close_inventory(input: Res<Input>, mut next_state: ResMut<NextState<UIStates>>) {
+    if !input.tab {
         return;
     }
+    next_state.set(UIStates::None);
+}
+
+fn on_open_inventory(mut query: Query<&mut Visibility, With<Inventory>>) {
+    for mut visibility in &mut query {
+        *visibility = Visibility::Inherited;
+    }
+}
+
+fn on_close_inventory(mut query: Query<&mut Visibility, With<Inventory>>) {
     for mut visibility in &mut query {
         *visibility = Visibility::Hidden;
     }
-    next_state.set(UIStates::None);
+}
+
+fn sync_opened(
+    query: Query<&Visibility, (With<Inventory>, Changed<Visibility>)>,
+    mut next_state: ResMut<NextState<InventoryOpened>>,
+) {
+    for visibility in &query {
+        match *visibility {
+            Visibility::Inherited => next_state.set(InventoryOpened::Opened),
+            Visibility::Hidden => next_state.set(InventoryOpened::None),
+            Visibility::Visible => todo!(),
+        }
+    }
 }
 
 pub struct InventoryPlugin;
 
 impl Plugin for InventoryPlugin {
     fn build(&self, app: &mut App) {
+        app.insert_state(InventoryOpened::None);
         app.add_event::<InventoryOverflowed>();
         app.add_event::<InventoryPushedOut>();
         app.add_systems(
             Update,
             (
-                open_inventory.run_if(in_state(UIStates::None)),
-                close_inventory.run_if(in_state(UIStates::Inventory)),
+                open_inventory.run_if(in_state(InventoryOpened::None)),
+                close_inventory.run_if(in_state(InventoryOpened::Opened)),
+                sync_opened,
             ),
         );
+        app.add_systems(OnEnter(UIStates::Inventory), on_open_inventory);
+        app.add_systems(OnExit(UIStates::Inventory), on_close_inventory);
     }
 }

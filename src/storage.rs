@@ -1,5 +1,4 @@
 use crate::block::*;
-use crate::input::*;
 use crate::inventory::*;
 use crate::item::*;
 use crate::item_container::*;
@@ -45,7 +44,6 @@ impl ItemAndAmount for StorageOverflowed {
 }
 
 fn open_storage(
-    mut storage_query: Query<&mut Visibility, Or<(With<Inventory>, With<Storage>)>>,
     mut item_query: Query<(&mut ItemID, &mut ItemAmount, &ItemIndex), With<StorageItem>>,
     background_query: Query<
         (&ItemID, &ItemAmount, &ItemIndex, &BlockID),
@@ -75,15 +73,27 @@ fn open_storage(
             }
         }
         // States
-        for mut visibility in &mut storage_query {
-            *visibility = Visibility::Inherited;
-        }
         storage_block_id.0 = event.block_id;
         next_state.set(UIStates::Storage);
     }
-    // TODO openable when already opened
     // TODO optimize search background item
     // TODO spawn when world initialized
+}
+
+fn on_open_storage(
+    mut storage_query: Query<&mut Visibility, Or<(With<Inventory>, With<Storage>)>>,
+) {
+    for mut visibility in &mut storage_query {
+        *visibility = Visibility::Inherited;
+    }
+}
+
+fn on_close_storage(
+    mut storage_query: Query<&mut Visibility, Or<(With<Storage>, With<Inventory>)>>,
+) {
+    for mut visibility in &mut storage_query {
+        *visibility = Visibility::Hidden;
+    }
 }
 
 fn sync_items(
@@ -137,32 +147,13 @@ fn sync_items(
     }
 }
 
-fn close_storage(
-    mut storage_query: Query<&mut Visibility, Or<(With<Storage>, With<Inventory>)>>,
-    input: Res<Input>,
-    mut storage_block_id: ResMut<StorageBlockID>,
-    mut next_state: ResMut<NextState<UIStates>>,
-) {
-    if !input.tab && !input.escape {
-        return;
-    }
-    for mut visibility in &mut storage_query {
-        *visibility = Visibility::Hidden;
-    }
-    storage_block_id.0 = 0;
-    next_state.set(UIStates::None);
-}
-
-fn destroy_storage(
-    mut storage_query: Query<&mut Visibility, Or<(With<Inventory>, With<Storage>)>>,
+fn destroy_items(
     background_query: Query<(Entity, &ItemID, &ItemAmount, &BlockID), With<BackgroundItem>>,
     mut event_reader: EventReader<BlockDestroied>,
     mut event_writer: EventWriter<ItemDropped>,
     mut commands: Commands,
-    mut storage_block_id: ResMut<StorageBlockID>,
 ) {
     for event in event_reader.read() {
-        // Items
         for (entity, item_id, amount, block_id) in &background_query {
             if block_id.0 != event.block_id {
                 continue;
@@ -176,15 +167,22 @@ fn destroy_storage(
             }
             commands.entity(entity).despawn();
         }
-        // States
-        if storage_block_id.0 == event.block_id {
-            for mut visibility in &mut storage_query {
-                *visibility = Visibility::Hidden;
-            }
-            storage_block_id.0 = 0;
-        }
     }
     // TODO optimize event depends
+}
+
+fn destroy_storage(
+    mut event_reader: EventReader<BlockDestroied>,
+    mut storage_block_id: ResMut<StorageBlockID>,
+    mut next_state: ResMut<NextState<UIStates>>,
+) {
+    for event in event_reader.read() {
+        if storage_block_id.0 != event.block_id {
+            continue;
+        }
+        storage_block_id.0 = 0;
+        next_state.set(UIStates::None);
+    }
 }
 
 pub struct StoragePlugin;
@@ -197,11 +195,13 @@ impl Plugin for StoragePlugin {
         app.add_systems(
             Update,
             (
-                open_storage.run_if(in_state(UIStates::None)),
+                open_storage,
                 sync_items.run_if(in_state(UIStates::Storage)),
-                close_storage.run_if(in_state(UIStates::Storage)),
+                destroy_storage.run_if(in_state(UIStates::Storage)),
             ),
         );
-        app.add_systems(Last, destroy_storage);
+        app.add_systems(OnEnter(UIStates::Storage), on_open_storage);
+        app.add_systems(OnExit(UIStates::Storage), on_close_storage);
+        app.add_systems(Last, destroy_items);
     }
 }

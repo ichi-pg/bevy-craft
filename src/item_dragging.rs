@@ -5,7 +5,7 @@ use crate::item::*;
 use crate::item_container::*;
 use crate::player::*;
 use crate::storage::*;
-use crate::ui_forcus::*;
+use crate::ui_hovered::*;
 use bevy::prelude::*;
 
 #[derive(Component, Default)]
@@ -174,7 +174,7 @@ impl Plugin for ItemDraggingPlugin {
                 put_in_item::<HotbarItem>,
                 put_in_item::<InventoryItem>,
                 put_in_item::<StorageItem>,
-                drop_item.run_if(in_state(UIHobered::None)),
+                drop_item.run_if(in_state(UIHovered::None)),
                 proc_pre_none.run_if(in_state(ItemDragged::PreNone)),
             ),
         );

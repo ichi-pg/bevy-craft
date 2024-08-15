@@ -19,7 +19,7 @@ mod player;
 mod profiler;
 mod random;
 mod storage;
-mod ui_forcus;
+mod ui_hovered;
 mod ui_parts;
 mod ui_states;
 mod velocity;
@@ -43,7 +43,7 @@ fn main() {
             window::WindowPlugin,
             profiler::ProfilerPlugin,
             framerate::FrameratePlugin,
-            ui_forcus::UIForcusPlugin,
+            ui_hovered::UIHoveredPlugin,
             ui_states::UIStatusPlugin,
         ))
         .add_plugins((

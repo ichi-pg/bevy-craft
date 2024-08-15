@@ -1,7 +1,7 @@
 use crate::hit_test::*;
 use crate::input::*;
 use crate::item_dragging::*;
-use crate::ui_forcus::*;
+use crate::ui_hovered::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -64,7 +64,7 @@ impl Plugin for ClickShapePlugin {
             Update,
             (left_click, right_click)
                 .run_if(in_state(ItemDragged::None))
-                .run_if(in_state(UIHobered::None)),
+                .run_if(in_state(UIHovered::None)),
         );
     }
 }

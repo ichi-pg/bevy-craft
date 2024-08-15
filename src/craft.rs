@@ -10,10 +10,10 @@ use bevy::prelude::*;
 struct CraftRecipe;
 
 #[derive(Component, Default)]
-pub struct CraftUI;
+struct CraftUI;
 
 #[derive(Component, Default)]
-pub struct CraftItem;
+struct CraftItem;
 
 fn spawn_recipes(mut commands: Commands) {
     for i in [
@@ -48,32 +48,30 @@ fn spawn_nodes(query: Query<(&ItemID, &ItemAmount), With<CraftRecipe>>, mut comm
         });
 }
 
-fn open_recipes(
-    mut query: Query<&mut Visibility, Or<(With<CraftUI>, With<Inventory>)>>,
-    input: Res<Input>,
-    mut next_state: ResMut<NextState<UIStates>>,
-) {
+fn open_craft(input: Res<Input>, mut next_state: ResMut<NextState<UIStates>>) {
     if !input.c {
         return;
-    }
-    for mut visibility in &mut query {
-        *visibility = Visibility::Inherited;
     }
     next_state.set(UIStates::Craft);
 }
 
-fn close_recipes(
-    mut storage_query: Query<&mut Visibility, Or<(With<CraftUI>, With<Inventory>)>>,
-    input: Res<Input>,
-    mut next_state: ResMut<NextState<UIStates>>,
-) {
-    if !input.c && !input.tab && !input.escape {
+fn close_craft(input: Res<Input>, mut next_state: ResMut<NextState<UIStates>>) {
+    if !input.c {
         return;
     }
-    for mut visibility in &mut storage_query {
+    next_state.set(UIStates::None);
+}
+
+fn on_open_craft(mut query: Query<&mut Visibility, Or<(With<CraftUI>, With<Inventory>)>>) {
+    for mut visibility in &mut query {
+        *visibility = Visibility::Inherited;
+    }
+}
+
+fn on_close_craft(mut query: Query<&mut Visibility, Or<(With<CraftUI>, With<Inventory>)>>) {
+    for mut visibility in &mut query {
         *visibility = Visibility::Hidden;
     }
-    next_state.set(UIStates::None);
 }
 
 pub struct CraftPlugin;
@@ -84,9 +82,12 @@ impl Plugin for CraftPlugin {
         app.add_systems(
             Update,
             (
-                open_recipes.run_if(in_state(UIStates::None)),
-                close_recipes.run_if(in_state(UIStates::Craft)),
+                open_craft.run_if(not(in_state(UIStates::Craft))),
+                close_craft.run_if(in_state(UIStates::Craft)),
             ),
         );
+        app.add_systems(OnEnter(UIStates::Craft), on_open_craft);
+        app.add_systems(OnExit(UIStates::Craft), on_close_craft);
     }
+    // TODO commonize using generics
 }
