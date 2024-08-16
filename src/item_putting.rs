@@ -55,10 +55,10 @@ fn put_in_item<T: Event + ItemAndAmount, U: Component, V: Event + Default + Item
 
 fn push_out_item<T: Component, U: Event + Default + ItemAndAmount>(
     mut query: Query<(&Interaction, &mut ItemID, &mut ItemAmount), (With<T>, Changed<Interaction>)>,
-    shift_pressed: Res<ShiftPressed>,
+    shift: Res<Shift>,
     mut event_writer: EventWriter<U>,
 ) {
-    if !shift_pressed.0 {
+    if !shift.pressed {
         return;
     }
     for (intersection, mut item_id, mut amount) in &mut query {

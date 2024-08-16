@@ -77,10 +77,10 @@ fn add_move_xy(
 
 fn add_jump(
     mut query: Query<&mut Velocity2, (With<PlayerController>, With<Grounded>)>,
-    space_pressed: Res<SpacePressed>,
+    space: Res<Space>,
 ) {
     for mut velocity in &mut query {
-        if space_pressed.0 {
+        if space.pressed {
             velocity.y = 1500.0;
         } else {
             velocity.y = 0.0;

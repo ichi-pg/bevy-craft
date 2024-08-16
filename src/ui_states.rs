@@ -1,5 +1,6 @@
 use crate::input::*;
-use bevy::{prelude::*, state::state::FreelyMutableState};
+use bevy::prelude::*;
+use bevy::state::state::*;
 
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub enum UIStates {
@@ -13,7 +14,7 @@ pub fn change_ui_state<T: Resource + Pressed>(
     state: UIStates,
 ) -> impl FnMut(Res<T>, ResMut<NextState<UIStates>>) {
     move |pressed, mut next_state| {
-        if !pressed.pressed() {
+        if !pressed.just_pressed() {
             return;
         }
         next_state.set(state);

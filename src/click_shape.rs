@@ -22,7 +22,7 @@ fn left_click(
     mut commands: Commands,
     mut event_writer: EventWriter<EmptyClicked>,
 ) {
-    if !left_click.0 {
+    if !left_click.just_pressed {
         return;
     }
     let mut found = false;
@@ -47,7 +47,7 @@ fn right_click(
     world_cursor: Res<WorldCursor>,
     mut commands: Commands,
 ) {
-    if !right_click.0 {
+    if !right_click.just_pressed {
         return;
     }
     for (entity, transform, shape) in &query {

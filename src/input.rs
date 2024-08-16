@@ -3,46 +3,31 @@ use bevy::prelude::*;
 use bevy::window::*;
 use bevy_craft::*;
 
-macro_rules! define_vec2 {
-    ( $( $x:tt ),* ) => {
-        $(
-            #[derive(Resource, Deref, DerefMut)]
-            pub struct $x(pub Vec2);
-        )*
-    };
-}
-
-define_vec2!(WorldCursor, WindowCursor, LeftStick);
-
 macro_rules! define_pressed {
     ( $( $x:tt ),* ) => {
         $(
-            #[derive(Resource, Pressed)]
-            pub struct $x(pub bool);
+            #[derive(Resource, Pressed, Default)]
+            pub struct $x {
+                pub pressed: bool,
+                pub just_pressed: bool,
+            }
         )*
     };
 }
 
 define_pressed!(
-    LeftClick,
-    LeftClickPressed,
-    RightClick,
-    Escape,
-    Tab,
-    Enter,
-    AltPressed,
-    ShiftPressed,
-    CtrlPressed,
-    SpacePressed,
-    KeyQ,
-    KeyE,
-    KeyR,
-    KeyF,
-    KeyC,
-    KeyV,
-    KeyB,
-    KeyM
+    LeftClick, RightClick, Escape, Tab, Enter, Space, Alt, Shift, Control, KeyQ, KeyE, KeyR, KeyF,
+    KeyC, KeyV, KeyB, KeyM
 );
+
+#[derive(Resource, Deref, DerefMut)]
+pub struct WorldCursor(pub Vec2);
+
+#[derive(Resource, Deref, DerefMut)]
+pub struct WindowCursor(pub Vec2);
+
+#[derive(Resource, Deref, DerefMut)]
+pub struct LeftStick(pub Vec2);
 
 #[derive(Resource)]
 pub struct Wheel(pub i8);
@@ -52,10 +37,12 @@ pub struct KeyNum(pub [bool; 10]);
 
 pub trait Pressed {
     fn pressed(&self) -> bool;
+    fn just_pressed(&self) -> bool;
+    fn set_just_pressed(&mut self, pressed: bool);
     fn set_pressed(&mut self, pressed: bool);
 }
 
-fn read_wasd(mut left_stick: ResMut<LeftStick>, keyboard: Res<ButtonInput<KeyCode>>) {
+fn read_stick(mut left_stick: ResMut<LeftStick>, keyboard: Res<ButtonInput<KeyCode>>) {
     left_stick.0 = Vec2::ZERO;
     if keyboard.pressed(KeyCode::KeyW) {
         left_stick.y += 1.0;
@@ -85,37 +72,23 @@ fn read_numbers(mut key_num: ResMut<KeyNum>, keyboard: Res<ButtonInput<KeyCode>>
 }
 
 fn read_pressed<T: Resource + Pressed>(
-    codes: Vec<KeyCode>,
-) -> impl FnMut(ResMut<T>, Res<ButtonInput<KeyCode>>) {
-    move |mut res, keyboard| {
-        for code in &codes {
-            if keyboard.pressed(*code) {
-                res.set_pressed(true);
-                return;
-            }
-        }
-        res.set_pressed(false);
-    }
-}
-
-fn read_just_pressed<T: Resource + Pressed>(
     code: KeyCode,
 ) -> impl FnMut(ResMut<T>, Res<ButtonInput<KeyCode>>) {
     move |mut res, keyboard| {
         let pressed = res.pressed();
-        res.set_pressed(keyboard.just_pressed(code) && !pressed);
+        res.set_just_pressed(keyboard.just_pressed(code) && !pressed);
+        res.set_pressed(keyboard.pressed(code));
     }
 }
 
-fn read_mouse(
+fn read_click(
     mut left_click: ResMut<LeftClick>,
-    mut left_click_pressed: ResMut<LeftClickPressed>,
     mut right_click: ResMut<RightClick>,
     mouse: Res<ButtonInput<MouseButton>>,
 ) {
-    left_click.0 = mouse.just_pressed(MouseButton::Left) && !left_click.0;
-    left_click_pressed.0 = mouse.pressed(MouseButton::Left);
-    right_click.0 = mouse.just_pressed(MouseButton::Right) && !right_click.0;
+    left_click.just_pressed = mouse.just_pressed(MouseButton::Left) && !left_click.just_pressed;
+    left_click.pressed = mouse.pressed(MouseButton::Left);
+    right_click.just_pressed = mouse.just_pressed(MouseButton::Right) && !right_click.just_pressed;
 }
 
 fn read_wheel(mut mut_wheel: ResMut<Wheel>, mut wheels: EventReader<MouseWheel>) {
@@ -153,43 +126,47 @@ pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        macro_rules! insert_just_pressed {
-            ( $( $x:tt ),* ) => {
-                $(
-                    app.insert_resource($x(false));
-                    app.add_systems(PreUpdate, read_just_pressed::<$x>(KeyCode::$x));
-                )*
-            };
-        }
-        insert_just_pressed!(Escape, Tab, Enter, KeyQ, KeyE, KeyR, KeyF, KeyC, KeyV, KeyB, KeyM);
         macro_rules! insert_pressed {
-            ( $( ( $x:tt, $y:expr) ),* ) => {
+            ( $( ( $x:tt, $y:tt) ),* ) => {
                 $(
-                    app.insert_resource($x(false));
-                    app.add_systems(PreUpdate, read_pressed::<$x>($y));
+                    app.insert_resource($x::default());
+                    app.add_systems(PreUpdate, read_pressed::<$x>(KeyCode::$y));
                 )*
             };
         }
         insert_pressed!(
-            (AltPressed, vec![KeyCode::AltLeft, KeyCode::AltRight]),
-            (ShiftPressed, vec![KeyCode::ShiftLeft, KeyCode::ShiftRight]),
-            (
-                CtrlPressed,
-                vec![KeyCode::ControlLeft, KeyCode::ControlRight]
-            ),
-            (SpacePressed, vec![KeyCode::Space])
+            (Escape, Escape),
+            (Tab, Tab),
+            (Enter, Enter),
+            (Space, Space),
+            (Alt, AltLeft),
+            (Shift, ShiftLeft),
+            (Control, ControlLeft),
+            (KeyQ, KeyQ),
+            (KeyE, KeyE),
+            (KeyR, KeyR),
+            (KeyF, KeyR),
+            (KeyC, KeyC),
+            (KeyV, KeyV),
+            (KeyB, KeyB),
+            (KeyM, KeyM)
         );
         app.insert_resource(Wheel(0));
         app.insert_resource(WindowCursor(Vec2::ZERO));
         app.insert_resource(WorldCursor(Vec2::ZERO));
         app.insert_resource(LeftStick(Vec2::ZERO));
-        app.insert_resource(LeftClick(false));
-        app.insert_resource(LeftClickPressed(false));
-        app.insert_resource(RightClick(false));
+        app.insert_resource(LeftClick::default());
+        app.insert_resource(RightClick::default());
         app.insert_resource(KeyNum::default());
         app.add_systems(
             PreUpdate,
-            (read_wasd, read_mouse, read_wheel, read_cursor, read_numbers),
+            (
+                read_stick,
+                read_click,
+                read_wheel,
+                read_cursor,
+                read_numbers,
+            ),
         );
     }
     // FIXME not update frame

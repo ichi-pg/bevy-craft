@@ -41,10 +41,16 @@ fn impl_pressed(ast: &syn::DeriveInput) -> TokenStream {
     let gen = quote! {
         impl Pressed for #name {
             fn pressed(&self) -> bool {
-                self.0
+                self.pressed
+            }
+            fn just_pressed(&self) -> bool {
+                self.just_pressed
             }
             fn set_pressed(&mut self, pressed: bool) {
-                self.0 = pressed;
+                self.pressed = pressed;
+            }
+            fn set_just_pressed(&mut self, just_pressed: bool) {
+                self.just_pressed = just_pressed;
             }
         }
     };
