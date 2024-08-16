@@ -107,11 +107,16 @@ fn read_numbers(mut key_num: ResMut<KeyNum>, keyboard: Res<ButtonInput<KeyCode>>
 }
 
 fn read_pressed<T: Resource + Pressed>(
-    code: KeyCode,
+    codes: Vec<KeyCode>,
 ) -> impl FnMut(ResMut<T>, Res<ButtonInput<KeyCode>>) {
     move |mut res, keyboard| {
-        let pressed = res.pressed();
-        res.set_pressed(keyboard.pressed(code) && !pressed);
+        for code in &codes {
+            if keyboard.pressed(*code) {
+                res.set_pressed(true);
+                return;
+            }
+        }
+        res.set_pressed(false);
     }
 }
 
@@ -201,10 +206,10 @@ impl Plugin for InputPlugin {
                 read_wheel,
                 read_cursor,
                 read_numbers,
-                read_pressed::<AltPressed>(KeyCode::AltLeft),
-                read_pressed::<ShiftPressed>(KeyCode::ShiftLeft),
-                read_pressed::<CtrlPressed>(KeyCode::ControlLeft),
-                read_pressed::<SpacePressed>(KeyCode::Space),
+                read_pressed::<AltPressed>(vec![KeyCode::AltLeft, KeyCode::AltRight]),
+                read_pressed::<ShiftPressed>(vec![KeyCode::ShiftLeft, KeyCode::ShiftRight]),
+                read_pressed::<CtrlPressed>(vec![KeyCode::ControlLeft, KeyCode::ControlRight]),
+                read_pressed::<SpacePressed>(vec![KeyCode::Space]),
                 read_just_pressed::<Escape>(KeyCode::Escape),
                 read_just_pressed::<Tab>(KeyCode::Tab),
                 read_just_pressed::<Enter>(KeyCode::Enter),

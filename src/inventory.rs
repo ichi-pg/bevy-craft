@@ -22,7 +22,7 @@ pub struct InventoryPushedOut {
     pub amount: u16,
 }
 
-#[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(States, Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub enum InventoryOpened {
     None,
     Opened,

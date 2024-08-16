@@ -1,7 +1,7 @@
 use crate::input::*;
 use bevy::{prelude::*, state::state::FreelyMutableState};
 
-#[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(States, Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub enum UIStates {
     None,
     Inventory,
@@ -16,7 +16,7 @@ pub fn change_ui_state<T: Resource + Pressed>(
         if !pressed.pressed() {
             return;
         }
-        next_state.set(state.clone());
+        next_state.set(state);
     }
 }
 
@@ -30,16 +30,16 @@ pub fn change_visibility<T: Component, U: Component>(
     }
 }
 
-pub fn sync_visibility<T: Component, U: FreelyMutableState>(
+pub fn sync_visibility<T: Component, U: FreelyMutableState + Copy>(
     visible: U,
     hidden: U,
 ) -> impl FnMut(Query<&Visibility, (With<T>, Changed<Visibility>)>, ResMut<NextState<U>>) {
     move |query, mut next_state| {
         for visibility in &query {
             match *visibility {
-                Visibility::Inherited => next_state.set(visible.clone()),
-                Visibility::Hidden => next_state.set(hidden.clone()),
-                Visibility::Visible => next_state.set(visible.clone()),
+                Visibility::Inherited => next_state.set(visible),
+                Visibility::Hidden => next_state.set(hidden),
+                Visibility::Visible => next_state.set(visible),
             }
         }
     }
