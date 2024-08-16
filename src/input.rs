@@ -3,71 +3,49 @@ use bevy::prelude::*;
 use bevy::window::*;
 use bevy_craft::*;
 
+macro_rules! define_vec2 {
+    ( $( $x:tt ),* ) => {
+        $(
+            #[derive(Resource, Deref, DerefMut)]
+            pub struct $x(pub Vec2);
+        )*
+    };
+}
+
+define_vec2!(WorldCursor, WindowCursor, LeftStick);
+
+macro_rules! define_pressed {
+    ( $( $x:tt ),* ) => {
+        $(
+            #[derive(Resource, Pressed)]
+            pub struct $x(pub bool);
+        )*
+    };
+}
+
+define_pressed!(
+    LeftClick,
+    LeftClickPressed,
+    RightClick,
+    Escape,
+    Tab,
+    Enter,
+    AltPressed,
+    ShiftPressed,
+    CtrlPressed,
+    SpacePressed,
+    KeyQ,
+    KeyE,
+    KeyR,
+    KeyF,
+    KeyC,
+    KeyV,
+    KeyB,
+    KeyM
+);
+
 #[derive(Resource)]
 pub struct Wheel(pub i8);
-
-#[derive(Resource, Deref, DerefMut)]
-pub struct WorldCursor(pub Vec2);
-
-#[derive(Resource, Deref, DerefMut)]
-pub struct WindowCursor(pub Vec2);
-
-#[derive(Resource, Deref, DerefMut)]
-pub struct LeftStick(pub Vec2);
-
-#[derive(Resource, Pressed)]
-pub struct LeftClick(pub bool);
-
-#[derive(Resource, Pressed)]
-pub struct LeftClickPressed(pub bool);
-
-#[derive(Resource, Pressed)]
-pub struct RightClick(pub bool);
-
-#[derive(Resource, Pressed)]
-pub struct Escape(pub bool);
-
-#[derive(Resource, Pressed)]
-pub struct Tab(pub bool);
-
-#[derive(Resource, Pressed)]
-pub struct Enter(pub bool);
-
-#[derive(Resource, Pressed)]
-pub struct AltPressed(pub bool);
-
-#[derive(Resource, Pressed)]
-pub struct ShiftPressed(pub bool);
-
-#[derive(Resource, Pressed)]
-pub struct CtrlPressed(pub bool);
-
-#[derive(Resource, Pressed)]
-pub struct SpacePressed(pub bool);
-
-#[derive(Resource, Pressed)]
-pub struct KeyQ(pub bool);
-
-#[derive(Resource, Pressed)]
-pub struct KeyE(pub bool);
-
-#[derive(Resource, Pressed)]
-pub struct KeyR(pub bool);
-
-#[derive(Resource, Pressed)]
-pub struct KeyF(pub bool);
-
-#[derive(Resource, Pressed)]
-pub struct KeyC(pub bool);
-
-#[derive(Resource, Pressed)]
-pub struct KeyV(pub bool);
-
-#[derive(Resource, Pressed)]
-pub struct KeyB(pub bool);
-
-#[derive(Resource, Pressed)]
-pub struct KeyM(pub bool);
 
 #[derive(Resource, Deref, DerefMut, Default)]
 pub struct KeyNum(pub [bool; 10]);
@@ -175,6 +153,32 @@ pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
+        macro_rules! insert_just_pressed {
+            ( $( $x:tt ),* ) => {
+                $(
+                    app.insert_resource($x(false));
+                    app.add_systems(PreUpdate, read_just_pressed::<$x>(KeyCode::$x));
+                )*
+            };
+        }
+        insert_just_pressed!(Escape, Tab, Enter, KeyQ, KeyE, KeyR, KeyF, KeyC, KeyV, KeyB, KeyM);
+        macro_rules! insert_pressed {
+            ( $( ( $x:tt, $y:expr) ),* ) => {
+                $(
+                    app.insert_resource($x(false));
+                    app.add_systems(PreUpdate, read_pressed::<$x>($y));
+                )*
+            };
+        }
+        insert_pressed!(
+            (AltPressed, vec![KeyCode::AltLeft, KeyCode::AltRight]),
+            (ShiftPressed, vec![KeyCode::ShiftLeft, KeyCode::ShiftRight]),
+            (
+                CtrlPressed,
+                vec![KeyCode::ControlLeft, KeyCode::ControlRight]
+            ),
+            (SpacePressed, vec![KeyCode::Space])
+        );
         app.insert_resource(Wheel(0));
         app.insert_resource(WindowCursor(Vec2::ZERO));
         app.insert_resource(WorldCursor(Vec2::ZERO));
@@ -182,46 +186,10 @@ impl Plugin for InputPlugin {
         app.insert_resource(LeftClick(false));
         app.insert_resource(LeftClickPressed(false));
         app.insert_resource(RightClick(false));
-        app.insert_resource(Escape(false));
-        app.insert_resource(Tab(false));
-        app.insert_resource(Enter(false));
-        app.insert_resource(AltPressed(false));
-        app.insert_resource(ShiftPressed(false));
-        app.insert_resource(CtrlPressed(false));
-        app.insert_resource(SpacePressed(false));
-        app.insert_resource(KeyQ(false));
-        app.insert_resource(KeyE(false));
-        app.insert_resource(KeyR(false));
-        app.insert_resource(KeyF(false));
-        app.insert_resource(KeyC(false));
-        app.insert_resource(KeyV(false));
-        app.insert_resource(KeyB(false));
-        app.insert_resource(KeyM(false));
         app.insert_resource(KeyNum::default());
         app.add_systems(
             PreUpdate,
-            (
-                read_wasd,
-                read_mouse,
-                read_wheel,
-                read_cursor,
-                read_numbers,
-                read_pressed::<AltPressed>(vec![KeyCode::AltLeft, KeyCode::AltRight]),
-                read_pressed::<ShiftPressed>(vec![KeyCode::ShiftLeft, KeyCode::ShiftRight]),
-                read_pressed::<CtrlPressed>(vec![KeyCode::ControlLeft, KeyCode::ControlRight]),
-                read_pressed::<SpacePressed>(vec![KeyCode::Space]),
-                read_just_pressed::<Escape>(KeyCode::Escape),
-                read_just_pressed::<Tab>(KeyCode::Tab),
-                read_just_pressed::<Enter>(KeyCode::Enter),
-                read_just_pressed::<KeyQ>(KeyCode::KeyQ),
-                read_just_pressed::<KeyE>(KeyCode::KeyE),
-                read_just_pressed::<KeyR>(KeyCode::KeyR),
-                read_just_pressed::<KeyF>(KeyCode::KeyF),
-                read_just_pressed::<KeyC>(KeyCode::KeyC),
-                read_just_pressed::<KeyV>(KeyCode::KeyV),
-                read_just_pressed::<KeyB>(KeyCode::KeyB),
-                read_just_pressed::<KeyM>(KeyCode::KeyM),
-            ),
+            (read_wasd, read_mouse, read_wheel, read_cursor, read_numbers),
         );
     }
     // FIXME not update frame
