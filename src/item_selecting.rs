@@ -1,28 +1,19 @@
 use crate::input::*;
 use crate::item_container::*;
+use crate::math::*;
 use bevy::prelude::*;
 
 #[derive(Resource)]
 pub struct SelectedItem(pub u8);
 
-fn change_selected(mut selected: ResMut<SelectedItem>, wheel: Res<Wheel>, key_num: Res<KeyNum>) {
-    if wheel.0 < 0 {
-        if selected.0 == 9 {
-            selected.0 = 0;
-        } else {
-            selected.0 += 1;
-        }
-    } else if wheel.0 > 0 {
-        if selected.0 == 0 {
-            selected.0 = 9;
-        } else {
-            selected.0 -= 1;
-        }
-    } else {
-        for (index, just_pressed) in key_num.iter().enumerate() {
-            if *just_pressed {
-                selected.0 = index as u8;
-            }
+fn change_wheel(mut selected: ResMut<SelectedItem>, wheel: Res<Wheel>) {
+    selected.0 = (selected.0 as i8 - wheel.0.signum()).repeat(0, 9) as u8;
+}
+
+fn change_number(mut selected: ResMut<SelectedItem>, key_num: Res<KeyNum>) {
+    for (index, pressed) in key_num.iter().enumerate() {
+        if *pressed {
+            selected.0 = index as u8;
         }
     }
 }
@@ -45,6 +36,6 @@ pub struct ItemSelectingPlugin;
 impl Plugin for ItemSelectingPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(SelectedItem(0));
-        app.add_systems(Update, (change_selected, sync_selected));
+        app.add_systems(Update, (change_wheel, change_number, sync_selected));
     }
 }

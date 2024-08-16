@@ -1,5 +1,5 @@
 use crate::input::*;
-use bevy::prelude::*;
+use bevy::{prelude::*, state::state::FreelyMutableState};
 
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
 pub enum UIStates {
@@ -9,10 +9,10 @@ pub enum UIStates {
     Craft,
 }
 
-pub fn open_ui<T: Resource + Pressed>(
+pub fn change_ui_state<T: Resource + Pressed>(
     state: UIStates,
 ) -> impl FnMut(Res<T>, ResMut<NextState<UIStates>>) {
-    move |pressed: Res<T>, mut next_state: ResMut<NextState<UIStates>>| {
+    move |pressed, mut next_state| {
         if !pressed.pressed() {
             return;
         }
@@ -20,29 +20,28 @@ pub fn open_ui<T: Resource + Pressed>(
     }
 }
 
-pub fn close_ui<T: Resource + Pressed>(
-    pressed: Res<T>,
-    mut next_state: ResMut<NextState<UIStates>>,
-) {
-    if !pressed.pressed() {
-        return;
-    }
-    next_state.set(UIStates::None);
-}
-
-pub fn on_open_ui<T: Component, U: Component>(
-    mut query: Query<&mut Visibility, Or<(With<T>, With<U>)>>,
-) {
-    for mut visibility in &mut query {
-        *visibility = Visibility::Inherited;
+pub fn change_visibility<T: Component, U: Component>(
+    visibility: Visibility,
+) -> impl FnMut(Query<&mut Visibility, Or<(With<T>, With<U>)>>) {
+    move |mut query| {
+        for mut mut_visibility in &mut query {
+            *mut_visibility = visibility;
+        }
     }
 }
 
-pub fn on_close_ui<T: Component, U: Component>(
-    mut query: Query<&mut Visibility, Or<(With<T>, With<U>)>>,
-) {
-    for mut visibility in &mut query {
-        *visibility = Visibility::Hidden;
+pub fn sync_visibility<T: Component, U: FreelyMutableState>(
+    visible: U,
+    hidden: U,
+) -> impl FnMut(Query<&Visibility, (With<T>, Changed<Visibility>)>, ResMut<NextState<U>>) {
+    move |query, mut next_state| {
+        for visibility in &query {
+            match *visibility {
+                Visibility::Inherited => next_state.set(visible.clone()),
+                Visibility::Hidden => next_state.set(hidden.clone()),
+                Visibility::Visible => next_state.set(visible.clone()),
+            }
+        }
     }
 }
 
@@ -51,6 +50,6 @@ pub struct UIStatusPlugin;
 impl Plugin for UIStatusPlugin {
     fn build(&self, app: &mut App) {
         app.insert_state(UIStates::None);
-        app.add_systems(Update, close_ui::<Escape>);
+        app.add_systems(Update, change_ui_state::<Escape>(UIStates::None));
     }
 }

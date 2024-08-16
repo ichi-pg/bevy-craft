@@ -184,8 +184,14 @@ impl Plugin for StoragePlugin {
                 destroy_storage.run_if(in_state(UIStates::Storage)),
             ),
         );
-        app.add_systems(OnEnter(UIStates::Storage), on_open_ui::<Storage, Inventory>);
-        app.add_systems(OnExit(UIStates::Storage), on_close_ui::<Storage, Inventory>);
+        app.add_systems(
+            OnEnter(UIStates::Storage),
+            change_visibility::<Storage, Inventory>(Visibility::Inherited),
+        );
+        app.add_systems(
+            OnExit(UIStates::Storage),
+            change_visibility::<Storage, Inventory>(Visibility::Hidden),
+        );
         app.add_systems(Last, destroy_items);
     }
 }

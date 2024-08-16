@@ -56,11 +56,17 @@ impl Plugin for CraftPlugin {
         app.add_systems(
             Update,
             (
-                open_ui::<KeyC>(UIStates::Craft).run_if(not(in_state(UIStates::Craft))),
-                close_ui::<KeyC>.run_if(in_state(UIStates::Craft)),
+                change_ui_state::<KeyC>(UIStates::Craft).run_if(not(in_state(UIStates::Craft))),
+                change_ui_state::<KeyC>(UIStates::None).run_if(in_state(UIStates::Craft)),
             ),
         );
-        app.add_systems(OnEnter(UIStates::Craft), on_open_ui::<CraftUI, Inventory>);
-        app.add_systems(OnExit(UIStates::Craft), on_close_ui::<CraftUI, Inventory>);
+        app.add_systems(
+            OnEnter(UIStates::Craft),
+            change_visibility::<CraftUI, Inventory>(Visibility::Inherited),
+        );
+        app.add_systems(
+            OnExit(UIStates::Craft),
+            change_visibility::<CraftUI, Inventory>(Visibility::Hidden),
+        );
     }
 }

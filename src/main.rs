@@ -15,6 +15,7 @@ mod item_container;
 mod item_dragging;
 mod item_putting;
 mod item_selecting;
+mod math;
 mod player;
 mod profiler;
 mod random;
