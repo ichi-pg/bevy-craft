@@ -311,8 +311,10 @@ dependencies = [
  "bevy",
  "bevy_framepace",
  "iyes_perf_ui",
+ "quote",
  "rand",
  "rand_chacha",
+ "syn 1.0.109",
 ]
 
 [[package]]

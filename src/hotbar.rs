@@ -1,5 +1,6 @@
 use crate::item::*;
 use bevy::prelude::*;
+use bevy_craft::*;
 
 #[derive(Component, Default)]
 pub struct Hotbar;
@@ -7,46 +8,16 @@ pub struct Hotbar;
 #[derive(Component, Default)]
 pub struct HotbarItem;
 
-#[derive(Event, Default)]
+#[derive(Event, Default, ItemAndAmount)]
 pub struct HotbarOverflowed {
     pub item_id: u16,
     pub amount: u16,
 }
 
-impl ItemAndAmount for HotbarOverflowed {
-    fn item_id(&self) -> u16 {
-        self.item_id
-    }
-    fn amount(&self) -> u16 {
-        self.amount
-    }
-    fn set_item_id(&mut self, item_id: u16) {
-        self.item_id = item_id;
-    }
-    fn set_amount(&mut self, amount: u16) {
-        self.amount = amount;
-    }
-}
-
-#[derive(Event, Default)]
+#[derive(Event, Default, ItemAndAmount)]
 pub struct HotbarPushedOut {
     pub item_id: u16,
     pub amount: u16,
-}
-
-impl ItemAndAmount for HotbarPushedOut {
-    fn item_id(&self) -> u16 {
-        self.item_id
-    }
-    fn amount(&self) -> u16 {
-        self.amount
-    }
-    fn set_item_id(&mut self, item_id: u16) {
-        self.item_id = item_id;
-    }
-    fn set_amount(&mut self, amount: u16) {
-        self.amount = amount;
-    }
 }
 
 pub struct HotbarPlugin;

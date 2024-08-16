@@ -4,6 +4,7 @@ use crate::item::*;
 use crate::item_container::*;
 use crate::ui_states::*;
 use bevy::prelude::*;
+use bevy_craft::*;
 
 #[derive(Component)]
 struct BackgroundItem;
@@ -22,25 +23,10 @@ pub struct StorageClicked {
     pub block_id: u64,
 }
 
-#[derive(Event, Default)]
+#[derive(Event, Default, ItemAndAmount)]
 pub struct StorageOverflowed {
     pub item_id: u16,
     pub amount: u16,
-}
-
-impl ItemAndAmount for StorageOverflowed {
-    fn item_id(&self) -> u16 {
-        self.item_id
-    }
-    fn amount(&self) -> u16 {
-        self.amount
-    }
-    fn set_item_id(&mut self, item_id: u16) {
-        self.item_id = item_id;
-    }
-    fn set_amount(&mut self, amount: u16) {
-        self.amount = amount;
-    }
 }
 
 fn open_storage(

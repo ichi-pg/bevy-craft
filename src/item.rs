@@ -2,6 +2,7 @@ use crate::collision::*;
 use crate::hit_test::*;
 use crate::velocity::*;
 use bevy::prelude::*;
+use bevy_craft::*;
 
 #[derive(Component)]
 pub struct Item;
@@ -26,25 +27,10 @@ pub trait ItemAndAmount {
     fn set_amount(&mut self, item_id: u16);
 }
 
-#[derive(Event)]
+#[derive(Event, ItemAndAmount)]
 pub struct ItemPickedUp {
     pub item_id: u16,
     pub amount: u16,
-}
-
-impl ItemAndAmount for ItemPickedUp {
-    fn item_id(&self) -> u16 {
-        self.item_id
-    }
-    fn amount(&self) -> u16 {
-        self.amount
-    }
-    fn set_item_id(&mut self, item_id: u16) {
-        self.item_id = item_id;
-    }
-    fn set_amount(&mut self, amount: u16) {
-        self.amount = amount;
-    }
 }
 
 pub fn item_color(item_id: u16) -> Color {

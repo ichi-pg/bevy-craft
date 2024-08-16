@@ -1,6 +1,7 @@
 use bevy::input::mouse::*;
 use bevy::prelude::*;
 use bevy::window::*;
+use bevy_craft::*;
 
 #[derive(Resource)]
 pub struct Wheel(pub i8);
@@ -14,58 +15,58 @@ pub struct WindowCursor(pub Vec2);
 #[derive(Resource, Deref, DerefMut)]
 pub struct LeftStick(pub Vec2);
 
-#[derive(Resource)]
+#[derive(Resource, Pressed)]
 pub struct LeftClick(pub bool);
 
-#[derive(Resource)]
+#[derive(Resource, Pressed)]
 pub struct LeftClickPressed(pub bool);
 
-#[derive(Resource)]
+#[derive(Resource, Pressed)]
 pub struct RightClick(pub bool);
 
-#[derive(Resource)]
+#[derive(Resource, Pressed)]
 pub struct Escape(pub bool);
 
-#[derive(Resource)]
+#[derive(Resource, Pressed)]
 pub struct Tab(pub bool);
 
-#[derive(Resource)]
+#[derive(Resource, Pressed)]
 pub struct Enter(pub bool);
 
-#[derive(Resource)]
+#[derive(Resource, Pressed)]
 pub struct AltPressed(pub bool);
 
-#[derive(Resource)]
+#[derive(Resource, Pressed)]
 pub struct ShiftPressed(pub bool);
 
-#[derive(Resource)]
+#[derive(Resource, Pressed)]
 pub struct CtrlPressed(pub bool);
 
-#[derive(Resource)]
+#[derive(Resource, Pressed)]
 pub struct SpacePressed(pub bool);
 
-#[derive(Resource)]
+#[derive(Resource, Pressed)]
 pub struct KeyQ(pub bool);
 
-#[derive(Resource)]
+#[derive(Resource, Pressed)]
 pub struct KeyE(pub bool);
 
-#[derive(Resource)]
+#[derive(Resource, Pressed)]
 pub struct KeyR(pub bool);
 
-#[derive(Resource)]
+#[derive(Resource, Pressed)]
 pub struct KeyF(pub bool);
 
-#[derive(Resource)]
+#[derive(Resource, Pressed)]
 pub struct KeyC(pub bool);
 
-#[derive(Resource)]
+#[derive(Resource, Pressed)]
 pub struct KeyV(pub bool);
 
-#[derive(Resource)]
+#[derive(Resource, Pressed)]
 pub struct KeyB(pub bool);
 
-#[derive(Resource)]
+#[derive(Resource, Pressed)]
 pub struct KeyM(pub bool);
 
 #[derive(Resource, Deref, DerefMut, Default)]
@@ -73,37 +74,10 @@ pub struct KeyNum(pub [bool; 10]);
 
 pub trait Pressed {
     fn pressed(&self) -> bool;
+    fn set_pressed(&mut self, pressed: bool);
 }
 
-impl Pressed for Escape {
-    fn pressed(&self) -> bool {
-        self.0
-    }
-}
-
-impl Pressed for Tab {
-    fn pressed(&self) -> bool {
-        self.0
-    }
-}
-
-impl Pressed for KeyC {
-    fn pressed(&self) -> bool {
-        self.0
-    }
-}
-
-fn read_keyboard1(
-    mut left_stick: ResMut<LeftStick>,
-    mut escape: ResMut<Escape>,
-    mut tab: ResMut<Tab>,
-    mut enter: ResMut<Enter>,
-    mut alt_pressed: ResMut<AltPressed>,
-    mut shift_pressed: ResMut<ShiftPressed>,
-    mut ctrl_pressed: ResMut<CtrlPressed>,
-    mut space_pressed: ResMut<SpacePressed>,
-    keyboard: Res<ButtonInput<KeyCode>>,
-) {
+fn read_wasd(mut left_stick: ResMut<LeftStick>, keyboard: Res<ButtonInput<KeyCode>>) {
     left_stick.0 = Vec2::ZERO;
     if keyboard.pressed(KeyCode::KeyW) {
         left_stick.y += 1.0;
@@ -117,36 +91,9 @@ fn read_keyboard1(
     if keyboard.pressed(KeyCode::KeyA) {
         left_stick.x -= 1.0;
     }
-    escape.0 = keyboard.just_pressed(KeyCode::Escape) && !escape.0;
-    tab.0 = keyboard.just_pressed(KeyCode::Tab) && !tab.0;
-    enter.0 = keyboard.just_pressed(KeyCode::Enter) && !enter.0;
-    alt_pressed.0 = keyboard.pressed(KeyCode::AltLeft) || keyboard.pressed(KeyCode::AltRight);
-    shift_pressed.0 = keyboard.pressed(KeyCode::ShiftLeft) || keyboard.pressed(KeyCode::ShiftRight);
-    ctrl_pressed.0 =
-        keyboard.pressed(KeyCode::ControlLeft) || keyboard.pressed(KeyCode::ControlRight);
-    space_pressed.0 = keyboard.pressed(KeyCode::Space);
 }
 
-fn read_keyboard2(
-    mut key_q: ResMut<KeyQ>,
-    mut key_e: ResMut<KeyE>,
-    mut key_r: ResMut<KeyR>,
-    mut key_f: ResMut<KeyF>,
-    mut key_c: ResMut<KeyC>,
-    mut key_v: ResMut<KeyV>,
-    mut key_b: ResMut<KeyB>,
-    mut key_m: ResMut<KeyM>,
-    mut key_num: ResMut<KeyNum>,
-    keyboard: Res<ButtonInput<KeyCode>>,
-) {
-    key_q.0 = keyboard.just_pressed(KeyCode::KeyQ) && !key_q.0;
-    key_e.0 = keyboard.just_pressed(KeyCode::KeyE) && !key_e.0;
-    key_r.0 = keyboard.just_pressed(KeyCode::KeyR) && !key_r.0;
-    key_f.0 = keyboard.just_pressed(KeyCode::KeyF) && !key_f.0;
-    key_c.0 = keyboard.just_pressed(KeyCode::KeyC) && !key_c.0;
-    key_v.0 = keyboard.just_pressed(KeyCode::KeyV) && !key_v.0;
-    key_b.0 = keyboard.just_pressed(KeyCode::KeyB) && !key_b.0;
-    key_m.0 = keyboard.just_pressed(KeyCode::KeyM) && !key_m.0;
+fn read_numbers(mut key_num: ResMut<KeyNum>, keyboard: Res<ButtonInput<KeyCode>>) {
     key_num[0] = keyboard.just_pressed(KeyCode::Digit1) && !key_num[0];
     key_num[1] = keyboard.just_pressed(KeyCode::Digit2) && !key_num[1];
     key_num[2] = keyboard.just_pressed(KeyCode::Digit3) && !key_num[2];
@@ -157,6 +104,24 @@ fn read_keyboard2(
     key_num[7] = keyboard.just_pressed(KeyCode::Digit8) && !key_num[7];
     key_num[8] = keyboard.just_pressed(KeyCode::Digit9) && !key_num[8];
     key_num[9] = keyboard.just_pressed(KeyCode::Digit0) && !key_num[9];
+}
+
+fn read_pressed<T: Resource + Pressed>(
+    code: KeyCode,
+) -> impl FnMut(ResMut<T>, Res<ButtonInput<KeyCode>>) {
+    move |mut res, keyboard| {
+        let pressed = res.pressed();
+        res.set_pressed(keyboard.pressed(code) && !pressed);
+    }
+}
+
+fn read_just_pressed<T: Resource + Pressed>(
+    code: KeyCode,
+) -> impl FnMut(ResMut<T>, Res<ButtonInput<KeyCode>>) {
+    move |mut res, keyboard| {
+        let pressed = res.pressed();
+        res.set_pressed(keyboard.just_pressed(code) && !pressed);
+    }
 }
 
 fn read_mouse(
@@ -231,11 +196,26 @@ impl Plugin for InputPlugin {
         app.add_systems(
             PreUpdate,
             (
-                read_keyboard1,
-                read_keyboard2,
+                read_wasd,
                 read_mouse,
                 read_wheel,
                 read_cursor,
+                read_numbers,
+                read_pressed::<AltPressed>(KeyCode::AltLeft),
+                read_pressed::<ShiftPressed>(KeyCode::ShiftLeft),
+                read_pressed::<CtrlPressed>(KeyCode::ControlLeft),
+                read_pressed::<SpacePressed>(KeyCode::Space),
+                read_just_pressed::<Escape>(KeyCode::Escape),
+                read_just_pressed::<Tab>(KeyCode::Tab),
+                read_just_pressed::<Enter>(KeyCode::Enter),
+                read_just_pressed::<KeyQ>(KeyCode::KeyQ),
+                read_just_pressed::<KeyE>(KeyCode::KeyE),
+                read_just_pressed::<KeyR>(KeyCode::KeyR),
+                read_just_pressed::<KeyF>(KeyCode::KeyF),
+                read_just_pressed::<KeyC>(KeyCode::KeyC),
+                read_just_pressed::<KeyV>(KeyCode::KeyV),
+                read_just_pressed::<KeyB>(KeyCode::KeyB),
+                read_just_pressed::<KeyM>(KeyCode::KeyM),
             ),
         );
     }

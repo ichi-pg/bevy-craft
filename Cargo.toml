@@ -10,6 +10,8 @@ iyes_perf_ui = "0.3"
 arrayvec = "0.7"
 rand = "0.8"
 rand_chacha = "0.3"
+syn = "1.0"
+quote = "1.0"
 
 [profile.dev]
 opt-level = 1
@@ -19,3 +21,6 @@ opt-level = 3
 
 [toolchain]
 channel = "nightly"
+
+[lib]
+proc-macro = true
