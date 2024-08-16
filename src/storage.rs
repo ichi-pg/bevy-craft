@@ -80,22 +80,6 @@ fn open_storage(
     // TODO spawn when world initialized
 }
 
-fn on_open_storage(
-    mut storage_query: Query<&mut Visibility, Or<(With<Inventory>, With<Storage>)>>,
-) {
-    for mut visibility in &mut storage_query {
-        *visibility = Visibility::Inherited;
-    }
-}
-
-fn on_close_storage(
-    mut storage_query: Query<&mut Visibility, Or<(With<Storage>, With<Inventory>)>>,
-) {
-    for mut visibility in &mut storage_query {
-        *visibility = Visibility::Hidden;
-    }
-}
-
 fn sync_items(
     item_query: Query<
         (&ItemID, &ItemAmount, &ItemIndex),
@@ -200,8 +184,8 @@ impl Plugin for StoragePlugin {
                 destroy_storage.run_if(in_state(UIStates::Storage)),
             ),
         );
-        app.add_systems(OnEnter(UIStates::Storage), on_open_storage);
-        app.add_systems(OnExit(UIStates::Storage), on_close_storage);
+        app.add_systems(OnEnter(UIStates::Storage), on_open_ui::<Storage, Inventory>);
+        app.add_systems(OnExit(UIStates::Storage), on_close_ui::<Storage, Inventory>);
         app.add_systems(Last, destroy_items);
     }
 }

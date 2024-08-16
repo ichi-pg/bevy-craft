@@ -57,32 +57,6 @@ pub enum InventoryOpened {
     Opened,
 }
 
-fn open_inventory(tab: Res<Tab>, mut next_state: ResMut<NextState<UIStates>>) {
-    if !tab.0 {
-        return;
-    }
-    next_state.set(UIStates::Inventory);
-}
-
-fn close_inventory(tab: Res<Tab>, mut next_state: ResMut<NextState<UIStates>>) {
-    if !tab.0 {
-        return;
-    }
-    next_state.set(UIStates::None);
-}
-
-fn on_open_inventory(mut query: Query<&mut Visibility, With<Inventory>>) {
-    for mut visibility in &mut query {
-        *visibility = Visibility::Inherited;
-    }
-}
-
-fn on_close_inventory(mut query: Query<&mut Visibility, With<Inventory>>) {
-    for mut visibility in &mut query {
-        *visibility = Visibility::Hidden;
-    }
-}
-
 fn sync_opened(
     query: Query<&Visibility, (With<Inventory>, Changed<Visibility>)>,
     mut next_state: ResMut<NextState<InventoryOpened>>,
@@ -106,12 +80,18 @@ impl Plugin for InventoryPlugin {
         app.add_systems(
             Update,
             (
-                open_inventory.run_if(in_state(InventoryOpened::None)),
-                close_inventory.run_if(in_state(InventoryOpened::Opened)),
+                open_ui::<Tab>(UIStates::Inventory).run_if(in_state(InventoryOpened::None)),
+                close_ui::<Tab>.run_if(in_state(InventoryOpened::Opened)),
                 sync_opened,
             ),
         );
-        app.add_systems(OnEnter(UIStates::Inventory), on_open_inventory);
-        app.add_systems(OnExit(UIStates::Inventory), on_close_inventory);
+        app.add_systems(
+            OnEnter(UIStates::Inventory),
+            on_open_ui::<Inventory, Inventory>,
+        );
+        app.add_systems(
+            OnExit(UIStates::Inventory),
+            on_close_ui::<Inventory, Inventory>,
+        );
     }
 }

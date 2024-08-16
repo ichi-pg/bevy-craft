@@ -48,32 +48,6 @@ fn spawn_nodes(query: Query<(&ItemID, &ItemAmount), With<CraftRecipe>>, mut comm
         });
 }
 
-fn open_craft(key_c: Res<KeyC>, mut next_state: ResMut<NextState<UIStates>>) {
-    if !key_c.0 {
-        return;
-    }
-    next_state.set(UIStates::Craft);
-}
-
-fn close_craft(key_c: Res<KeyC>, mut next_state: ResMut<NextState<UIStates>>) {
-    if !key_c.0 {
-        return;
-    }
-    next_state.set(UIStates::None);
-}
-
-fn on_open_craft(mut query: Query<&mut Visibility, Or<(With<CraftUI>, With<Inventory>)>>) {
-    for mut visibility in &mut query {
-        *visibility = Visibility::Inherited;
-    }
-}
-
-fn on_close_craft(mut query: Query<&mut Visibility, Or<(With<CraftUI>, With<Inventory>)>>) {
-    for mut visibility in &mut query {
-        *visibility = Visibility::Hidden;
-    }
-}
-
 pub struct CraftPlugin;
 
 impl Plugin for CraftPlugin {
@@ -82,11 +56,11 @@ impl Plugin for CraftPlugin {
         app.add_systems(
             Update,
             (
-                open_craft.run_if(not(in_state(UIStates::Craft))),
-                close_craft.run_if(in_state(UIStates::Craft)),
+                open_ui::<KeyC>(UIStates::Craft).run_if(not(in_state(UIStates::Craft))),
+                close_ui::<KeyC>.run_if(in_state(UIStates::Craft)),
             ),
         );
-        app.add_systems(OnEnter(UIStates::Craft), on_open_craft);
-        app.add_systems(OnExit(UIStates::Craft), on_close_craft);
+        app.add_systems(OnEnter(UIStates::Craft), on_open_ui::<CraftUI, Inventory>);
+        app.add_systems(OnExit(UIStates::Craft), on_close_ui::<CraftUI, Inventory>);
     }
 }

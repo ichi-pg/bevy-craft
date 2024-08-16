@@ -71,6 +71,28 @@ pub struct KeyM(pub bool);
 #[derive(Resource, Deref, DerefMut, Default)]
 pub struct KeyNum(pub [bool; 10]);
 
+pub trait Pressed {
+    fn pressed(&self) -> bool;
+}
+
+impl Pressed for Escape {
+    fn pressed(&self) -> bool {
+        self.0
+    }
+}
+
+impl Pressed for Tab {
+    fn pressed(&self) -> bool {
+        self.0
+    }
+}
+
+impl Pressed for KeyC {
+    fn pressed(&self) -> bool {
+        self.0
+    }
+}
+
 fn read_keyboard1(
     mut left_stick: ResMut<LeftStick>,
     mut escape: ResMut<Escape>,
