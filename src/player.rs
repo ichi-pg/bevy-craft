@@ -47,12 +47,12 @@ fn spawn_player(
 
 fn add_move_x(
     mut query: Query<(&mut Velocity2, &mut Direction2), With<PlayerController>>,
-    input: Res<Input>,
+    left_stick: Res<LeftStick>,
 ) {
     for (mut velocity, mut direction) in &mut query {
-        if input.left_stick.x != 0.0 {
-            velocity.x = input.left_stick.x * 400.0;
-            direction.x = input.left_stick.x;
+        if left_stick.x != 0.0 {
+            velocity.x = left_stick.x * 400.0;
+            direction.x = left_stick.x;
         } else {
             velocity.x = 0.0;
         }
@@ -61,11 +61,11 @@ fn add_move_x(
 
 fn add_move_xy(
     mut query: Query<(&mut Velocity2, &mut Direction2), With<PlayerController>>,
-    input: Res<Input>,
+    left_stick: Res<LeftStick>,
 ) {
     for (mut velocity, mut direction) in &mut query {
-        if input.left_stick != Vec2::ZERO {
-            let normal = input.left_stick.normalize();
+        if left_stick.0 != Vec2::ZERO {
+            let normal = left_stick.normalize();
             velocity.0 = normal * 400.0;
             direction.x = normal.x;
             direction.y = normal.y;
@@ -77,10 +77,10 @@ fn add_move_xy(
 
 fn add_jump(
     mut query: Query<&mut Velocity2, (With<PlayerController>, With<Grounded>)>,
-    input: Res<Input>,
+    space_pressed: Res<SpacePressed>,
 ) {
     for mut velocity in &mut query {
-        if input.space_pressed {
+        if space_pressed.0 {
             velocity.y = 1500.0;
         } else {
             velocity.y = 0.0;

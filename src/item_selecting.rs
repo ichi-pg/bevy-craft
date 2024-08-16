@@ -5,21 +5,21 @@ use bevy::prelude::*;
 #[derive(Resource)]
 pub struct SelectedItem(pub u8);
 
-fn change_selected(mut selected: ResMut<SelectedItem>, input: Res<Input>) {
-    if input.wheel < 0 {
+fn change_selected(mut selected: ResMut<SelectedItem>, wheel: Res<Wheel>, key_num: Res<KeyNum>) {
+    if wheel.0 < 0 {
         if selected.0 == 9 {
             selected.0 = 0;
         } else {
             selected.0 += 1;
         }
-    } else if input.wheel > 0 {
+    } else if wheel.0 > 0 {
         if selected.0 == 0 {
             selected.0 = 9;
         } else {
             selected.0 -= 1;
         }
     } else {
-        for (index, just_pressed) in input.num.iter().enumerate() {
+        for (index, just_pressed) in key_num.iter().enumerate() {
             if *just_pressed {
                 selected.0 = index as u8;
             }

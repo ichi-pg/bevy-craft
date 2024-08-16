@@ -41,9 +41,10 @@ fn drag_item<T: Component>(
     mut query: Query<(&Interaction, &mut ItemID, &mut ItemAmount), (With<T>, Changed<Interaction>)>,
     mut next_state: ResMut<NextState<ItemDragged>>,
     mut commands: Commands,
-    input: Res<Input>,
+    shift_pressed: Res<ShiftPressed>,
+    ctrl_pressed: Res<CtrlPressed>,
 ) {
-    if input.shift_pressed {
+    if shift_pressed.0 {
         return;
     }
     for entity in &area_query {
@@ -53,7 +54,7 @@ fn drag_item<T: Component>(
             }
             match intersection {
                 Interaction::Pressed => {
-                    let remain = if input.ctrl_pressed {
+                    let remain = if ctrl_pressed.0 {
                         (amount.0 as f32 * 0.5).floor() as u16
                     } else {
                         0
@@ -74,10 +75,10 @@ fn drag_item<T: Component>(
     }
 }
 
-fn dragging_item(mut query: Query<&mut Style, With<DragItem>>, input: Res<Input>) {
+fn dragging_item(mut query: Query<&mut Style, With<DragItem>>, window_cursor: Res<WindowCursor>) {
     for mut style in &mut query {
-        style.left = Val::Px(input.window_cursor.x);
-        style.top = Val::Px(input.window_cursor.y);
+        style.left = Val::Px(window_cursor.x);
+        style.top = Val::Px(window_cursor.y);
     }
 }
 
@@ -123,12 +124,12 @@ fn put_in_item<T: Component>(
 fn drop_item(
     player_query: Query<(&Transform, &Direction2), With<PlayerController>>,
     query: Query<(Entity, &ItemID, &ItemAmount), With<DragItem>>,
-    input: Res<Input>,
+    left_click: Res<LeftClick>,
     mut commands: Commands,
     mut event_writer: EventWriter<ItemDropped>,
     mut next_state: ResMut<NextState<ItemDragged>>,
 ) {
-    if !input.left_click {
+    if !left_click.0 {
         return;
     }
     for (entity, item_id, amount) in &query {
@@ -148,8 +149,11 @@ fn drop_item(
     }
 }
 
-fn proc_pre_none(mut next_state: ResMut<NextState<ItemDragged>>, input: Res<Input>) {
-    if input.left_click_pressed {
+fn proc_pre_none(
+    mut next_state: ResMut<NextState<ItemDragged>>,
+    left_click_pressed: Res<LeftClickPressed>,
+) {
+    if left_click_pressed.0 {
         return;
     }
     next_state.set(ItemDragged::None);

@@ -6,12 +6,13 @@ use bevy::winit::*;
 fn toggle_fullscreen(
     mut query: Query<(Entity, &mut Window), With<PrimaryWindow>>,
     winit_windows: NonSend<WinitWindows>,
-    input: Res<Input>,
+    alt_pressed: Res<AltPressed>,
+    enter: Res<Enter>,
 ) {
-    if !input.alt_pressed {
+    if !alt_pressed.0 {
         return;
     }
-    if !input.enter {
+    if !enter.0 {
         return;
     }
     for (entity, mut window) in &mut query {

@@ -2,84 +2,156 @@ use bevy::input::mouse::*;
 use bevy::prelude::*;
 use bevy::window::*;
 
-#[derive(Resource, Default)]
-pub struct Input {
-    pub wheel: i8,
-    pub world_cursor: Vec2,
-    pub window_cursor: Vec2,
-    pub left_stick: Vec2,
-    pub left_click: bool,
-    pub left_click_pressed: bool,
-    pub right_click: bool,
-    pub escape: bool,
-    pub tab: bool,
-    pub enter: bool,
-    pub alt_pressed: bool,
-    pub shift_pressed: bool,
-    pub ctrl_pressed: bool,
-    pub space_pressed: bool,
-    pub q: bool,
-    pub e: bool,
-    pub r: bool,
-    pub f: bool,
-    pub c: bool,
-    pub v: bool,
-    pub b: bool,
-    pub m: bool,
-    pub num: [bool; 10],
-}
+#[derive(Resource)]
+pub struct Wheel(pub i8);
 
-fn read_keyboard(mut input: ResMut<Input>, keyboard: Res<ButtonInput<KeyCode>>) {
-    input.left_stick = Vec2::ZERO;
+#[derive(Resource, Deref, DerefMut)]
+pub struct WorldCursor(pub Vec2);
+
+#[derive(Resource, Deref, DerefMut)]
+pub struct WindowCursor(pub Vec2);
+
+#[derive(Resource, Deref, DerefMut)]
+pub struct LeftStick(pub Vec2);
+
+#[derive(Resource)]
+pub struct LeftClick(pub bool);
+
+#[derive(Resource)]
+pub struct LeftClickPressed(pub bool);
+
+#[derive(Resource)]
+pub struct RightClick(pub bool);
+
+#[derive(Resource)]
+pub struct Escape(pub bool);
+
+#[derive(Resource)]
+pub struct Tab(pub bool);
+
+#[derive(Resource)]
+pub struct Enter(pub bool);
+
+#[derive(Resource)]
+pub struct AltPressed(pub bool);
+
+#[derive(Resource)]
+pub struct ShiftPressed(pub bool);
+
+#[derive(Resource)]
+pub struct CtrlPressed(pub bool);
+
+#[derive(Resource)]
+pub struct SpacePressed(pub bool);
+
+#[derive(Resource)]
+pub struct KeyQ(pub bool);
+
+#[derive(Resource)]
+pub struct KeyE(pub bool);
+
+#[derive(Resource)]
+pub struct KeyR(pub bool);
+
+#[derive(Resource)]
+pub struct KeyF(pub bool);
+
+#[derive(Resource)]
+pub struct KeyC(pub bool);
+
+#[derive(Resource)]
+pub struct KeyV(pub bool);
+
+#[derive(Resource)]
+pub struct KeyB(pub bool);
+
+#[derive(Resource)]
+pub struct KeyM(pub bool);
+
+#[derive(Resource, Deref, DerefMut, Default)]
+pub struct KeyNum(pub [bool; 10]);
+
+fn read_keyboard1(
+    mut left_stick: ResMut<LeftStick>,
+    mut escape: ResMut<Escape>,
+    mut tab: ResMut<Tab>,
+    mut enter: ResMut<Enter>,
+    mut alt_pressed: ResMut<AltPressed>,
+    mut shift_pressed: ResMut<ShiftPressed>,
+    mut ctrl_pressed: ResMut<CtrlPressed>,
+    mut space_pressed: ResMut<SpacePressed>,
+    keyboard: Res<ButtonInput<KeyCode>>,
+) {
+    left_stick.0 = Vec2::ZERO;
     if keyboard.pressed(KeyCode::KeyW) {
-        input.left_stick.y += 1.0;
+        left_stick.y += 1.0;
     }
     if keyboard.pressed(KeyCode::KeyS) {
-        input.left_stick.y -= 1.0;
+        left_stick.y -= 1.0;
     }
     if keyboard.pressed(KeyCode::KeyD) {
-        input.left_stick.x += 1.0;
+        left_stick.x += 1.0;
     }
     if keyboard.pressed(KeyCode::KeyA) {
-        input.left_stick.x -= 1.0;
+        left_stick.x -= 1.0;
     }
-    input.escape = keyboard.just_pressed(KeyCode::Escape) && !input.escape;
-    input.tab = keyboard.just_pressed(KeyCode::Tab) && !input.tab;
-    input.enter = keyboard.just_pressed(KeyCode::Enter) && !input.enter;
-    input.alt_pressed = keyboard.pressed(KeyCode::AltLeft) || keyboard.pressed(KeyCode::AltRight);
-    input.shift_pressed = keyboard.pressed(KeyCode::ShiftLeft);
-    input.ctrl_pressed = keyboard.pressed(KeyCode::ControlLeft);
-    input.space_pressed = keyboard.pressed(KeyCode::Space);
-    input.q = keyboard.just_pressed(KeyCode::KeyQ) && !input.q;
-    input.e = keyboard.just_pressed(KeyCode::KeyE) && !input.e;
-    input.r = keyboard.just_pressed(KeyCode::KeyR) && !input.r;
-    input.f = keyboard.just_pressed(KeyCode::KeyF) && !input.f;
-    input.c = keyboard.just_pressed(KeyCode::KeyC) && !input.c;
-    input.v = keyboard.just_pressed(KeyCode::KeyV) && !input.v;
-    input.b = keyboard.just_pressed(KeyCode::KeyB) && !input.b;
-    input.m = keyboard.just_pressed(KeyCode::KeyM) && !input.m;
-    input.num[0] = keyboard.just_pressed(KeyCode::Digit1) && !input.num[0];
-    input.num[1] = keyboard.just_pressed(KeyCode::Digit2) && !input.num[1];
-    input.num[2] = keyboard.just_pressed(KeyCode::Digit3) && !input.num[2];
-    input.num[3] = keyboard.just_pressed(KeyCode::Digit4) && !input.num[3];
-    input.num[4] = keyboard.just_pressed(KeyCode::Digit5) && !input.num[4];
-    input.num[5] = keyboard.just_pressed(KeyCode::Digit6) && !input.num[5];
-    input.num[6] = keyboard.just_pressed(KeyCode::Digit7) && !input.num[6];
-    input.num[7] = keyboard.just_pressed(KeyCode::Digit8) && !input.num[7];
-    input.num[8] = keyboard.just_pressed(KeyCode::Digit9) && !input.num[8];
-    input.num[9] = keyboard.just_pressed(KeyCode::Digit0) && !input.num[9];
+    escape.0 = keyboard.just_pressed(KeyCode::Escape) && !escape.0;
+    tab.0 = keyboard.just_pressed(KeyCode::Tab) && !tab.0;
+    enter.0 = keyboard.just_pressed(KeyCode::Enter) && !enter.0;
+    alt_pressed.0 = keyboard.pressed(KeyCode::AltLeft) || keyboard.pressed(KeyCode::AltRight);
+    shift_pressed.0 = keyboard.pressed(KeyCode::ShiftLeft) || keyboard.pressed(KeyCode::ShiftRight);
+    ctrl_pressed.0 =
+        keyboard.pressed(KeyCode::ControlLeft) || keyboard.pressed(KeyCode::ControlRight);
+    space_pressed.0 = keyboard.pressed(KeyCode::Space);
 }
 
-fn read_mouse(mut input: ResMut<Input>, mouse: Res<ButtonInput<MouseButton>>) {
-    input.left_click = mouse.just_pressed(MouseButton::Left) && !input.left_click;
-    input.left_click_pressed = mouse.pressed(MouseButton::Left);
-    input.right_click = mouse.just_pressed(MouseButton::Right) && !input.right_click
+fn read_keyboard2(
+    mut key_q: ResMut<KeyQ>,
+    mut key_e: ResMut<KeyE>,
+    mut key_r: ResMut<KeyR>,
+    mut key_f: ResMut<KeyF>,
+    mut key_c: ResMut<KeyC>,
+    mut key_v: ResMut<KeyV>,
+    mut key_b: ResMut<KeyB>,
+    mut key_m: ResMut<KeyM>,
+    mut key_num: ResMut<KeyNum>,
+    keyboard: Res<ButtonInput<KeyCode>>,
+) {
+    key_q.0 = keyboard.just_pressed(KeyCode::KeyQ) && !key_q.0;
+    key_e.0 = keyboard.just_pressed(KeyCode::KeyE) && !key_e.0;
+    key_r.0 = keyboard.just_pressed(KeyCode::KeyR) && !key_r.0;
+    key_f.0 = keyboard.just_pressed(KeyCode::KeyF) && !key_f.0;
+    key_c.0 = keyboard.just_pressed(KeyCode::KeyC) && !key_c.0;
+    key_v.0 = keyboard.just_pressed(KeyCode::KeyV) && !key_v.0;
+    key_b.0 = keyboard.just_pressed(KeyCode::KeyB) && !key_b.0;
+    key_m.0 = keyboard.just_pressed(KeyCode::KeyM) && !key_m.0;
+    key_num[0] = keyboard.just_pressed(KeyCode::Digit1) && !key_num[0];
+    key_num[1] = keyboard.just_pressed(KeyCode::Digit2) && !key_num[1];
+    key_num[2] = keyboard.just_pressed(KeyCode::Digit3) && !key_num[2];
+    key_num[3] = keyboard.just_pressed(KeyCode::Digit4) && !key_num[3];
+    key_num[4] = keyboard.just_pressed(KeyCode::Digit5) && !key_num[4];
+    key_num[5] = keyboard.just_pressed(KeyCode::Digit6) && !key_num[5];
+    key_num[6] = keyboard.just_pressed(KeyCode::Digit7) && !key_num[6];
+    key_num[7] = keyboard.just_pressed(KeyCode::Digit8) && !key_num[7];
+    key_num[8] = keyboard.just_pressed(KeyCode::Digit9) && !key_num[8];
+    key_num[9] = keyboard.just_pressed(KeyCode::Digit0) && !key_num[9];
 }
 
-fn read_wheel(mut input: ResMut<Input>, mut wheels: EventReader<MouseWheel>) {
-    input.wheel = 0;
+fn read_mouse(
+    mut left_click: ResMut<LeftClick>,
+    mut left_click_pressed: ResMut<LeftClickPressed>,
+    mut right_click: ResMut<RightClick>,
+    mouse: Res<ButtonInput<MouseButton>>,
+) {
+    left_click.0 = mouse.just_pressed(MouseButton::Left) && !left_click.0;
+    left_click_pressed.0 = mouse.pressed(MouseButton::Left);
+    right_click.0 = mouse.just_pressed(MouseButton::Right) && !right_click.0;
+}
+
+fn read_wheel(mut mut_wheel: ResMut<Wheel>, mut wheels: EventReader<MouseWheel>) {
+    mut_wheel.0 = 0;
     for wheel in wheels.read() {
-        input.wheel += match wheel.unit {
+        mut_wheel.0 += match wheel.unit {
             MouseScrollUnit::Line => wheel.y as i8,
             MouseScrollUnit::Pixel => wheel.y as i8,
         };
@@ -87,7 +159,8 @@ fn read_wheel(mut input: ResMut<Input>, mut wheels: EventReader<MouseWheel>) {
 }
 
 fn read_cursor(
-    mut input: ResMut<Input>,
+    mut mut_window_cursor: ResMut<WindowCursor>,
+    mut mut_world_cursor: ResMut<WorldCursor>,
     window_query: Query<&Window, With<PrimaryWindow>>,
     camera_query: Query<(&Camera, &GlobalTransform)>,
 ) {
@@ -98,9 +171,9 @@ fn read_cursor(
                     .viewport_to_world(transform, window_cursor)
                     .map(|ray| ray.origin.truncate())
                 {
-                    input.world_cursor = world_cursor;
+                    mut_world_cursor.0 = world_cursor;
                 }
-                input.window_cursor = window_cursor;
+                mut_window_cursor.0 = window_cursor;
             }
         }
     }
@@ -110,12 +183,42 @@ pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(Input { ..default() });
+        app.insert_resource(Wheel(0));
+        app.insert_resource(WindowCursor(Vec2::ZERO));
+        app.insert_resource(WorldCursor(Vec2::ZERO));
+        app.insert_resource(LeftStick(Vec2::ZERO));
+        app.insert_resource(LeftClick(false));
+        app.insert_resource(LeftClickPressed(false));
+        app.insert_resource(RightClick(false));
+        app.insert_resource(Escape(false));
+        app.insert_resource(Tab(false));
+        app.insert_resource(Enter(false));
+        app.insert_resource(AltPressed(false));
+        app.insert_resource(ShiftPressed(false));
+        app.insert_resource(CtrlPressed(false));
+        app.insert_resource(SpacePressed(false));
+        app.insert_resource(KeyQ(false));
+        app.insert_resource(KeyE(false));
+        app.insert_resource(KeyR(false));
+        app.insert_resource(KeyF(false));
+        app.insert_resource(KeyC(false));
+        app.insert_resource(KeyV(false));
+        app.insert_resource(KeyB(false));
+        app.insert_resource(KeyM(false));
+        app.insert_resource(KeyNum::default());
         app.add_systems(
             PreUpdate,
-            (read_keyboard, read_mouse, read_wheel, read_cursor),
+            (
+                read_keyboard1,
+                read_keyboard2,
+                read_mouse,
+                read_wheel,
+                read_cursor,
+            ),
         );
     }
     // FIXME not update frame
     // TODO optimize to changed
+    // TODO other devices
+    // TODO abstract names
 }

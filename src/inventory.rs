@@ -57,15 +57,15 @@ pub enum InventoryOpened {
     Opened,
 }
 
-fn open_inventory(input: Res<Input>, mut next_state: ResMut<NextState<UIStates>>) {
-    if !input.tab {
+fn open_inventory(tab: Res<Tab>, mut next_state: ResMut<NextState<UIStates>>) {
+    if !tab.0 {
         return;
     }
     next_state.set(UIStates::Inventory);
 }
 
-fn close_inventory(input: Res<Input>, mut next_state: ResMut<NextState<UIStates>>) {
-    if !input.tab {
+fn close_inventory(tab: Res<Tab>, mut next_state: ResMut<NextState<UIStates>>) {
+    if !tab.0 {
         return;
     }
     next_state.set(UIStates::None);

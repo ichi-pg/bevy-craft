@@ -48,15 +48,15 @@ fn spawn_nodes(query: Query<(&ItemID, &ItemAmount), With<CraftRecipe>>, mut comm
         });
 }
 
-fn open_craft(input: Res<Input>, mut next_state: ResMut<NextState<UIStates>>) {
-    if !input.c {
+fn open_craft(key_c: Res<KeyC>, mut next_state: ResMut<NextState<UIStates>>) {
+    if !key_c.0 {
         return;
     }
     next_state.set(UIStates::Craft);
 }
 
-fn close_craft(input: Res<Input>, mut next_state: ResMut<NextState<UIStates>>) {
-    if !input.c {
+fn close_craft(key_c: Res<KeyC>, mut next_state: ResMut<NextState<UIStates>>) {
+    if !key_c.0 {
         return;
     }
     next_state.set(UIStates::None);
@@ -89,5 +89,4 @@ impl Plugin for CraftPlugin {
         app.add_systems(OnEnter(UIStates::Craft), on_open_craft);
         app.add_systems(OnExit(UIStates::Craft), on_close_craft);
     }
-    // TODO commonize using generics
 }

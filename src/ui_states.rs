@@ -9,8 +9,8 @@ pub enum UIStates {
     Craft,
 }
 
-fn close_ui(input: Res<Input>, mut next_state: ResMut<NextState<UIStates>>) {
-    if !input.escape {
+fn close_ui(escape: Res<Escape>, mut next_state: ResMut<NextState<UIStates>>) {
+    if !escape.0 {
         return;
     }
     next_state.set(UIStates::None);
@@ -23,4 +23,5 @@ impl Plugin for UIStatusPlugin {
         app.insert_state(UIStates::None);
         app.add_systems(Update, close_ui);
     }
+    // TODO using generics
 }

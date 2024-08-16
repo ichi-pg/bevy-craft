@@ -17,16 +17,17 @@ pub struct EmptyClicked {
 
 fn left_click(
     query: Query<(Entity, &Transform, &Shape)>,
-    input: Res<Input>,
+    left_click: Res<LeftClick>,
+    world_cursor: Res<WorldCursor>,
     mut commands: Commands,
     mut event_writer: EventWriter<EmptyClicked>,
 ) {
-    if !input.left_click {
+    if !left_click.0 {
         return;
     }
     let mut found = false;
     for (entity, transform, shape) in &query {
-        if point_test(input.world_cursor, transform.translation, *shape) {
+        if point_test(world_cursor.0, transform.translation, *shape) {
             commands.entity(entity).insert(LeftClicked);
             found = true;
         }
@@ -35,21 +36,22 @@ fn left_click(
         return;
     }
     event_writer.send(EmptyClicked {
-        pos: input.world_cursor,
+        pos: world_cursor.0,
     });
     // TODO chunk or sweep or tree
 }
 
 fn right_click(
     query: Query<(Entity, &Transform, &Shape)>,
-    input: Res<Input>,
+    right_click: Res<RightClick>,
+    world_cursor: Res<WorldCursor>,
     mut commands: Commands,
 ) {
-    if !input.right_click {
+    if !right_click.0 {
         return;
     }
     for (entity, transform, shape) in &query {
-        if point_test(input.world_cursor, transform.translation, *shape) {
+        if point_test(world_cursor.0, transform.translation, *shape) {
             commands.entity(entity).insert(RightClicked);
         }
     }
