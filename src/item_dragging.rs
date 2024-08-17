@@ -54,20 +54,26 @@ fn drag_item<T: Component>(
         }
         match intersection {
             Interaction::Pressed => {
-                let half_amount = if control.pressed {
+                let remain_amount = if control.pressed {
                     (amount.0 as f32 * 0.5).floor() as u16
                 } else {
                     0
                 };
                 for entity in &area_query {
                     commands.entity(entity).with_children(|parent| {
-                        build_item::<DragItem>(parent, item_id.0, amount.0 - half_amount, 0, false);
+                        build_item::<DragItem>(
+                            parent,
+                            item_id.0,
+                            amount.0 - remain_amount,
+                            0,
+                            false,
+                        );
                     });
                 }
-                if half_amount == 0 {
+                if remain_amount == 0 {
                     item_id.0 = 0;
                 }
-                amount.0 = half_amount;
+                amount.0 = remain_amount;
                 next_state.set(ItemDragged::PreDragged);
             }
             Interaction::Hovered => continue,

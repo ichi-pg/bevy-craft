@@ -6,6 +6,9 @@ use crate::ui_parts::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
+struct ItemNode;
+
+#[derive(Component)]
 pub struct ItemIndex(pub u8);
 
 pub fn build_item<T: Component + Default>(
@@ -30,6 +33,7 @@ pub fn build_item<T: Component + Default>(
                 ..default()
             },
             Interaction::None,
+            ItemNode,
             ItemID(item_id),
             ItemAmount(amount),
             ItemIndex(index),
@@ -83,12 +87,12 @@ fn spawn_containers(mut commands: Commands) {
         });
 }
 
-fn sync_children<T: Component>(
+fn sync_children(
     parent_query: Query<
         (&Children, &ItemID, &ItemAmount),
-        (With<T>, Or<(Changed<ItemID>, Changed<ItemAmount>)>),
+        (With<ItemNode>, Or<(Changed<ItemID>, Changed<ItemAmount>)>),
     >,
-    mut child_query: Query<(&mut ItemID, &mut ItemAmount), (With<Node>, Without<T>)>,
+    mut child_query: Query<(&mut ItemID, &mut ItemAmount), (With<Node>, Without<ItemNode>)>,
 ) {
     for (children, parent_item_id, parent_amount) in &parent_query {
         for child in children.iter() {
@@ -108,14 +112,7 @@ pub struct ItemContainerPlugin;
 impl Plugin for ItemContainerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_containers);
-        app.add_systems(
-            Update,
-            (
-                sync_children::<HotbarItem>,
-                sync_children::<InventoryItem>,
-                sync_children::<StorageItem>,
-            ),
-        );
+        app.add_systems(Update, sync_children);
     }
     // TODO spawn item when inventory overflowed
 }

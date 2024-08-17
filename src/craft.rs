@@ -65,13 +65,30 @@ fn click_recipe(
             Without<CraftItem>,
             Without<CraftProduct>,
             Without<CraftMaterial>,
+            Without<DragItem>,
         ),
     >,
     area_query: Query<Entity, With<DragArea>>,
     mut commands: Commands,
     mut next_state: ResMut<NextState<ItemDragged>>,
+    mut drag_query: Query<
+        (&ItemID, &mut ItemAmount),
+        (
+            With<DragItem>,
+            Without<CraftItem>,
+            Without<CraftProduct>,
+            Without<CraftMaterial>,
+            Without<HotbarItem>,
+            Without<InventoryItem>,
+        ),
+    >,
 ) {
     for (intersection, intersection_item_id) in &intersection_query {
+        for (item_id, _) in &drag_query {
+            if item_id.0 != intersection_item_id.0 {
+                return;
+            }
+        }
         match *intersection {
             Interaction::Pressed => {
                 for (children, product_item_id, product_amount) in &product_query {
@@ -119,6 +136,12 @@ fn click_recipe(
                             Err(_) => todo!(),
                         }
                     }
+                    for (item_id, mut amount) in &mut drag_query {
+                        if item_id.0 == product_item_id.0 {
+                            amount.0 += product_amount.0;
+                            return;
+                        }
+                    }
                     for entity in &area_query {
                         commands.entity(entity).with_children(|parent| {
                             build_item::<DragItem>(
@@ -140,7 +163,7 @@ fn click_recipe(
     // TODO optimize recipe query
     // TODO optimize sum
     // TODO storage items
-    // TODO increment and decrement dragging item
+    // TODO commonize drag item
 }
 
 pub struct CraftPlugin;
@@ -151,7 +174,7 @@ impl Plugin for CraftPlugin {
         app.add_systems(
             Update,
             (
-                click_recipe.run_if(in_state(ItemDragged::None)),
+                click_recipe,
                 change_ui_state::<KeyC>(UIStates::Craft).run_if(not(in_state(UIStates::Craft))),
                 change_ui_state::<KeyC>(UIStates::None).run_if(in_state(UIStates::Craft)),
             ),
