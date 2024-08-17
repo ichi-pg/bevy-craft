@@ -6,11 +6,7 @@
 cargo run --features bevy/dynamic_linking
 ```
 
-```shell
-cargo run --target wasm32-unknown-unknown
-```
-
-## Build Web
+## Build
 
 ```shell
 cargo build --release --target wasm32-unknown-unknown
