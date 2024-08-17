@@ -82,6 +82,7 @@ fn click_recipe(
             Without<InventoryItem>,
         ),
     >,
+    control: Res<Control>,
 ) {
     for (intersection, intersection_item_id) in &intersection_query {
         for (item_id, _) in &drag_query {
@@ -95,7 +96,7 @@ fn click_recipe(
                     if product_item_id.0 != intersection_item_id.0 {
                         continue;
                     }
-                    let mut not_enough = false;
+                    let mut times = if control.pressed { 10 } else { 1 };
                     for child in children.iter() {
                         match material_query.get(*child) {
                             Ok((material_item_id, material_amount)) => {
@@ -105,21 +106,21 @@ fn click_recipe(
                                         sum += amount.0;
                                     }
                                 }
-                                if sum < material_amount.0 {
-                                    not_enough = true;
+                                times = times.min(sum / material_amount.0);
+                                if times == 0 {
                                     break;
                                 }
                             }
                             Err(_) => todo!(),
                         }
                     }
-                    if not_enough {
+                    if times == 0 {
                         continue;
                     }
                     for child in children.iter() {
                         match material_query.get(*child) {
                             Ok((material_item_id, material_amount)) => {
-                                let mut consume_amount = material_amount.0;
+                                let mut consume_amount = material_amount.0 * times;
                                 for (mut item_id, mut amount) in &mut query {
                                     if item_id.0 == material_item_id.0 {
                                         if amount.0 > consume_amount {
@@ -138,7 +139,7 @@ fn click_recipe(
                     }
                     for (item_id, mut amount) in &mut drag_query {
                         if item_id.0 == product_item_id.0 {
-                            amount.0 += product_amount.0;
+                            amount.0 += product_amount.0 * times;
                             return;
                         }
                     }
@@ -147,7 +148,7 @@ fn click_recipe(
                             build_item::<DragItem>(
                                 parent,
                                 product_item_id.0,
-                                product_amount.0,
+                                product_amount.0 * times,
                                 0,
                                 false,
                             );
@@ -164,7 +165,6 @@ fn click_recipe(
     // TODO optimize sum
     // TODO storage items
     // TODO commonize drag item
-    // TODO craft ten times when control + left click
 }
 
 pub struct CraftPlugin;
