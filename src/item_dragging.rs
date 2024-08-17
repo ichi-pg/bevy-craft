@@ -80,7 +80,9 @@ fn drag_item<T: Component>(
             Interaction::None => continue,
         }
     }
-    // TODO increment and decrement dragging item
+    // TODO take half when shift + right click
+    // TODO take ten when control + right click
+    // TODO take one when right click
 }
 
 fn dragging_item(mut query: Query<&mut Style, With<DragItem>>, window_cursor: Res<WindowCursor>) {
@@ -127,6 +129,9 @@ fn put_in_item<T: Component>(
     // FIXME b0003 when into other container
     // FIXME sometimes item is dropped when after pushed out
     // FIXME sometimes item is placed
+    // TODO put half when shift + right click
+    // TODO put ten when control + right click
+    // TODO put one when right click
 }
 
 fn drop_item(

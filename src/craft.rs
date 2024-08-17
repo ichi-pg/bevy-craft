@@ -164,6 +164,7 @@ fn click_recipe(
     // TODO optimize sum
     // TODO storage items
     // TODO commonize drag item
+    // TODO craft ten times when control + left click
 }
 
 pub struct CraftPlugin;
