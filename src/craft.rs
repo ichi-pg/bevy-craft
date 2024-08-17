@@ -5,7 +5,6 @@ use crate::item::*;
 use crate::item_container::*;
 use crate::item_dragging::*;
 use crate::ui_parts::*;
-use crate::ui_states::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -15,7 +14,7 @@ struct CraftProduct;
 struct CraftMaterial;
 
 #[derive(Component, Default)]
-struct CraftUI;
+pub struct CraftUI;
 
 #[derive(Component, Default)]
 struct CraftItem;
@@ -172,21 +171,6 @@ pub struct CraftPlugin;
 impl Plugin for CraftPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, (spawn_recipes, spawn_nodes).chain());
-        app.add_systems(
-            Update,
-            (
-                click_recipe,
-                change_ui_state::<KeyC>(UIStates::Craft).run_if(not(in_state(UIStates::Craft))),
-                change_ui_state::<KeyC>(UIStates::None).run_if(in_state(UIStates::Craft)),
-            ),
-        );
-        app.add_systems(
-            OnEnter(UIStates::Craft),
-            change_visibility::<CraftUI, Inventory>(Visibility::Inherited),
-        );
-        app.add_systems(
-            OnExit(UIStates::Craft),
-            change_visibility::<CraftUI, Inventory>(Visibility::Hidden),
-        );
+        app.add_systems(Update, click_recipe);
     }
 }

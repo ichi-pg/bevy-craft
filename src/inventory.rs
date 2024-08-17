@@ -1,3 +1,4 @@
+use crate::craft::*;
 use crate::input::*;
 use crate::item::*;
 use crate::ui_states::*;
@@ -38,8 +39,8 @@ impl Plugin for InventoryPlugin {
         app.add_systems(
             Update,
             (
-                change_ui_state::<Tab>(UIStates::Inventory).run_if(in_state(InventoryOpened::None)),
-                change_ui_state::<Tab>(UIStates::None).run_if(in_state(InventoryOpened::Opened)),
+                change_ui_state::<Tab>(UIStates::Inventory).run_if(in_state(UIStates::None)),
+                change_ui_state::<Tab>(UIStates::None).run_if(not(in_state(UIStates::None))),
                 sync_visibility::<Inventory, InventoryOpened>(
                     InventoryOpened::Opened,
                     InventoryOpened::None,
@@ -48,11 +49,11 @@ impl Plugin for InventoryPlugin {
         );
         app.add_systems(
             OnEnter(UIStates::Inventory),
-            change_visibility::<Inventory, Inventory>(Visibility::Inherited),
+            change_visibility::<Inventory, CraftUI>(Visibility::Inherited),
         );
         app.add_systems(
             OnExit(UIStates::Inventory),
-            change_visibility::<Inventory, Inventory>(Visibility::Hidden),
+            change_visibility::<Inventory, CraftUI>(Visibility::Hidden),
         );
     }
 }
