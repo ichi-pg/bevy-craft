@@ -38,6 +38,7 @@ fn toggle_fullscreen(
             }
         }
     }
+    // TODO web flex
 }
 
 pub struct WindowPlugin;
