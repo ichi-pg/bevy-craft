@@ -12,6 +12,7 @@ mod input;
 mod inventory;
 mod item;
 mod item_container;
+mod item_details;
 mod item_dragging;
 mod item_putting;
 mod item_selecting;
@@ -60,6 +61,7 @@ fn main() {
             item_putting::ItemPuttingPlugin,
             item_dragging::ItemDraggingPlugin,
             item_selecting::ItemSelectingPlugin,
+            item_details::ItemDetailsPlugin,
             hotbar::HotbarPlugin,
             inventory::InventoryPlugin,
             storage::StoragePlugin,
