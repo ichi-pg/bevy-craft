@@ -54,7 +54,7 @@ fn spawn_blocks(mut commands: Commands, mut random: ResMut<Random>) {
             if if x >= 0 { x } else { -x } <= y * 2 + 1 {
                 continue;
             }
-            let item_id = (random.next_u32() % 20) as u16 + 1;
+            let item_id = (random.next_u32() % 6) as u16 + 1;
             commands.spawn(block_bundle(
                 item_id,
                 x as f32 * BLOCK_SIZE,

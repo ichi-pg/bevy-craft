@@ -14,7 +14,7 @@ pub fn build_item<T: Component + Default>(
     amount: u16,
     index: u8,
     selectable: bool,
-) {
+) -> Entity {
     parent
         .spawn((
             ImageBundle {
@@ -51,8 +51,10 @@ pub fn build_item<T: Component + Default>(
                 ItemID(item_id),
                 ItemAmount(amount),
             ));
-        });
+        })
+        .id()
     // TODO texture
+    // TODO remove selectable
 }
 
 fn build_container<T: Component + Default, U: Component + Default>(

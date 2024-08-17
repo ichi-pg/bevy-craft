@@ -120,7 +120,6 @@ fn put_in_item<T: Component>(
     // FIXME b0003 when into other container
     // FIXME sometimes item is dropped when after pushed out
     // FIXME sometimes item is placed
-    // FIXME Interaction::Pressed is not just pressed
 }
 
 fn drop_item(
