@@ -34,6 +34,8 @@ fn main() {
                 resolution: (1920.0, 1080.0).into(),
                 position: WindowPosition::Centered(MonitorSelection::Primary),
                 resizable: false,
+                #[cfg(target_arch = "wasm32")]
+                canvas: Some("#bevy-canvas".into()),
                 ..default()
             }),
             ..default()

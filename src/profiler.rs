@@ -11,7 +11,7 @@ pub struct ProfilerPlugin;
 
 impl Plugin for ProfilerPlugin {
     fn build(&self, app: &mut App) {
-        #[cfg(debug_assertions)]
+        #[cfg(any(debug_assertions, target_arch = "wasm32"))]
         {
             app.add_plugins((
                 FrameTimeDiagnosticsPlugin,
