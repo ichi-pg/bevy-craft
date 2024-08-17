@@ -23,17 +23,10 @@ fn spawn_player(
 ) {
     let size = 128.0;
     commands.spawn((
-        // SpriteBundle {
-        //     sprite: Sprite {
-        //         color: Color::WHITE,
-        //         custom_size: Some(Vec2::new(size, size)),
-        //         ..default()
-        //     },
-        //     ..default()
-        // },
         MaterialMesh2dBundle {
             mesh: Mesh2dHandle(meshes.add(Circle::new(size * 0.5))),
             material: materials.add(Color::srgb(1.0, 1.0, 1.0)),
+            transform: Transform::from_xyz(0.0, 128.0, 0.0),
             ..default()
         },
         Player,
