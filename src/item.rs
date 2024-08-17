@@ -41,7 +41,7 @@ pub fn item_color(item_id: u16) -> Color {
         102 => Color::srgb(0.4, 0.4, 0.5),
         103 => Color::srgb(0.4, 0.3, 0.5),
         _ => {
-            let a = item_id as f32 * 0.02 + 0.3;
+            let a = item_id as f32 * 0.1 + 0.2;
             let b = a * 0.5;
             match item_id % 3 {
                 0 => Color::srgb(a, a, a),

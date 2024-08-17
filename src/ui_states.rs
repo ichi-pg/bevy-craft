@@ -52,4 +52,5 @@ impl Plugin for UIStatusPlugin {
         app.insert_state(UIStates::None);
         app.add_systems(Update, change_ui_state::<Escape>(UIStates::None));
     }
+    // TODO escape is game settings
 }

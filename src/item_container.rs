@@ -6,7 +6,7 @@ use crate::ui_parts::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
-struct ItemNode;
+pub struct ItemNode;
 
 #[derive(Component)]
 pub struct ItemIndex(pub u8);
@@ -69,7 +69,7 @@ fn build_container<T: Component + Default, U: Component + Default>(
     selectable: bool,
 ) {
     parent
-        .spawn(colored_grid::<T>(x, y, visibility))
+        .spawn((grid_node(x, y, visibility), T::default()))
         .with_children(|parent| {
             for i in 0..x * y {
                 build_item::<U>(parent, 0, 0, i as u8, selectable);
@@ -79,7 +79,7 @@ fn build_container<T: Component + Default, U: Component + Default>(
 
 fn spawn_containers(mut commands: Commands) {
     commands
-        .spawn(screen_node(10.0))
+        .spawn(screen_node(10.0, AlignItems::Center))
         .with_children(|parent: &mut ChildBuilder| {
             build_container::<Storage, StorageItem>(parent, 10, 4, Visibility::Hidden, false);
             build_container::<Inventory, InventoryItem>(parent, 10, 4, Visibility::Hidden, false);

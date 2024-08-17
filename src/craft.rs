@@ -8,6 +8,15 @@ use crate::ui_parts::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
+struct ItemDetails;
+
+#[derive(Component, Default)]
+struct ProductItem;
+
+#[derive(Component, Default)]
+struct MaterialItem;
+
+#[derive(Component)]
 struct CraftProduct;
 
 #[derive(Component)]
@@ -16,52 +25,62 @@ struct CraftMaterial;
 #[derive(Component, Default)]
 pub struct CraftUI;
 
-#[derive(Component, Default)]
-struct CraftItem;
-
 fn spawn_recipes(mut commands: Commands) {
-    for i in [
-        ((101, 1), vec![(2, 1), (3, 1)]),
-        ((102, 1), vec![(101, 1), (4, 1)]),
-        ((103, 1), vec![(101, 1), (5, 1), (6, 1)]),
+    for item in [
+        (101, 1, vec![(2, 1), (3, 1)]),
+        (102, 1, vec![(101, 1), (4, 1)]),
+        (103, 1, vec![(101, 1), (5, 1), (6, 1)]),
     ] {
         commands
-            .spawn((CraftProduct, ItemID(i.0 .0), ItemAmount(i.0 .1)))
+            .spawn((CraftProduct, ItemID(item.0), ItemAmount(item.1)))
             .with_children(|parent| {
-                for j in i.1 {
-                    parent.spawn((ItemID(j.0), ItemAmount(j.1), CraftMaterial));
+                for material in item.2 {
+                    parent.spawn((CraftMaterial, ItemID(material.0), ItemAmount(material.1)));
                 }
             });
     }
-    // TODO workbench
 }
 
-fn spawn_nodes(query: Query<(&ItemID, &ItemAmount), With<CraftProduct>>, mut commands: Commands) {
+fn spawn_details(mut commands: Commands) {
     commands
-        .spawn(screen_node(600.0))
+        .spawn(screen_node(10.0, AlignItems::End))
         .with_children(|parent: &mut ChildBuilder| {
             parent
-                .spawn(colored_grid::<CraftUI>(10, 4, Visibility::Hidden))
+                .spawn((grid_node(3, 1, Visibility::Hidden), ItemDetails))
                 .with_children(|parent| {
-                    let mut index = 0;
-                    for (item_id, amount) in &query {
-                        build_item::<CraftItem>(parent, item_id.0, amount.0, index, false);
-                        index += 1;
+                    for i in 0..3 {
+                        build_item::<MaterialItem>(parent, 0, 0, i, false);
                     }
                 });
         });
-    // TODO material nodes
+    // TODO details mod
+}
+
+fn spawn_items(query: Query<(&ItemID, &ItemAmount), With<CraftProduct>>, mut commands: Commands) {
+    commands
+        .spawn(screen_node(600.0, AlignItems::Center))
+        .with_children(|parent: &mut ChildBuilder| {
+            parent
+                .spawn((grid_node(10, 4, Visibility::Hidden), CraftUI))
+                .with_children(|parent| {
+                    for (index, (item_id, amount)) in query.iter().enumerate() {
+                        build_item::<ProductItem>(parent, item_id.0, amount.0, index as u8, false);
+                    }
+                });
+        });
+    // TODO workbench
+    // TODO hand craft recipes
 }
 
 fn click_recipe(
-    intersection_query: Query<(&Interaction, &ItemID), (With<CraftItem>, Changed<Interaction>)>,
+    intersection_query: Query<(&Interaction, &ItemID), (With<ProductItem>, Changed<Interaction>)>,
     product_query: Query<(&Children, &ItemID, &ItemAmount), With<CraftProduct>>,
     material_query: Query<(&ItemID, &ItemAmount), With<CraftMaterial>>,
     mut query: Query<
         (&mut ItemID, &mut ItemAmount),
         (
             Or<(With<HotbarItem>, With<InventoryItem>)>,
-            Without<CraftItem>,
+            Without<ProductItem>,
             Without<CraftProduct>,
             Without<CraftMaterial>,
             Without<DragItem>,
@@ -74,7 +93,7 @@ fn click_recipe(
         (&ItemID, &mut ItemAmount),
         (
             With<DragItem>,
-            Without<CraftItem>,
+            Without<ProductItem>,
             Without<CraftProduct>,
             Without<CraftMaterial>,
             Without<HotbarItem>,
@@ -166,11 +185,71 @@ fn click_recipe(
     // TODO commonize drag item
 }
 
+fn toggle_details(
+    interaction_query: Query<
+        (&Interaction, &ItemID),
+        (
+            (With<ItemNode>, Without<MaterialItem>),
+            Changed<Interaction>,
+        ),
+    >,
+    mut details_query: Query<&mut Visibility, With<ItemDetails>>,
+    mut query: Query<
+        (&mut ItemID, &mut ItemAmount),
+        (
+            With<MaterialItem>,
+            Without<CraftProduct>,
+            Without<CraftMaterial>,
+        ),
+    >,
+    product_query: Query<(&Children, &ItemID), With<CraftProduct>>,
+    material_query: Query<(&ItemID, &ItemAmount), With<CraftMaterial>>,
+) {
+    for (interaction, interaction_item_id) in &interaction_query {
+        if interaction_item_id.0 == 0 {
+            continue;
+        }
+        for mut visibility in &mut details_query {
+            *visibility = match *interaction {
+                Interaction::Pressed => *visibility,
+                Interaction::Hovered => Visibility::Inherited,
+                Interaction::None => Visibility::Hidden,
+            }
+        }
+        let mut iter = query.iter_mut();
+        for (children, product_item_id) in &product_query {
+            if product_item_id.0 == interaction_item_id.0 {
+                for child in children.iter() {
+                    match material_query.get(*child) {
+                        Ok((material_item_id, material_amount)) => match iter.next() {
+                            Some((mut item_id, mut amount)) => {
+                                item_id.0 = material_item_id.0;
+                                amount.0 = material_amount.0;
+                            }
+                            None => todo!(),
+                        },
+                        Err(_) => todo!(),
+                    }
+                }
+            }
+        }
+        for (mut item_id, mut amount) in iter {
+            item_id.0 = 0;
+            amount.0 = 0;
+        }
+    }
+    // TODO fix blinking
+    // TODO hide while dragging
+}
+
 pub struct CraftPlugin;
 
 impl Plugin for CraftPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (spawn_recipes, spawn_nodes).chain());
-        app.add_systems(Update, click_recipe);
+        app.add_systems(
+            Startup,
+            ((spawn_recipes, spawn_items).chain(), spawn_details),
+        );
+        app.add_systems(Update, (click_recipe, toggle_details));
     }
 }
