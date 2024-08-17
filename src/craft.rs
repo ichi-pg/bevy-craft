@@ -3,6 +3,7 @@ use crate::input::*;
 use crate::inventory::*;
 use crate::item::*;
 use crate::item_container::*;
+use crate::item_dragging::*;
 use crate::ui_parts::*;
 use crate::ui_states::*;
 use bevy::prelude::*;
@@ -66,11 +67,14 @@ fn click_recipe(
             Without<CraftMaterial>,
         ),
     >,
+    area_query: Query<Entity, With<DragArea>>,
+    mut commands: Commands,
+    mut next_state: ResMut<NextState<ItemDragged>>,
 ) {
     for (intersection, intersection_item_id) in &intersection_query {
         match *intersection {
             Interaction::Pressed => {
-                for (children, product_item_id, _) in &product_query {
+                for (children, product_item_id, product_amount) in &product_query {
                     if product_item_id.0 != intersection_item_id.0 {
                         continue;
                     }
@@ -115,6 +119,18 @@ fn click_recipe(
                             Err(_) => todo!(),
                         }
                     }
+                    for entity in &area_query {
+                        commands.entity(entity).with_children(|parent| {
+                            build_item::<DragItem>(
+                                parent,
+                                product_item_id.0,
+                                product_amount.0,
+                                0,
+                                false,
+                            );
+                        });
+                    }
+                    next_state.set(ItemDragged::PreDragged);
                 }
             }
             Interaction::Hovered => continue,
@@ -124,7 +140,7 @@ fn click_recipe(
     // TODO optimize recipe query
     // TODO optimize sum
     // TODO storage items
-    // TODO dragging item
+    // TODO increment and decrement dragging item
 }
 
 pub struct CraftPlugin;
@@ -135,7 +151,7 @@ impl Plugin for CraftPlugin {
         app.add_systems(
             Update,
             (
-                click_recipe,
+                click_recipe.run_if(in_state(ItemDragged::None)),
                 change_ui_state::<KeyC>(UIStates::Craft).run_if(not(in_state(UIStates::Craft))),
                 change_ui_state::<KeyC>(UIStates::None).run_if(in_state(UIStates::Craft)),
             ),

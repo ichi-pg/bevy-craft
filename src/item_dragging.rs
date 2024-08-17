@@ -9,10 +9,10 @@ use crate::ui_hovered::*;
 use bevy::prelude::*;
 
 #[derive(Component, Default)]
-struct DragItem;
+pub struct DragItem;
 
 #[derive(Component)]
-struct DragArea;
+pub struct DragArea;
 
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub enum ItemDragged {
@@ -48,32 +48,33 @@ fn drag_item<T: Component>(
     if shift.pressed {
         return;
     }
-    for entity in &area_query {
-        for (intersection, mut item_id, mut amount) in &mut query {
-            if item_id.0 == 0 {
-                continue;
-            }
-            match intersection {
-                Interaction::Pressed => {
-                    let remain = if control.pressed {
-                        (amount.0 as f32 * 0.5).floor() as u16
-                    } else {
-                        0
-                    };
+    for (intersection, mut item_id, mut amount) in &mut query {
+        if item_id.0 == 0 {
+            continue;
+        }
+        match intersection {
+            Interaction::Pressed => {
+                let half_amount = if control.pressed {
+                    (amount.0 as f32 * 0.5).floor() as u16
+                } else {
+                    0
+                };
+                for entity in &area_query {
                     commands.entity(entity).with_children(|parent| {
-                        build_item::<DragItem>(parent, item_id.0, amount.0 - remain, 0, false);
+                        build_item::<DragItem>(parent, item_id.0, amount.0 - half_amount, 0, false);
                     });
-                    if remain == 0 {
-                        item_id.0 = 0;
-                    }
-                    amount.0 = remain;
-                    next_state.set(ItemDragged::PreDragged);
                 }
-                Interaction::Hovered => continue,
-                Interaction::None => continue,
+                if half_amount == 0 {
+                    item_id.0 = 0;
+                }
+                amount.0 = half_amount;
+                next_state.set(ItemDragged::PreDragged);
             }
+            Interaction::Hovered => continue,
+            Interaction::None => continue,
         }
     }
+    // TODO increment and decrement dragging item
 }
 
 fn dragging_item(mut query: Query<&mut Style, With<DragItem>>, window_cursor: Res<WindowCursor>) {
