@@ -161,4 +161,5 @@ impl Plugin for ItemPuttingPlugin {
             ),
         );
     }
+    // TODO push out with equipment
 }
