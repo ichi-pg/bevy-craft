@@ -76,9 +76,30 @@ fn push_out_item<T: Component, U: Event + Default + ItemAndAmount>(
             Interaction::None => continue,
         }
     }
-    // TODO quick store and refill
-    // TODO quick in out
-    // TODO sort
+}
+
+fn bulk_push_out<T: Component, U: Event + Default + ItemAndAmount, V: Resource + Pressed>(
+    mut query: Query<(&mut ItemID, &mut ItemAmount), With<T>>,
+    pressed: Res<V>,
+    mut event_writer: EventWriter<U>,
+) {
+    if !pressed.just_pressed() {
+        return;
+    }
+    for (mut item_id, mut amount) in &mut query {
+        if item_id.0 == 0 {
+            continue;
+        }
+        let mut e: U = U::default();
+        e.set_item_id(item_id.0);
+        e.set_amount(amount.0);
+        event_writer.send(e);
+        item_id.0 = 0;
+        amount.0 = 0;
+    }
+    // TODO only exists items
+    // TODO around storages
+    // TODO check overflow
 }
 
 pub struct ItemPuttingPlugin;
@@ -108,6 +129,12 @@ impl Plugin for ItemPuttingPlugin {
                 )
                     .run_if(in_state(ItemDragged::None))
                     .run_if(in_state(InventoryOpened::Opened)),
+                (
+                    bulk_push_out::<HotbarItem, HotbarPushedOut, KeyR>,
+                    bulk_push_out::<InventoryItem, InventoryPushedOut, KeyR>,
+                    bulk_push_out::<StorageItem, StorageOverflowed, KeyF>,
+                )
+                    .run_if(in_state(UIStates::Storage)),
             ),
         );
     }
