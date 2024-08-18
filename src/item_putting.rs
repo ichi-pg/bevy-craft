@@ -100,6 +100,7 @@ fn bulk_push_out<T: Component, U: Event + Default + ItemAndAmount, V: Resource +
     // TODO only exists items
     // TODO around storages
     // TODO check overflow
+    // TODO protected items
 }
 
 pub struct ItemPuttingPlugin;
@@ -130,7 +131,6 @@ impl Plugin for ItemPuttingPlugin {
                     .run_if(in_state(ItemDragged::None))
                     .run_if(in_state(InventoryOpened::Opened)),
                 (
-                    bulk_push_out::<HotbarItem, HotbarPushedOut, KeyR>,
                     bulk_push_out::<InventoryItem, InventoryPushedOut, KeyR>,
                     bulk_push_out::<StorageItem, StorageOverflowed, KeyF>,
                 )
