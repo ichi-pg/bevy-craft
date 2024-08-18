@@ -29,4 +29,5 @@ impl Plugin for UIHoveredPlugin {
         app.insert_state(UIHovered::None);
         app.add_systems(PreUpdate, change_hovered);
     }
+    // TODO hovered component?
 }

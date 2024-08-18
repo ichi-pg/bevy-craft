@@ -16,8 +16,8 @@ macro_rules! define_pressed {
 }
 
 define_pressed!(
-    LeftClick, RightClick, Escape, Tab, Enter, Space, Alt, Shift, Control, KeyQ, KeyE, KeyR, KeyF,
-    KeyC, KeyV, KeyB, KeyM
+    LeftClick, RightClick, Escape, Tab, Enter, Space, Alt, Shift, Control, KeyQ, KeyE, KeyR, KeyT,
+    KeyF, KeyG, KeyC, KeyV, KeyB, KeyM
 );
 
 #[derive(Resource, Deref, DerefMut)]
@@ -134,7 +134,6 @@ impl Plugin for InputPlugin {
                 )*
             };
         }
-        // TODO flexible key codes
         insert_pressed!(
             (Escape, Escape),
             (Tab, Tab),
@@ -146,7 +145,9 @@ impl Plugin for InputPlugin {
             (KeyQ, KeyQ),
             (KeyE, KeyE),
             (KeyR, KeyR),
-            (KeyF, KeyR),
+            (KeyT, KeyT),
+            (KeyF, KeyF),
+            (KeyG, KeyG),
             (KeyC, KeyC),
             (KeyV, KeyV),
             (KeyB, KeyB),
@@ -174,4 +175,5 @@ impl Plugin for InputPlugin {
     // TODO optimize to changed
     // TODO other devices
     // TODO abstract names
+    // TODO flexible key codes
 }

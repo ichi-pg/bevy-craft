@@ -54,4 +54,5 @@ impl Plugin for UIStatusPlugin {
         app.add_systems(Update, change_ui_state::<Escape>(UIStates::None));
     }
     // TODO escape is game settings
+    // TODO shortcut navigation
 }

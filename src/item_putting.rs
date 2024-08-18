@@ -49,8 +49,6 @@ fn put_in_item<T: Event + ItemAndAmount, U: Component, V: Event + Default + Item
     }
     // TODO refactor V::from
     // TODO which player?
-    // TODO closed storages items is hash map resource?
-    // TODO using state
 }
 
 fn push_out_item<T: Component, U: Event + Default + ItemAndAmount>(
@@ -78,6 +76,7 @@ fn push_out_item<T: Component, U: Event + Default + ItemAndAmount>(
             Interaction::None => continue,
         }
     }
+    // TODO quick store and refill
     // TODO quick in out
     // TODO sort
 }

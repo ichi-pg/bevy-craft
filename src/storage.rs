@@ -64,6 +64,8 @@ fn open_storage(
     }
     // TODO optimize search background item
     // TODO spawn when world initialized
+    // TODO hash map?
+    // TODO enable distance
 }
 
 fn sync_items(

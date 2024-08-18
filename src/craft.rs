@@ -33,6 +33,7 @@ fn spawn_recipes(mut commands: Commands) {
                 }
             });
     }
+    // TODO hash map?
 }
 
 fn spawn_items(query: Query<(&ItemID, &ItemAmount), With<CraftProduct>>, mut commands: Commands) {

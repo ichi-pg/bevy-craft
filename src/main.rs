@@ -87,6 +87,7 @@ fn main() {
     // TODO enemy
     // TODO minimap, fast travel
 
+    // TODO durability with free repair
     // TODO weapon
     // sword, arrow, drone, ...
 

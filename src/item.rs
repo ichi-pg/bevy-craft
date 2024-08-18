@@ -115,5 +115,4 @@ impl Plugin for ItemPlugin {
         app.add_systems(Update, (spawn_item, sync_text, sync_image));
         app.add_systems(Last, pick_up_item);
     }
-    // TODO using macro
 }
