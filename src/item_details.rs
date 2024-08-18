@@ -24,7 +24,7 @@ fn spawn_details(mut commands: Commands) {
         });
 }
 
-fn sync_details(
+fn interact_item(
     interaction_query: Query<
         (&Interaction, &ItemID),
         (
@@ -45,40 +45,80 @@ fn sync_details(
     material_query: Query<(&ItemID, &ItemAmount), With<CraftMaterial>>,
 ) {
     for (interaction, interaction_item_id) in &interaction_query {
-        if interaction_item_id.0 == 0 {
-            continue;
-        }
-        for mut visibility in &mut details_query {
-            *visibility = match *interaction {
-                Interaction::Pressed => *visibility,
-                Interaction::Hovered => Visibility::Inherited,
-                Interaction::None => Visibility::Hidden,
-            }
-        }
-        let mut iter = query.iter_mut();
-        for (children, product_item_id) in &product_query {
-            if product_item_id.0 == interaction_item_id.0 {
-                for child in children.iter() {
-                    match material_query.get(*child) {
-                        Ok((material_item_id, material_amount)) => match iter.next() {
-                            Some((mut item_id, mut amount)) => {
-                                item_id.0 = material_item_id.0;
-                                amount.0 = material_amount.0;
-                            }
-                            None => todo!(),
-                        },
-                        Err(_) => todo!(),
+        match *interaction {
+            Interaction::Pressed => continue,
+            Interaction::Hovered => {
+                if interaction_item_id.0 == 0 {
+                    for mut visibility in &mut details_query {
+                        *visibility = Visibility::Hidden;
+                    }
+                    continue;
+                }
+                for mut visibility in &mut details_query {
+                    *visibility = Visibility::Inherited;
+                }
+                for (children, product_item_id) in &product_query {
+                    if product_item_id.0 != interaction_item_id.0 {
+                        continue;
+                    }
+                    let mut iter = query.iter_mut();
+                    for child in children.iter() {
+                        match material_query.get(*child) {
+                            Ok((material_item_id, material_amount)) => match iter.next() {
+                                Some((mut item_id, mut amount)) => {
+                                    item_id.0 = material_item_id.0;
+                                    amount.0 = material_amount.0;
+                                }
+                                None => todo!(),
+                            },
+                            Err(_) => todo!(),
+                        }
+                    }
+                    for (mut item_id, mut amount) in iter {
+                        item_id.0 = 0;
+                        amount.0 = 0;
                     }
                 }
             }
-        }
-        for (mut item_id, mut amount) in iter {
-            item_id.0 = 0;
-            amount.0 = 0;
+            Interaction::None => continue,
         }
     }
-    // TODO fix blinking
     // TODO hide while dragging
+}
+
+fn interact_grid(
+    interaction_query: Query<&Interaction, (With<GridNode>, Changed<Interaction>)>,
+    mut details_query: Query<&mut Visibility, With<ItemDetails>>,
+) {
+    for interaction in &interaction_query {
+        match *interaction {
+            Interaction::Pressed => continue,
+            Interaction::Hovered => continue,
+            Interaction::None => {
+                for mut visibility in &mut details_query {
+                    *visibility = Visibility::Hidden;
+                }
+            }
+        }
+    }
+}
+
+fn sync_hidden(
+    details_query: Query<&Visibility, (With<ItemDetails>, Changed<Visibility>)>,
+    mut query: Query<(&mut ItemID, &mut ItemAmount), With<MaterialItem>>,
+) {
+    for visibility in &details_query {
+        match *visibility {
+            Visibility::Inherited => continue,
+            Visibility::Hidden => {
+                for (mut item_id, mut amount) in &mut query {
+                    item_id.0 = 0;
+                    amount.0 = 0;
+                }
+            }
+            Visibility::Visible => continue,
+        }
+    }
 }
 
 pub struct ItemDetailsPlugin;
@@ -86,6 +126,6 @@ pub struct ItemDetailsPlugin;
 impl Plugin for ItemDetailsPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_details);
-        app.add_systems(Update, sync_details);
+        app.add_systems(Update, (interact_item, interact_grid, sync_hidden));
     }
 }

@@ -78,6 +78,8 @@ fn push_out_item<T: Component, U: Event + Default + ItemAndAmount>(
             Interaction::None => continue,
         }
     }
+    // TODO quick in out
+    // TODO sort
 }
 
 pub struct ItemPuttingPlugin;

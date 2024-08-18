@@ -1,6 +1,9 @@
 use crate::ui_hovered::*;
 use bevy::prelude::*;
 
+#[derive(Component)]
+pub struct GridNode;
+
 pub fn screen_node(padding: f32, align_items: AlignItems) -> NodeBundle {
     NodeBundle {
         style: Style {
@@ -22,7 +25,11 @@ pub fn screen_node(padding: f32, align_items: AlignItems) -> NodeBundle {
     }
 }
 
-pub fn grid_node(x: u16, y: u16, visibility: Visibility) -> (NodeBundle, Interaction, UI) {
+pub fn grid_node(
+    x: u16,
+    y: u16,
+    visibility: Visibility,
+) -> (NodeBundle, Interaction, UI, GridNode) {
     (
         NodeBundle {
             style: Style {
@@ -41,5 +48,7 @@ pub fn grid_node(x: u16, y: u16, visibility: Visibility) -> (NodeBundle, Interac
         },
         Interaction::None,
         UI,
+        GridNode,
     )
+    // TODO split background and grid
 }
