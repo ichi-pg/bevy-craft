@@ -13,6 +13,7 @@ fn spawn_stats(mut commands: Commands) {
     for item in [(101, 10)] {
         commands.spawn((ItemStats, ItemID(item.0), Defense(item.1)));
     }
+    // TODO merge craft materials and stats?
 }
 
 fn sync_stats(
