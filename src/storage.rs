@@ -64,7 +64,7 @@ fn open_storage(
     }
     // TODO optimize search background item
     // TODO spawn when world initialized
-    // TODO hash map?
+    // TODO hash map with block id?
     // TODO enable distance
 }
 

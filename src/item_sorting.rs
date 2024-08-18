@@ -34,6 +34,7 @@ fn sort_items<T: Component, U: Resource + Pressed>(
         item_id.0 = 0;
         amount.0 = 0;
     }
+    // TODO button?
 }
 
 pub struct ItemSortingPlugin;

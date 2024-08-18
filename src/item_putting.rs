@@ -49,6 +49,7 @@ fn put_in_item<T: Event + ItemAndAmount, U: Component, V: Event + Default + Item
     }
     // TODO refactor V::from
     // TODO which player?
+    // TODO max item amount
 }
 
 fn push_out_item<T: Component, U: Event + Default + ItemAndAmount>(
@@ -78,9 +79,16 @@ fn push_out_item<T: Component, U: Event + Default + ItemAndAmount>(
     }
 }
 
-fn bulk_push_out<T: Component, U: Event + Default + ItemAndAmount, V: Resource + Pressed>(
+fn bulk_push_out<
+    T: Component,
+    U: Event + Default + ItemAndAmount,
+    V: Component,
+    W: Resource + Pressed,
+>(
     mut query: Query<(&mut ItemID, &mut ItemAmount), With<T>>,
-    pressed: Res<V>,
+    filter_query: Query<&ItemID, (With<V>, Without<T>)>,
+    pressed: Res<W>,
+    shift: Res<Shift>,
     mut event_writer: EventWriter<U>,
 ) {
     if !pressed.just_pressed() {
@@ -90,6 +98,18 @@ fn bulk_push_out<T: Component, U: Event + Default + ItemAndAmount, V: Resource +
         if item_id.0 == 0 {
             continue;
         }
+        if !shift.pressed {
+            let mut found = false;
+            for filter_item_id in &filter_query {
+                if filter_item_id.0 == item_id.0 {
+                    found = true;
+                    break;
+                }
+            }
+            if !found {
+                continue;
+            }
+        }
         let mut e: U = U::default();
         e.set_item_id(item_id.0);
         e.set_amount(amount.0);
@@ -97,10 +117,12 @@ fn bulk_push_out<T: Component, U: Event + Default + ItemAndAmount, V: Resource +
         item_id.0 = 0;
         amount.0 = 0;
     }
-    // TODO only exists items
     // TODO around storages
     // TODO check overflow
     // TODO protected items
+    // TODO supply hotbar
+    // TODO hash set with item id?
+    // TODO button?
 }
 
 pub struct ItemPuttingPlugin;
@@ -131,8 +153,8 @@ impl Plugin for ItemPuttingPlugin {
                     .run_if(in_state(ItemDragged::None))
                     .run_if(in_state(InventoryOpened::Opened)),
                 (
-                    bulk_push_out::<InventoryItem, InventoryPushedOut, KeyR>,
-                    bulk_push_out::<StorageItem, StorageOverflowed, KeyF>,
+                    bulk_push_out::<InventoryItem, InventoryPushedOut, StorageItem, KeyR>,
+                    bulk_push_out::<StorageItem, StorageOverflowed, InventoryItem, KeyF>,
                 )
                     .run_if(in_state(UIStates::Storage)),
             ),
