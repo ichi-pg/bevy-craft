@@ -4,6 +4,7 @@ mod camera;
 mod click_shape;
 mod collision;
 mod craft;
+mod equipment;
 mod framerate;
 mod gravity;
 mod hit_test;
@@ -70,6 +71,7 @@ fn main() {
             inventory::InventoryPlugin,
             storage::StoragePlugin,
             craft::CraftPlugin,
+            equipment::EquipmentPlugin,
         ))
         .add_plugins((
             camera::CameraPlugin,
@@ -84,8 +86,8 @@ fn main() {
     // switch, door, ladder, rope, bomb, barrel, raft, magnetic, torch, ...
 
     // TODO tame, mount
-    // TODO tools, potion, equipment
-    // TODO craft, enchant(job building), skill(combo building)
+    // TODO tools, potion
+    // TODO enchant(job building), skill(combo building)
     // TODO housing, farmming, industry
     // TODO rogue dungeon
     // TODO enemy
@@ -103,7 +105,7 @@ fn main() {
     // TODO save and load
     // TODO multiplayer
     // TODO sound
-    // TODO config (fps, resolution, key config, ...)
+    // TODO config (framerate, resolution, key bind, ...)
 
     // TODO visual making
     // water, lighting, post effect, background layers, ...

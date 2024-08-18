@@ -98,7 +98,7 @@ fn bulk_push_out<
         if item_id.0 == 0 {
             continue;
         }
-        if !shift.pressed {
+        if shift.pressed {
             let mut found = false;
             for filter_item_id in &filter_query {
                 if filter_item_id.0 == item_id.0 {
@@ -118,6 +118,7 @@ fn bulk_push_out<
         amount.0 = 0;
     }
     // TODO around storages
+    // TODO filtered storage
     // TODO check overflow
     // TODO protected items
     // TODO supply hotbar

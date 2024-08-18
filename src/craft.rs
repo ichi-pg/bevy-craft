@@ -38,14 +38,24 @@ fn spawn_recipes(mut commands: Commands) {
 
 fn spawn_items(query: Query<(&ItemID, &ItemAmount), With<CraftProduct>>, mut commands: Commands) {
     commands
-        .spawn(screen_node(600.0, AlignItems::Center))
+        .spawn(screen_node(4, 2, AlignItems::Center))
         .with_children(|parent: &mut ChildBuilder| {
             parent
-                .spawn((grid_node(10, 4, Visibility::Hidden), CraftUI))
+                .spawn(grid_space(10, 2, JustifyContent::Start))
                 .with_children(|parent| {
-                    for (index, (item_id, amount)) in query.iter().enumerate() {
-                        build_item::<ProductItem>(parent, item_id.0, amount.0, index as u8, false);
-                    }
+                    parent
+                        .spawn((grid_node(3, 2, Visibility::Hidden), CraftUI))
+                        .with_children(|parent| {
+                            for (index, (item_id, amount)) in query.iter().enumerate() {
+                                build_item::<ProductItem>(
+                                    parent,
+                                    item_id.0,
+                                    amount.0,
+                                    index as u8,
+                                    false,
+                                );
+                            }
+                        });
                 });
         });
     // TODO workbench

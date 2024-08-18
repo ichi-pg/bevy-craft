@@ -14,14 +14,18 @@ struct MaterialItem;
 
 fn spawn_details(mut commands: Commands) {
     commands
-        .spawn(screen_node(10.0, AlignItems::End))
+        .spawn(screen_node(0, 0, AlignItems::End))
         .with_children(|parent: &mut ChildBuilder| {
             parent
-                .spawn((grid_node(3, 1, Visibility::Hidden), ItemDetails))
-                .with_children(|parent| {
-                    for i in 0..3 {
-                        build_item::<MaterialItem>(parent, 0, 0, i, false);
-                    }
+                .spawn(NodeBundle { ..default() })
+                .with_children(|parent: &mut ChildBuilder| {
+                    parent
+                        .spawn((grid_node(3, 1, Visibility::Hidden), ItemDetails))
+                        .with_children(|parent| {
+                            for i in 0..3 {
+                                build_item::<MaterialItem>(parent, 0, 0, i, false);
+                            }
+                        });
                 });
         });
 }
@@ -136,7 +140,7 @@ impl Plugin for ItemDetailsPlugin {
         );
         app.add_systems(
             OnEnter(ItemDragged::Dragged),
-            change_visibility::<ItemDetails, ItemDetails>(Visibility::Hidden),
+            change_visibility::<ItemDetails, ItemDetails, ItemDetails>(Visibility::Hidden),
         );
     }
 }

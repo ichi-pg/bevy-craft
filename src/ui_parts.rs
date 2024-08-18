@@ -4,7 +4,7 @@ use bevy::prelude::*;
 #[derive(Component)]
 pub struct GridNode;
 
-pub fn screen_node(padding: f32, align_items: AlignItems) -> NodeBundle {
+pub fn screen_node(y: u16, containers: u16, align_items: AlignItems) -> NodeBundle {
     NodeBundle {
         style: Style {
             width: Val::Percent(100.0),
@@ -17,13 +17,27 @@ pub fn screen_node(padding: f32, align_items: AlignItems) -> NodeBundle {
                 Val::Px(10.0),
                 Val::Px(10.0),
                 Val::Px(10.0),
-                Val::Px(padding),
+                Val::Px(10.0 + containers as f32 * 20.0 + y as f32 * 10.0 + y as f32 * 100.0),
             ),
             ..default()
         },
         ..default()
     }
     // TODO ui root?
+}
+
+pub fn grid_space(x: u16, y: u16, justify_content: JustifyContent) -> NodeBundle {
+    NodeBundle {
+        style: Style {
+            width: Val::Px((x * 110 + 10) as f32),
+            height: Val::Px((y * 110 + 10) as f32),
+            flex_direction: FlexDirection::Row,
+            justify_content,
+            align_items: AlignItems::Center,
+            ..default()
+        },
+        ..default()
+    }
 }
 
 pub fn grid_node(

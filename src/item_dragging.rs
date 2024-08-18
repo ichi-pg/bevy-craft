@@ -1,3 +1,4 @@
+use crate::equipment::*;
 use crate::hotbar::*;
 use crate::input::*;
 use crate::inventory::*;
@@ -186,6 +187,7 @@ impl Plugin for ItemDraggingPlugin {
                     drag_item::<HotbarItem>,
                     drag_item::<InventoryItem>,
                     drag_item::<StorageItem>,
+                    drag_item::<EquipmentItem>,
                 )
                     .run_if(in_state(ItemDragged::None)),
                 dragging_item,
@@ -193,6 +195,7 @@ impl Plugin for ItemDraggingPlugin {
                     put_in_item::<HotbarItem>,
                     put_in_item::<InventoryItem>,
                     put_in_item::<StorageItem>,
+                    put_in_item::<EquipmentItem>,
                     drop_item.run_if(in_state(UIHovered::None)),
                 )
                     .run_if(in_state(ItemDragged::Dragged)),

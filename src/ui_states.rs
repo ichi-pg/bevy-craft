@@ -20,9 +20,9 @@ pub fn change_ui_state<T: Resource + Pressed>(
     }
 }
 
-pub fn change_visibility<T: Component, U: Component>(
+pub fn change_visibility<T: Component, U: Component, V: Component>(
     visibility: Visibility,
-) -> impl FnMut(Query<&mut Visibility, Or<(With<T>, With<U>)>>) {
+) -> impl FnMut(Query<&mut Visibility, Or<(With<T>, With<U>, With<V>)>>) {
     move |mut query| {
         for mut mut_visibility in &mut query {
             *mut_visibility = visibility;

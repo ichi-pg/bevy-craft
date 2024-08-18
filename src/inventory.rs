@@ -1,4 +1,5 @@
 use crate::craft::*;
+use crate::equipment::*;
 use crate::input::*;
 use crate::item::*;
 use crate::ui_states::*;
@@ -49,11 +50,11 @@ impl Plugin for InventoryPlugin {
         );
         app.add_systems(
             OnEnter(UIStates::Inventory),
-            change_visibility::<Inventory, CraftUI>(Visibility::Inherited),
+            change_visibility::<Inventory, CraftUI, EquipmentUI>(Visibility::Inherited),
         );
         app.add_systems(
             OnExit(UIStates::Inventory),
-            change_visibility::<Inventory, CraftUI>(Visibility::Hidden),
+            change_visibility::<Inventory, CraftUI, EquipmentUI>(Visibility::Hidden),
         );
     }
 }

@@ -27,7 +27,6 @@ pub fn build_item<T: Component + Default>(
                     flex_direction: FlexDirection::Column,
                     justify_content: JustifyContent::End,
                     align_items: AlignItems::End,
-                    padding: UiRect::all(Val::Px(4.0)),
                     ..default()
                 },
                 ..default()
@@ -79,10 +78,10 @@ fn build_container<T: Component + Default, U: Component + Default>(
 
 fn spawn_containers(mut commands: Commands) {
     commands
-        .spawn(screen_node(10.0, AlignItems::Center))
+        .spawn(screen_node(0, 0, AlignItems::Center))
         .with_children(|parent: &mut ChildBuilder| {
-            build_container::<Storage, StorageItem>(parent, 10, 4, Visibility::Hidden, false);
-            build_container::<Inventory, InventoryItem>(parent, 10, 4, Visibility::Hidden, false);
+            build_container::<Storage, StorageItem>(parent, 10, 3, Visibility::Hidden, false);
+            build_container::<Inventory, InventoryItem>(parent, 10, 3, Visibility::Hidden, false);
             build_container::<Hotbar, HotbarItem>(parent, 10, 1, Visibility::Inherited, true);
         });
 }

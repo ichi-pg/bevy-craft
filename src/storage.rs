@@ -66,6 +66,7 @@ fn open_storage(
     // TODO spawn when world initialized
     // TODO hash map with block id?
     // TODO enable distance
+    // TODO display contents on storage block
 }
 
 fn sync_items(
@@ -140,7 +141,7 @@ fn destroy_items(
             commands.entity(entity).despawn();
         }
     }
-    // TODO optimize event depends
+    // TODO optimize event mod depends
 }
 
 fn destroy_storage(
@@ -174,11 +175,11 @@ impl Plugin for StoragePlugin {
         );
         app.add_systems(
             OnEnter(UIStates::Storage),
-            change_visibility::<Storage, Inventory>(Visibility::Inherited),
+            change_visibility::<Storage, Inventory, Inventory>(Visibility::Inherited),
         );
         app.add_systems(
             OnExit(UIStates::Storage),
-            change_visibility::<Storage, Inventory>(Visibility::Hidden),
+            change_visibility::<Storage, Inventory, Inventory>(Visibility::Hidden),
         );
         app.add_systems(Last, destroy_items);
     }
