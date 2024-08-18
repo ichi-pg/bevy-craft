@@ -134,6 +134,7 @@ impl Plugin for InputPlugin {
                 )*
             };
         }
+        // TODO flexible key codes
         insert_pressed!(
             (Escape, Escape),
             (Tab, Tab),

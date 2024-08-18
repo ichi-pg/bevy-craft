@@ -28,6 +28,7 @@ pub fn change_visibility<T: Component, U: Component>(
             *mut_visibility = visibility;
         }
     }
+    // TODO flexible generics
 }
 
 pub fn sync_visibility<T: Component, U: FreelyMutableState + Copy>(
