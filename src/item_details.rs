@@ -1,7 +1,9 @@
 use crate::craft::*;
 use crate::item::*;
 use crate::item_container::*;
+use crate::item_dragging::*;
 use crate::ui_parts::*;
+use crate::ui_states::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -83,7 +85,6 @@ fn interact_item(
             Interaction::None => continue,
         }
     }
-    // TODO hide while dragging
 }
 
 fn interact_grid(
@@ -126,6 +127,16 @@ pub struct ItemDetailsPlugin;
 impl Plugin for ItemDetailsPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_details);
-        app.add_systems(Update, (interact_item, interact_grid, sync_hidden));
+        app.add_systems(
+            Update,
+            (
+                (interact_item, interact_grid).run_if(in_state(ItemDragged::None)),
+                sync_hidden,
+            ),
+        );
+        app.add_systems(
+            OnEnter(ItemDragged::Dragged),
+            change_visibility::<ItemDetails, ItemDetails>(Visibility::Hidden),
+        );
     }
 }
