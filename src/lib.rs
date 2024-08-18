@@ -56,3 +56,24 @@ fn impl_pressed(ast: &syn::DeriveInput) -> TokenStream {
     };
     gen.into()
 }
+
+#[proc_macro_derive(Stats)]
+pub fn derive_stats(input: TokenStream) -> TokenStream {
+    let ast = syn::parse(input).unwrap();
+    impl_stats(&ast)
+}
+
+fn impl_stats(ast: &syn::DeriveInput) -> TokenStream {
+    let name = &ast.ident;
+    let gen = quote! {
+        impl Stats for #name {
+            fn get(&self) -> u16 {
+                self.0
+            }
+            fn set(&mut self, stats: u16) {
+                self.0 = stats;
+            }
+        }
+    };
+    gen.into()
+}
