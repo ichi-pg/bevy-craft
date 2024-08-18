@@ -1,6 +1,7 @@
 use crate::gravity::*;
 use crate::hit_test::*;
 use crate::input::*;
+use crate::item_stats::*;
 use crate::velocity::*;
 use bevy::{
     prelude::*,
@@ -31,6 +32,7 @@ fn spawn_player(
         },
         Player,
         PlayerController,
+        Defense(0),
         JumpController,
         Velocity2::default(),
         Direction2(Vec2::X),

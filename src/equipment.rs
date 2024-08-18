@@ -1,5 +1,7 @@
+use crate::item::*;
 use crate::item_container::*;
 use crate::ui_parts::*;
+use crate::ui_states::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -7,6 +9,9 @@ pub struct EquipmentUI;
 
 #[derive(Component, Default)]
 pub struct EquipmentItem;
+
+#[derive(Event, Default)]
+pub struct EquipmentChanged;
 
 fn spawn_equipments(mut commands: Commands) {
     commands
@@ -25,6 +30,8 @@ fn spawn_equipments(mut commands: Commands) {
                 });
         });
     // TODO character preview
+    // TODO stats preview
+    // TODO ability preview
     // TODO slot categorize
 }
 
@@ -32,8 +39,11 @@ pub struct EquipmentPlugin;
 
 impl Plugin for EquipmentPlugin {
     fn build(&self, app: &mut App) {
+        app.add_event::<EquipmentChanged>();
         app.add_systems(Startup, spawn_equipments);
+        app.add_systems(
+            Update,
+            sync_changed::<EquipmentItem, ItemID, EquipmentChanged>,
+        );
     }
-    // TODO stats
-    // TODO ability
 }

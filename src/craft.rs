@@ -8,7 +8,7 @@ use crate::ui_parts::*;
 use bevy::prelude::*;
 
 #[derive(Component, Default)]
-pub struct ProductItem;
+struct ProductItem;
 
 #[derive(Component)]
 pub struct CraftProduct;
@@ -173,6 +173,7 @@ fn click_recipe(
     // TODO optimize sum
     // TODO storage items
     // TODO commonize drag item
+    // TODO max item amount
 }
 
 pub struct CraftPlugin;

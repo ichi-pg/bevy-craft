@@ -46,6 +46,15 @@ pub fn sync_visibility<T: Component, U: FreelyMutableState + Copy>(
     }
 }
 
+pub fn sync_changed<T: Component, U: Component, V: Event + Default>(
+    query: Query<&T, Changed<U>>,
+    mut event_writer: EventWriter<V>,
+) {
+    for _ in &query {
+        event_writer.send(V::default());
+    }
+}
+
 pub struct UIStatusPlugin;
 
 impl Plugin for UIStatusPlugin {

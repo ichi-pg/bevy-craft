@@ -18,6 +18,7 @@ mod item_dragging;
 mod item_putting;
 mod item_selecting;
 mod item_sorting;
+mod item_stats;
 mod math;
 mod player;
 mod profiler;
@@ -65,6 +66,7 @@ fn main() {
             item_selecting::ItemSelectingPlugin,
             item_details::ItemDetailsPlugin,
             item_sorting::ItemSortingPlugin,
+            item_stats::ItemStatsPlugin,
         ))
         .add_plugins((
             hotbar::HotbarPlugin,
