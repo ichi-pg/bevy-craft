@@ -13,9 +13,9 @@ mod hotbar;
 mod input;
 mod inventory;
 mod item;
-mod item_container;
 mod item_details;
 mod item_dragging;
+mod item_node;
 mod item_putting;
 mod item_selecting;
 mod item_sorting;
@@ -62,7 +62,7 @@ fn main() {
             click_shape::ClickShapePlugin,
         ))
         .add_plugins((
-            item_container::ItemContainerPlugin,
+            item_node::ItemNodePlugin,
             item_putting::ItemPuttingPlugin,
             item_dragging::ItemDraggingPlugin,
             item_selecting::ItemSelectingPlugin,

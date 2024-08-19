@@ -2,7 +2,7 @@ use crate::craft::*;
 use crate::craft_recipe::*;
 use crate::inventory::*;
 use crate::item::*;
-use crate::item_container::*;
+use crate::item_node::*;
 use crate::ui_parts::*;
 use crate::ui_states::*;
 use bevy::prelude::*;
@@ -16,10 +16,10 @@ pub struct WorkbenchClicked;
 
 fn spawn_items(query: Query<(&ItemID, &ItemAmount), With<CraftProduct>>, mut commands: Commands) {
     commands
-        .spawn(screen_node(4, 2, AlignItems::Center))
+        .spawn(screen_node(INVENTORY_Y + 1, 2, AlignItems::Center))
         .with_children(|parent: &mut ChildBuilder| {
             parent
-                .spawn(grid_space(10, 2, JustifyContent::SpaceBetween))
+                .spawn(grid_space(INVENTORY_X, 2, JustifyContent::SpaceBetween))
                 .with_children(|parent| {
                     for item_ids in [
                         HashSet::<u16>::from_iter([101, 102, 103]),

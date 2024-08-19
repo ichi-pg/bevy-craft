@@ -87,32 +87,13 @@ fn pick_up_item(
     }
 }
 
-fn sync_text(mut query: Query<(&ItemID, &ItemAmount, &mut Text), Changed<ItemAmount>>) {
-    for (item_id, amount, mut text) in &mut query {
-        for section in &mut text.sections {
-            section.value = if amount.0 == 0 {
-                String::new()
-            } else {
-                format!("{} x{}", item_id.0, amount.0)
-            };
-        }
-    }
-}
-
-fn sync_image(mut query: Query<(&ItemID, &mut BackgroundColor), (With<UiImage>, Changed<ItemID>)>) {
-    for (item_id, mut color) in &mut query {
-        color.0 = item_color(item_id.0);
-    }
-    // TODO texture
-}
-
 pub struct ItemPlugin;
 
 impl Plugin for ItemPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ItemDropped>();
         app.add_event::<ItemPickedUp>();
-        app.add_systems(Update, (spawn_item, sync_text, sync_image));
+        app.add_systems(Update, spawn_item);
         app.add_systems(Last, pick_up_item);
     }
 }

@@ -2,11 +2,13 @@ use crate::craft::*;
 use crate::equipment::*;
 use crate::input::*;
 use crate::item::*;
+use crate::item_node::*;
+use crate::ui_parts::*;
 use crate::ui_states::*;
 use bevy::prelude::*;
 use bevy_craft::*;
 
-#[derive(Component, Default)]
+#[derive(Component)]
 pub struct Inventory;
 
 #[derive(Component, Default)]
@@ -30,6 +32,26 @@ pub enum InventoryOpened {
     Opened,
 }
 
+pub const INVENTORY_X: u16 = 10;
+pub const INVENTORY_Y: u16 = 4;
+
+fn spawn_inventory(mut commands: Commands) {
+    commands
+        .spawn(screen_node(1, 1, AlignItems::Center))
+        .with_children(|parent: &mut ChildBuilder| {
+            parent
+                .spawn((
+                    grid_node(INVENTORY_X, INVENTORY_Y, Visibility::Hidden),
+                    Inventory,
+                ))
+                .with_children(|parent| {
+                    for i in 0..INVENTORY_X * INVENTORY_Y {
+                        build_item::<InventoryItem>(parent, 0, 0, i as u8, false);
+                    }
+                });
+        });
+}
+
 pub struct InventoryPlugin;
 
 impl Plugin for InventoryPlugin {
@@ -37,6 +59,7 @@ impl Plugin for InventoryPlugin {
         app.insert_state(InventoryOpened::None);
         app.add_event::<InventoryOverflowed>();
         app.add_event::<InventoryPushedOut>();
+        app.add_systems(Startup, spawn_inventory);
         app.add_systems(
             Update,
             (

@@ -1,8 +1,4 @@
-use crate::hotbar::*;
-use crate::inventory::*;
 use crate::item::*;
-use crate::storage::*;
-use crate::ui_parts::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -10,6 +6,8 @@ pub struct ItemNode;
 
 #[derive(Component)]
 pub struct ItemIndex(pub u8);
+
+pub const ITEM_SIZE: u16 = 80;
 
 pub fn build_item<T: Component + Default>(
     parent: &mut ChildBuilder,
@@ -22,8 +20,8 @@ pub fn build_item<T: Component + Default>(
         .spawn((
             ImageBundle {
                 style: Style {
-                    width: Val::Px(100.0),
-                    height: Val::Px(100.0),
+                    width: Val::Px(ITEM_SIZE as f32),
+                    height: Val::Px(ITEM_SIZE as f32),
                     flex_direction: FlexDirection::Column,
                     justify_content: JustifyContent::End,
                     align_items: AlignItems::End,
@@ -60,32 +58,6 @@ pub fn build_item<T: Component + Default>(
     // TODO remove selectable
 }
 
-fn build_container<T: Component + Default, U: Component + Default>(
-    parent: &mut ChildBuilder,
-    x: u16,
-    y: u16,
-    visibility: Visibility,
-    selectable: bool,
-) {
-    parent
-        .spawn((grid_node(x, y, visibility), T::default()))
-        .with_children(|parent| {
-            for i in 0..x * y {
-                build_item::<U>(parent, 0, 0, i as u8, selectable);
-            }
-        });
-}
-
-fn spawn_containers(mut commands: Commands) {
-    commands
-        .spawn(screen_node(0, 0, AlignItems::Center))
-        .with_children(|parent: &mut ChildBuilder| {
-            build_container::<Storage, StorageItem>(parent, 10, 3, Visibility::Hidden, false);
-            build_container::<Inventory, InventoryItem>(parent, 10, 3, Visibility::Hidden, false);
-            build_container::<Hotbar, HotbarItem>(parent, 10, 1, Visibility::Inherited, true);
-        });
-}
-
 fn sync_children(
     parent_query: Query<
         (&Children, &ItemID, &ItemAmount),
@@ -106,12 +78,30 @@ fn sync_children(
     }
 }
 
-pub struct ItemContainerPlugin;
+fn sync_text(mut query: Query<(&ItemID, &ItemAmount, &mut Text), Changed<ItemAmount>>) {
+    for (item_id, amount, mut text) in &mut query {
+        for section in &mut text.sections {
+            section.value = if amount.0 == 0 {
+                String::new()
+            } else {
+                format!("{} x{}", item_id.0, amount.0)
+            };
+        }
+    }
+}
 
-impl Plugin for ItemContainerPlugin {
+fn sync_image(mut query: Query<(&ItemID, &mut BackgroundColor), (With<UiImage>, Changed<ItemID>)>) {
+    for (item_id, mut color) in &mut query {
+        color.0 = item_color(item_id.0);
+    }
+    // TODO texture
+}
+
+pub struct ItemNodePlugin;
+
+impl Plugin for ItemNodePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_containers);
-        app.add_systems(Update, sync_children);
+        app.add_systems(Update, (sync_children, sync_text, sync_image));
     }
     // TODO spawn item when inventory overflowed
 }

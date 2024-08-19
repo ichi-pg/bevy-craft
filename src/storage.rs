@@ -1,7 +1,8 @@
 use crate::block::*;
 use crate::inventory::*;
 use crate::item::*;
-use crate::item_container::*;
+use crate::item_node::*;
+use crate::ui_parts::*;
 use crate::ui_states::*;
 use bevy::prelude::*;
 use bevy_craft::*;
@@ -9,7 +10,7 @@ use bevy_craft::*;
 #[derive(Component)]
 struct BackgroundItem;
 
-#[derive(Component, Default)]
+#[derive(Component)]
 pub struct Storage;
 
 #[derive(Component, Default)]
@@ -27,6 +28,20 @@ pub struct StorageClicked {
 pub struct StorageOverflowed {
     pub item_id: u16,
     pub amount: u16,
+}
+
+fn spawn_storage(mut commands: Commands) {
+    commands
+        .spawn(screen_node(INVENTORY_Y + 1, 2, AlignItems::Center))
+        .with_children(|parent: &mut ChildBuilder| {
+            parent
+                .spawn((grid_node(12, 3, Visibility::Hidden), Storage))
+                .with_children(|parent| {
+                    for i in 0..36 {
+                        build_item::<StorageItem>(parent, 0, 0, i as u8, false);
+                    }
+                });
+        });
 }
 
 fn open_storage(
@@ -165,6 +180,7 @@ impl Plugin for StoragePlugin {
         app.insert_resource(StorageBlockID(0));
         app.add_event::<StorageOverflowed>();
         app.add_event::<StorageClicked>();
+        app.add_systems(Startup, spawn_storage);
         app.add_systems(
             Update,
             (

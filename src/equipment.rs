@@ -1,5 +1,6 @@
+use crate::inventory::*;
 use crate::item::*;
-use crate::item_container::*;
+use crate::item_node::*;
 use crate::ui_parts::*;
 use crate::ui_states::*;
 use bevy::prelude::*;
@@ -15,15 +16,15 @@ pub struct EquipmentChanged;
 
 fn spawn_equipments(mut commands: Commands) {
     commands
-        .spawn(screen_node(4, 2, AlignItems::Center))
+        .spawn(screen_node(INVENTORY_Y + 1, 2, AlignItems::Center))
         .with_children(|parent: &mut ChildBuilder| {
             parent
-                .spawn(grid_space(10, 2, JustifyContent::End))
+                .spawn(grid_space(INVENTORY_X, 4, JustifyContent::End))
                 .with_children(|parent| {
                     parent
-                        .spawn((grid_node(3, 2, Visibility::Hidden), EquipmentUI))
+                        .spawn((grid_node(3, 4, Visibility::Hidden), EquipmentUI))
                         .with_children(|parent| {
-                            for i in 0..6 {
+                            for i in 0..10 {
                                 build_item::<EquipmentItem>(parent, 0, 0, i, false);
                             }
                         });
