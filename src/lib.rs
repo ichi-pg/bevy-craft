@@ -67,10 +67,10 @@ fn impl_stats(ast: &syn::DeriveInput) -> TokenStream {
     let name = &ast.ident;
     let gen = quote! {
         impl Stats for #name {
-            fn get(&self) -> u16 {
+            fn get(&self) -> f32 {
                 self.0
             }
-            fn set(&mut self, stats: u16) {
+            fn set(&mut self, stats: f32) {
                 self.0 = stats;
             }
         }

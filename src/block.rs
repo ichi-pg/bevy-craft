@@ -4,6 +4,7 @@ use crate::hotbar::*;
 use crate::item::*;
 use crate::item_node::*;
 use crate::item_selecting::*;
+use crate::item_stats::*;
 use crate::random::*;
 use crate::storage::*;
 use crate::workbench::*;
@@ -18,6 +19,9 @@ pub struct Block;
 #[derive(Component)]
 pub struct BlockID(pub u64);
 
+#[derive(Component)]
+struct Damaged;
+
 #[derive(Event)]
 pub struct BlockDestroied {
     pub translation: Vec3,
@@ -30,7 +34,15 @@ fn block_bundle(
     y: f32,
     color: Color,
     block_id: u64,
-) -> (SpriteBundle, Shape, Block, BlockID, ItemID) {
+) -> (
+    SpriteBundle,
+    Shape,
+    Block,
+    BlockID,
+    ItemID,
+    MaxHealth,
+    Health,
+) {
     (
         SpriteBundle {
             sprite: Sprite {
@@ -45,6 +57,8 @@ fn block_bundle(
         Block,
         BlockID(block_id),
         ItemID(item_id),
+        MaxHealth(100.0),
+        Health(100.0),
     )
     // TODO not overlap block id
 }
@@ -70,25 +84,49 @@ fn spawn_blocks(mut commands: Commands, mut random: ResMut<Random>) {
 }
 
 fn destroy_block(
-    query: Query<(Entity, &Transform, &ItemID, &BlockID), (With<Block>, With<LeftClicked>)>,
+    mut query: Query<
+        (Entity, &Transform, &ItemID, &BlockID, &mut Health),
+        (With<Block>, With<LeftClicked>),
+    >,
     mut commands: Commands,
     mut item_event_writer: EventWriter<ItemDropped>,
     mut block_event_writer: EventWriter<BlockDestroied>,
+    time: Res<Time>,
 ) {
-    for (entity, transform, item_id, block_id) in &query {
-        commands.entity(entity).despawn();
-        block_event_writer.send(BlockDestroied {
-            translation: transform.translation,
-            block_id: block_id.0,
-        });
-        item_event_writer.send(ItemDropped {
-            translation: transform.translation,
-            item_id: item_id.0,
-            amount: 1,
-        });
+    for (entity, transform, item_id, block_id, mut health) in &mut query {
+        health.0 -= 40.0 * time.delta_seconds();
+        if health.0 <= 0.0 {
+            commands.entity(entity).despawn();
+            block_event_writer.send(BlockDestroied {
+                translation: transform.translation,
+                block_id: block_id.0,
+            });
+            item_event_writer.send(ItemDropped {
+                translation: transform.translation,
+                item_id: item_id.0,
+                amount: 1,
+            });
+        } else {
+            commands.entity(entity).insert(Damaged);
+            commands.entity(entity).remove::<LeftClicked>();
+        }
     }
-    // TODO block hp
     // TODO pickaxe
+    // TODO texture each health rate
+}
+
+fn repair_health(
+    mut query: Query<(Entity, &mut Health, &MaxHealth), (With<Block>, With<Damaged>)>,
+    mut commands: Commands,
+    time: Res<Time>,
+) {
+    for (entity, mut health, max_health) in &mut query {
+        health.0 += 10.0 * time.delta_seconds();
+        if health.0 >= max_health.0 {
+            health.0 = max_health.0;
+            commands.entity(entity).remove::<Damaged>();
+        }
+    }
 }
 
 fn interact_block(
@@ -99,7 +137,7 @@ fn interact_block(
 ) {
     for (entity, item_id, block_id) in &query {
         match item_id.0 {
-            1 => {
+            102 => {
                 storage_event_writer.send(StorageClicked {
                     block_id: block_id.0,
                 });
@@ -151,7 +189,7 @@ impl Plugin for BlockPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<BlockDestroied>();
         app.add_systems(Startup, spawn_blocks);
-        app.add_systems(Update, (placement_block, interact_block));
+        app.add_systems(Update, (placement_block, interact_block, repair_health));
         app.add_systems(Last, destroy_block);
     }
 }

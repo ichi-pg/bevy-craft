@@ -20,24 +20,16 @@ fn left_click(
     left_click: Res<LeftClick>,
     world_cursor: Res<WorldCursor>,
     mut commands: Commands,
-    mut event_writer: EventWriter<EmptyClicked>,
 ) {
-    if !left_click.just_pressed {
+    if !left_click.pressed {
         return;
     }
-    let mut found = false;
     for (entity, transform, shape) in &query {
         if point_test(world_cursor.0, transform.translation, *shape) {
             commands.entity(entity).insert(LeftClicked);
-            found = true;
+            break;
         }
     }
-    if found {
-        return;
-    }
-    event_writer.send(EmptyClicked {
-        pos: world_cursor.0,
-    });
     // TODO chunk or sweep or tree
 }
 
@@ -46,15 +38,25 @@ fn right_click(
     right_click: Res<RightClick>,
     world_cursor: Res<WorldCursor>,
     mut commands: Commands,
+    mut event_writer: EventWriter<EmptyClicked>,
 ) {
     if !right_click.just_pressed {
         return;
     }
+    let mut found = false;
     for (entity, transform, shape) in &query {
         if point_test(world_cursor.0, transform.translation, *shape) {
             commands.entity(entity).insert(RightClicked);
+            found = true;
+            break;
         }
     }
+    if found {
+        return;
+    }
+    event_writer.send(EmptyClicked {
+        pos: world_cursor.0,
+    });
 }
 
 pub struct ClickShapePlugin;

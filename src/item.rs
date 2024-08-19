@@ -36,10 +36,9 @@ pub struct ItemPickedUp {
 pub fn item_color(item_id: u16) -> Color {
     match item_id {
         0 => Color::srgb(0.1, 0.1, 0.1),
-        1 => Color::srgb(0.5, 0.4, 0.3),
-        101 => Color::srgb(0.3, 0.4, 0.5),
-        102 => Color::srgb(0.4, 0.4, 0.5),
-        103 => Color::srgb(0.4, 0.3, 0.5),
+        101 => Color::srgb(0.3, 0.3, 0.4),
+        102 => Color::srgb(0.5, 0.4, 0.3),
+        103 => Color::srgb(0.5, 0.3, 0.3),
         _ => {
             let a = item_id as f32 * 0.1 + 0.2;
             let b = a * 0.5;
