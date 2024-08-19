@@ -13,6 +13,12 @@ pub struct Health(pub f32);
 #[derive(Component, Stats)]
 pub struct MaxHealth(pub f32);
 
+#[derive(Component, Stats)]
+pub struct PickaxePower(pub f32);
+
+#[derive(Component, Stats)]
+pub struct MeleePower(pub f32);
+
 pub trait Stats {
     fn get(&self) -> f32;
     fn set(&mut self, stats: f32);

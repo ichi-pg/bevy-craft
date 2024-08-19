@@ -34,6 +34,8 @@ fn spawn_player(
         PlayerController,
         Health(100.0),
         MaxHealth(100.0),
+        PickaxePower(30.0),
+        MeleePower(10.0),
         JumpController,
         Velocity2::default(),
         Direction2(Vec2::X),
