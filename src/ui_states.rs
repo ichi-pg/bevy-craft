@@ -7,6 +7,7 @@ pub enum UIStates {
     None,
     Inventory,
     Storage,
+    Workbench,
 }
 
 pub fn change_ui_state<T: Resource + Pressed>(

@@ -1,4 +1,4 @@
-use crate::craft::*;
+use crate::craft_recipe::*;
 use crate::item::*;
 use crate::item_container::*;
 use crate::item_dragging::*;

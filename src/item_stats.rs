@@ -20,6 +20,7 @@ fn spawn_stats(mut commands: Commands) {
         commands.spawn((ItemStats, ItemID(item.0), Defense(item.1)));
     }
     // TODO merge craft materials and stats?
+    // TODO item name
 }
 
 fn sync_stats<T: Component + Stats>(

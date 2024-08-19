@@ -4,6 +4,7 @@ mod camera;
 mod click_shape;
 mod collision;
 mod craft;
+mod craft_recipe;
 mod equipment;
 mod framerate;
 mod gravity;
@@ -29,6 +30,7 @@ mod ui_parts;
 mod ui_states;
 mod velocity;
 mod window;
+mod workbench;
 
 fn main() {
     App::new()
@@ -73,7 +75,9 @@ fn main() {
             inventory::InventoryPlugin,
             storage::StoragePlugin,
             craft::CraftPlugin,
+            craft_recipe::CraftRecipePlugin,
             equipment::EquipmentPlugin,
+            workbench::WorkbenchPlugin,
         ))
         .add_plugins((
             camera::CameraPlugin,

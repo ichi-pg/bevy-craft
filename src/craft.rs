@@ -1,3 +1,4 @@
+use crate::craft_recipe::*;
 use crate::hotbar::*;
 use crate::input::*;
 use crate::inventory::*;
@@ -6,35 +7,13 @@ use crate::item_container::*;
 use crate::item_dragging::*;
 use crate::ui_parts::*;
 use bevy::prelude::*;
+use std::collections::*;
 
 #[derive(Component, Default)]
-struct ProductItem;
-
-#[derive(Component)]
-pub struct CraftProduct;
-
-#[derive(Component)]
-pub struct CraftMaterial;
+pub struct ProductItem;
 
 #[derive(Component, Default)]
 pub struct CraftUI;
-
-fn spawn_recipes(mut commands: Commands) {
-    for item in [
-        (101, 1, vec![(2, 1), (3, 1)]),
-        (102, 1, vec![(101, 1), (4, 1)]),
-        (103, 1, vec![(101, 1), (5, 1), (6, 1)]),
-    ] {
-        commands
-            .spawn((CraftProduct, ItemID(item.0), ItemAmount(item.1)))
-            .with_children(|parent| {
-                for material in item.2 {
-                    parent.spawn((CraftMaterial, ItemID(material.0), ItemAmount(material.1)));
-                }
-            });
-    }
-    // TODO hash map with product id?
-}
 
 fn spawn_items(query: Query<(&ItemID, &ItemAmount), With<CraftProduct>>, mut commands: Commands) {
     commands
@@ -46,7 +25,11 @@ fn spawn_items(query: Query<(&ItemID, &ItemAmount), With<CraftProduct>>, mut com
                     parent
                         .spawn((grid_node(3, 2, Visibility::Hidden), CraftUI))
                         .with_children(|parent| {
+                            let hash_set = HashSet::<u16>::from_iter([101, 102, 103]);
                             for (index, (item_id, amount)) in query.iter().enumerate() {
+                                if !hash_set.contains(&item_id.0) {
+                                    continue;
+                                }
                                 build_item::<ProductItem>(
                                     parent,
                                     item_id.0,
@@ -58,8 +41,7 @@ fn spawn_items(query: Query<(&ItemID, &ItemAmount), With<CraftProduct>>, mut com
                         });
                 });
         });
-    // TODO workbench
-    // TODO hand craft recipes
+    // TODO can commonize with workbench
 }
 
 fn click_recipe(
@@ -180,7 +162,7 @@ pub struct CraftPlugin;
 
 impl Plugin for CraftPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (spawn_recipes, spawn_items).chain());
+        app.add_systems(Startup, spawn_items);
         app.add_systems(Update, click_recipe);
     }
 }

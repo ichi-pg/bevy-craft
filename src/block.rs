@@ -6,6 +6,7 @@ use crate::item_container::*;
 use crate::item_selecting::*;
 use crate::random::*;
 use crate::storage::*;
+use crate::workbench::*;
 use bevy::prelude::*;
 use rand::RngCore;
 
@@ -94,6 +95,7 @@ fn interact_block(
     query: Query<(Entity, &ItemID, &BlockID), (With<Block>, With<RightClicked>)>,
     mut commands: Commands,
     mut storage_event_writer: EventWriter<StorageClicked>,
+    mut workbench_event_writer: EventWriter<WorkbenchClicked>,
 ) {
     for (entity, item_id, block_id) in &query {
         match item_id.0 {
@@ -102,10 +104,14 @@ fn interact_block(
                     block_id: block_id.0,
                 });
             }
+            103 => {
+                workbench_event_writer.send(WorkbenchClicked);
+            }
             _ => {}
         };
         commands.entity(entity).remove::<RightClicked>();
     }
+    // TODO workbench
 }
 
 fn placement_block(
