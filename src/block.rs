@@ -149,7 +149,6 @@ fn interact_block(
         };
         commands.entity(entity).remove::<RightClicked>();
     }
-    // TODO workbench
 }
 
 fn placement_block(
