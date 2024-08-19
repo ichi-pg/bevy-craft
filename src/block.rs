@@ -40,8 +40,8 @@ fn block_bundle(
     Block,
     BlockID,
     ItemID,
-    MaxHealth,
     Health,
+    MaxHealth,
 ) {
     (
         SpriteBundle {
@@ -57,8 +57,8 @@ fn block_bundle(
         Block,
         BlockID(block_id),
         ItemID(item_id),
-        MaxHealth(100.0),
         Health(100.0),
+        MaxHealth(100.0),
     )
     // TODO not overlap block id
 }
@@ -112,7 +112,6 @@ fn destroy_block(
         }
     }
     // TODO pickaxe
-    // TODO texture each health rate
 }
 
 fn repair_health(
@@ -127,6 +126,15 @@ fn repair_health(
             commands.entity(entity).remove::<Damaged>();
         }
     }
+}
+
+fn sync_health(
+    mut query: Query<(&Health, &MaxHealth, &mut Sprite), (With<Block>, Changed<Health>)>,
+) {
+    for (health, max_health, mut sprite) in &mut query {
+        sprite.color.set_alpha(health.0 / max_health.0);
+    }
+    // TODO texture
 }
 
 fn interact_block(
@@ -188,7 +196,10 @@ impl Plugin for BlockPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<BlockDestroied>();
         app.add_systems(Startup, spawn_blocks);
-        app.add_systems(Update, (placement_block, interact_block, repair_health));
+        app.add_systems(
+            Update,
+            (placement_block, interact_block, repair_health, sync_health),
+        );
         app.add_systems(Last, destroy_block);
     }
 }
