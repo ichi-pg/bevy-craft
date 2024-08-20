@@ -5,6 +5,7 @@ use crate::item::*;
 use crate::item_node::*;
 use crate::item_selecting::*;
 use crate::item_stats::*;
+use crate::player::*;
 use crate::random::*;
 use crate::storage::*;
 use crate::workbench::*;
@@ -88,13 +89,16 @@ fn destroy_block(
         (Entity, &Transform, &ItemID, &BlockID, &mut Health),
         (With<Block>, With<LeftClicked>),
     >,
+    player_query: Query<&PickaxePower, With<PlayerController>>,
     mut commands: Commands,
     mut item_event_writer: EventWriter<ItemDropped>,
     mut block_event_writer: EventWriter<BlockDestroied>,
     time: Res<Time>,
 ) {
     for (entity, transform, item_id, block_id, mut health) in &mut query {
-        health.0 -= 40.0 * time.delta_seconds();
+        for pickaxe_power in &player_query {
+            health.0 -= pickaxe_power.0 * time.delta_seconds();
+        }
         if health.0 <= 0.0 {
             commands.entity(entity).despawn();
             block_event_writer.send(BlockDestroied {
@@ -111,7 +115,7 @@ fn destroy_block(
             commands.entity(entity).remove::<LeftClicked>();
         }
     }
-    // TODO pickaxe
+    // TODO pickaxe category
 }
 
 fn repair_health(

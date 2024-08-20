@@ -7,6 +7,9 @@ use bevy::prelude::*;
 pub struct SelectedItem(pub u8);
 
 fn change_wheel(mut selected: ResMut<SelectedItem>, wheel: Res<Wheel>) {
+    if wheel.0 == 0 {
+        return;
+    }
     selected.0 = (selected.0 as i8 - wheel.0.signum()).repeat(0, 9) as u8;
 }
 
@@ -22,6 +25,9 @@ fn sync_selected(
     mut query: Query<(&ItemIndex, &mut Visibility), With<Text>>,
     selected: Res<SelectedItem>,
 ) {
+    if !selected.is_changed() {
+        return;
+    }
     for (index, mut visibility) in &mut query {
         *visibility = if index.0 == selected.0 {
             Visibility::Inherited
@@ -29,7 +35,6 @@ fn sync_selected(
             Visibility::Hidden
         }
     }
-    // TODO optimize to changed
 }
 
 pub struct ItemSelectingPlugin;

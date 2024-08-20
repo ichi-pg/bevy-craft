@@ -59,16 +59,25 @@ fn read_stick(mut left_stick: ResMut<LeftStick>, keyboard: Res<ButtonInput<KeyCo
 }
 
 fn read_numbers(mut key_num: ResMut<KeyNum>, keyboard: Res<ButtonInput<KeyCode>>) {
-    key_num[0] = keyboard.just_pressed(KeyCode::Digit1) && !key_num[0];
-    key_num[1] = keyboard.just_pressed(KeyCode::Digit2) && !key_num[1];
-    key_num[2] = keyboard.just_pressed(KeyCode::Digit3) && !key_num[2];
-    key_num[3] = keyboard.just_pressed(KeyCode::Digit4) && !key_num[3];
-    key_num[4] = keyboard.just_pressed(KeyCode::Digit5) && !key_num[4];
-    key_num[5] = keyboard.just_pressed(KeyCode::Digit6) && !key_num[5];
-    key_num[6] = keyboard.just_pressed(KeyCode::Digit7) && !key_num[6];
-    key_num[7] = keyboard.just_pressed(KeyCode::Digit8) && !key_num[7];
-    key_num[8] = keyboard.just_pressed(KeyCode::Digit9) && !key_num[8];
-    key_num[9] = keyboard.just_pressed(KeyCode::Digit0) && !key_num[9];
+    macro_rules! number_pressed {
+        ( $( ( $x:tt, $y:tt) ),* ) => {
+            $(
+                key_num[$x] = keyboard.just_pressed(KeyCode::$y) && !key_num[$x];
+            )*
+        };
+    }
+    number_pressed!(
+        (0, Digit1),
+        (1, Digit2),
+        (2, Digit3),
+        (3, Digit4),
+        (4, Digit5),
+        (5, Digit6),
+        (6, Digit7),
+        (7, Digit8),
+        (8, Digit9),
+        (9, Digit0)
+    );
 }
 
 fn read_pressed<T: Resource + Pressed>(
