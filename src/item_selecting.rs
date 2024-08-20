@@ -29,6 +29,7 @@ fn sync_selected(
             Visibility::Hidden
         }
     }
+    // TODO optimize to changed
 }
 
 pub struct ItemSelectingPlugin;

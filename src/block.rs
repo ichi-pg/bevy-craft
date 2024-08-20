@@ -188,6 +188,7 @@ fn placement_block(
         }
     }
     // FIXME overlap item
+    // TODO using selected item id resource?
 }
 
 pub struct BlockPlugin;
