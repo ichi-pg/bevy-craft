@@ -106,4 +106,5 @@ impl Plugin for ItemStatsPlugin {
             ),
         );
     }
+    // FIXME consumed equipment or selected item
 }

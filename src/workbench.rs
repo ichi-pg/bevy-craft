@@ -38,7 +38,6 @@ fn spawn_items(query: Query<(&ItemID, &ItemAmount), With<CraftProduct>>, mut com
                                         item_id.0,
                                         amount.0,
                                         index as u8,
-                                        false,
                                     );
                                 }
                             });

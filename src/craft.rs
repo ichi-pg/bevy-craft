@@ -7,9 +7,10 @@ use crate::item_dragging::*;
 use crate::item_node::*;
 use crate::ui_parts::*;
 use bevy::prelude::*;
+use bevy_craft::*;
 use std::collections::*;
 
-#[derive(Component, Default)]
+#[derive(Component, Default, NodeItem)]
 pub struct ProductItem;
 
 #[derive(Component, Default)]
@@ -30,13 +31,7 @@ fn spawn_items(query: Query<(&ItemID, &ItemAmount), With<CraftProduct>>, mut com
                                 if !hash_set.contains(&item_id.0) {
                                     continue;
                                 }
-                                build_item::<ProductItem>(
-                                    parent,
-                                    item_id.0,
-                                    amount.0,
-                                    index as u8,
-                                    false,
-                                );
+                                build_item::<ProductItem>(parent, item_id.0, amount.0, index as u8);
                             }
                         });
                 });
@@ -140,7 +135,6 @@ fn click_recipe(
                                 product_item_id.0,
                                 product_amount.0 * times,
                                 0,
-                                false,
                             );
                         });
                     }

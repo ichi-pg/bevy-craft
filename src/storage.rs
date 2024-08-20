@@ -13,7 +13,7 @@ struct BackgroundItem;
 #[derive(Component)]
 pub struct Storage;
 
-#[derive(Component, Default)]
+#[derive(Component, Default, NodeItem)]
 pub struct StorageItem;
 
 #[derive(Resource)]
@@ -38,7 +38,7 @@ fn spawn_storage(mut commands: Commands) {
                 .spawn((grid_node(12, 3, Visibility::Hidden), Storage))
                 .with_children(|parent| {
                     for i in 0..36 {
-                        build_item::<StorageItem>(parent, 0, 0, i as u8, false);
+                        build_item::<StorageItem>(parent, 0, 0, i as u8);
                     }
                 });
         });

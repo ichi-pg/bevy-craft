@@ -4,11 +4,12 @@ use crate::item_node::*;
 use crate::ui_parts::*;
 use crate::ui_states::*;
 use bevy::prelude::*;
+use bevy_craft::*;
 
 #[derive(Component)]
 pub struct EquipmentUI;
 
-#[derive(Component, Default)]
+#[derive(Component, Default, NodeItem)]
 pub struct EquipmentItem;
 
 #[derive(Event, Default)]
@@ -25,7 +26,7 @@ fn spawn_equipments(mut commands: Commands) {
                         .spawn((grid_node(3, 4, Visibility::Hidden), EquipmentUI))
                         .with_children(|parent| {
                             for i in 0..10 {
-                                build_item::<EquipmentItem>(parent, 0, 0, i, false);
+                                build_item::<EquipmentItem>(parent, 0, 0, i);
                             }
                         });
                 });

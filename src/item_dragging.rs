@@ -8,8 +8,9 @@ use crate::player::*;
 use crate::storage::*;
 use crate::ui_hovered::*;
 use bevy::prelude::*;
+use bevy_craft::NodeItem;
 
-#[derive(Component, Default)]
+#[derive(Component, Default, NodeItem)]
 pub struct DragItem;
 
 #[derive(Component)]
@@ -62,13 +63,7 @@ fn drag_item<T: Component>(
                 };
                 for entity in &area_query {
                     commands.entity(entity).with_children(|parent| {
-                        build_item::<DragItem>(
-                            parent,
-                            item_id.0,
-                            amount.0 - remain_amount,
-                            0,
-                            false,
-                        );
+                        build_item::<DragItem>(parent, item_id.0, amount.0 - remain_amount, 0);
                     });
                 }
                 if remain_amount == 0 {

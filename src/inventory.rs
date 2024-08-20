@@ -11,7 +11,7 @@ use bevy_craft::*;
 #[derive(Component)]
 pub struct Inventory;
 
-#[derive(Component, Default)]
+#[derive(Component, Default, NodeItem)]
 pub struct InventoryItem;
 
 #[derive(Event, Default, ItemAndAmount)]
@@ -46,7 +46,7 @@ fn spawn_inventory(mut commands: Commands) {
                 ))
                 .with_children(|parent| {
                     for i in 0..INVENTORY_X * INVENTORY_Y {
-                        build_item::<InventoryItem>(parent, 0, 0, i as u8, false);
+                        build_item::<InventoryItem>(parent, 0, 0, i as u8);
                     }
                 });
         });

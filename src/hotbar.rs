@@ -7,7 +7,7 @@ use bevy_craft::*;
 #[derive(Component)]
 pub struct Hotbar;
 
-#[derive(Component, Default)]
+#[derive(Component, Default, SelectableItem)]
 pub struct HotbarItem;
 
 #[derive(Event, Default, ItemAndAmount)]
@@ -30,7 +30,7 @@ fn spawn_hotbar(mut commands: Commands) {
                 .spawn((grid_node(10, 1, Visibility::Inherited), Hotbar))
                 .with_children(|parent| {
                     for i in 0..10 {
-                        build_item::<HotbarItem>(parent, 0, 0, i as u8, true);
+                        build_item::<HotbarItem>(parent, 0, 0, i as u8);
                     }
                 });
         });

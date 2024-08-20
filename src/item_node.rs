@@ -7,14 +7,17 @@ pub struct ItemNode;
 #[derive(Component)]
 pub struct ItemIndex(pub u8);
 
+pub trait NodeItem {
+    fn selectable(&self) -> bool;
+}
+
 pub const ITEM_SIZE: u16 = 80;
 
-pub fn build_item<T: Component + Default>(
+pub fn build_item<T: Component + Default + NodeItem>(
     parent: &mut ChildBuilder,
     item_id: u16,
     amount: u16,
     index: u8,
-    selectable: bool,
 ) -> Entity {
     parent
         .spawn((
@@ -37,7 +40,7 @@ pub fn build_item<T: Component + Default>(
             T::default(),
         ))
         .with_children(|parent| {
-            if selectable {
+            if T::default().selectable() {
                 parent.spawn((
                     TextBundle {
                         visibility: Visibility::Hidden,

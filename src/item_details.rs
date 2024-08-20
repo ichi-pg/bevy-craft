@@ -5,11 +5,12 @@ use crate::item_node::*;
 use crate::ui_parts::*;
 use crate::ui_states::*;
 use bevy::prelude::*;
+use bevy_craft::*;
 
 #[derive(Component)]
 struct ItemDetails;
 
-#[derive(Component, Default)]
+#[derive(Component, Default, NodeItem)]
 struct MaterialItem;
 
 fn spawn_details(mut commands: Commands) {
@@ -23,7 +24,7 @@ fn spawn_details(mut commands: Commands) {
                         .spawn((grid_node(3, 1, Visibility::Hidden), ItemDetails))
                         .with_children(|parent| {
                             for i in 0..3 {
-                                build_item::<MaterialItem>(parent, 0, 0, i, false);
+                                build_item::<MaterialItem>(parent, 0, 0, i);
                             }
                         });
                 });
