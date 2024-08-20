@@ -58,7 +58,6 @@ pub fn build_item<T: Component + Default + NodeItem>(
         })
         .id()
     // TODO texture
-    // TODO remove selectable
 }
 
 fn sync_children(
