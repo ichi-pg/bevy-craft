@@ -10,7 +10,7 @@ use bevy::prelude::*;
 #[derive(Component)]
 pub struct Collided;
 
-fn notify_collision<T: Component, U: Component>(
+fn static_collision<T: Component, U: Component>(
     query1: Query<(&Transform, &Shape), (With<T>, Changed<Transform>)>,
     query2: Query<(Entity, &Transform, &Shape), With<U>>,
     mut commands: Commands,
@@ -41,7 +41,7 @@ fn notify_collision<T: Component, U: Component>(
     }
 }
 
-fn dynamics_collision<T: Component, U: Component>(
+fn dynamic_collision<T: Component, U: Component>(
     mut query1: Query<
         (Entity, &mut Transform, &Shape, &mut Velocity2),
         (With<T>, Changed<Transform>),
@@ -101,7 +101,6 @@ fn dynamics_collision<T: Component, U: Component>(
         }
     }
     // FIXME jump out when placement block to player position
-    // FIXME sometimes player dont sleep on wall
     // TODO chunk or sweep or tree
     // TODO refactor velocity, grounded, and hit head.
     // TODO dynamics gizmo
@@ -115,10 +114,11 @@ impl Plugin for CollisionPlugin {
         app.add_systems(
             PostUpdate,
             (
-                notify_collision::<Player, Item>,
-                dynamics_collision::<Player, Block>,
-                dynamics_collision::<Item, Block>,
-            ),
+                static_collision::<Player, Item>,
+                dynamic_collision::<Player, Block>,
+                dynamic_collision::<Item, Block>,
+            )
+                .after(add_velocity),
         );
     }
 }

@@ -122,9 +122,9 @@ fn put_in_item<T: Component>(
             Interaction::None => continue,
         }
     }
-    // FIXME b0003 when into other container
-    // FIXME sometimes item is dropped when after pushed out
-    // FIXME sometimes item is placed
+    // FIXME b0003 when into other container? (fixed by in_state dragged?)
+    // FIXME sometimes item is dropped when after pushed out? (fixed by in_state dragged?)
+    // FIXME sometimes item is placed? (fixed by in_state dragged?)
     // TODO put half when shift + right click
     // TODO put ten when control + right click
     // TODO put one when right click

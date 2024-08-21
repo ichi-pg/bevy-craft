@@ -4,7 +4,7 @@ use bevy::prelude::*;
 #[derive(Component, Deref, DerefMut, Default)]
 pub struct Velocity2(pub Vec2);
 
-fn add_velocity(
+pub fn add_velocity(
     mut query: Query<(Entity, &mut Transform, &Velocity2)>,
     time: Res<Time>,
     mut commands: Commands,
@@ -25,6 +25,6 @@ pub struct VelocityPlugin;
 
 impl Plugin for VelocityPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, add_velocity);
+        app.add_systems(PostUpdate, add_velocity);
     }
 }
