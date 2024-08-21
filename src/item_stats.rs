@@ -4,7 +4,7 @@ use crate::item::*;
 use crate::item_node::*;
 use crate::item_selecting::*;
 use crate::player::*;
-use crate::ui_states::sync_changed;
+use crate::ui_states::*;
 use bevy::prelude::*;
 use bevy_craft::*;
 
@@ -107,8 +107,8 @@ impl Plugin for ItemStatsPlugin {
         app.add_systems(
             Update,
             (
-                sync_equipment::<MaxHealth>(100.0),
-                sync_selected::<PickaxePower>(100.0),
+                sync_equipment::<MaxHealth>(HEALTH),
+                sync_selected::<PickaxePower>(PICKAXE_POWER),
                 sync_changed::<HotbarItem, ItemID, SelectedChanged>,
             ),
         );

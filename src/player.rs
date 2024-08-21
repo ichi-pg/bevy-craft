@@ -3,10 +3,8 @@ use crate::hit_test::*;
 use crate::input::*;
 use crate::item_stats::*;
 use crate::velocity::*;
-use bevy::{
-    prelude::*,
-    sprite::{MaterialMesh2dBundle, Mesh2dHandle},
-};
+use bevy::prelude::*;
+use bevy::sprite::*;
 
 #[derive(Component)]
 pub struct Player;
@@ -16,6 +14,10 @@ pub struct PlayerController;
 
 #[derive(Component, Deref, DerefMut)]
 pub struct Direction2(Vec2);
+
+pub const HEALTH: f32 = 100.0;
+pub const PICKAXE_POWER: f32 = 100.0;
+pub const MELEE_POWER: f32 = 10.0;
 
 fn spawn_player(
     mut commands: Commands,
@@ -32,10 +34,10 @@ fn spawn_player(
         },
         Player,
         PlayerController,
-        Health(100.0),
-        MaxHealth(100.0),
-        PickaxePower(100.0),
-        MeleePower(10.0),
+        Health(HEALTH),
+        MaxHealth(HEALTH),
+        PickaxePower(PICKAXE_POWER),
+        MeleePower(MELEE_POWER),
         JumpController,
         Velocity2::default(),
         Direction2(Vec2::X),
