@@ -4,6 +4,7 @@ use crate::ui_states::*;
 use bevy::prelude::*;
 use bevy::render::camera::*;
 use bevy::render::view::*;
+use bevy::window::*;
 
 #[derive(Component)]
 struct MinimapCamera;
@@ -12,26 +13,33 @@ const MINIMAP_ORDER: usize = 1;
 pub const MINIMAP_LAYER: RenderLayers = RenderLayers::layer(MINIMAP_ORDER);
 const UI_ORDER: usize = 2;
 const UI_LAYER: RenderLayers = RenderLayers::layer(UI_ORDER);
+const MINIMAP_WIDTH: u32 = 1600;
+const MINIMAP_HEIGHT: u32 = 900;
 
-fn spawn_minimap(mut commands: Commands) {
-    commands.spawn((
-        Camera2dBundle {
-            camera: Camera {
-                viewport: Some(Viewport {
-                    physical_position: UVec2::new(160, 90),
-                    physical_size: UVec2::new(1600, 900),
+fn spawn_minimap(query: Query<&Window, With<PrimaryWindow>>, mut commands: Commands) {
+    for window in &query {
+        commands.spawn((
+            Camera2dBundle {
+                camera: Camera {
+                    viewport: Some(Viewport {
+                        physical_position: UVec2::new(
+                            (window.width() as u32 - MINIMAP_WIDTH) / 2,
+                            (window.height() as u32 - MINIMAP_HEIGHT) / 2,
+                        ),
+                        physical_size: UVec2::new(MINIMAP_WIDTH, MINIMAP_HEIGHT),
+                        ..default()
+                    }),
+                    order: MINIMAP_ORDER as isize,
+                    is_active: false,
                     ..default()
-                }),
-                order: MINIMAP_ORDER as isize,
-                is_active: false,
+                },
                 ..default()
             },
-            ..default()
-        },
-        MINIMAP_LAYER,
-        MinimapCamera,
-        PlayerCamera,
-    ));
+            MINIMAP_LAYER,
+            MinimapCamera,
+            PlayerCamera,
+        ));
+    }
     commands.spawn((
         Camera2dBundle {
             camera: Camera {
@@ -42,7 +50,6 @@ fn spawn_minimap(mut commands: Commands) {
         },
         UI_LAYER,
     ));
-    // TODO window size
     // TODO background
 }
 
@@ -77,6 +84,5 @@ impl Plugin for MinimapPlugin {
         app.add_systems(OnExit(UIStates::Minimap), activate_minimap(false));
     }
     // TODO zoom in out
-    // TODO move camera
     // TODO fast travel
 }
