@@ -2,6 +2,7 @@ use crate::gravity::*;
 use crate::hit_test::*;
 use crate::input::*;
 use crate::item_stats::*;
+use crate::minimap::*;
 use crate::velocity::*;
 use bevy::prelude::*;
 use bevy::sprite::*;
@@ -15,6 +16,7 @@ pub struct PlayerController;
 #[derive(Component, Deref, DerefMut)]
 pub struct Direction2(Vec2);
 
+const PLAYER_SIZE: f32 = 128.0;
 pub const HEALTH: f32 = 100.0;
 pub const PICKAXE_POWER: f32 = 100.0;
 pub const MELEE_POWER: f32 = 10.0;
@@ -24,25 +26,38 @@ fn spawn_player(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    let size = 128.0;
-    commands.spawn((
-        MaterialMesh2dBundle {
-            mesh: Mesh2dHandle(meshes.add(Circle::new(size * 0.5))),
-            material: materials.add(Color::srgb(1.0, 1.0, 1.0)),
-            transform: Transform::from_xyz(0.0, 128.0, 0.0),
-            ..default()
-        },
-        Player,
-        PlayerController,
-        Health(HEALTH),
-        MaxHealth(HEALTH),
-        PickaxePower(PICKAXE_POWER),
-        MeleePower(MELEE_POWER),
-        JumpController,
-        Velocity2::default(),
-        Direction2(Vec2::X),
-        Shape::Circle(size * 0.5),
-    ));
+    commands
+        .spawn((
+            MaterialMesh2dBundle {
+                mesh: Mesh2dHandle(meshes.add(Circle::new(PLAYER_SIZE * 0.5))),
+                material: materials.add(Color::WHITE),
+                transform: Transform::from_xyz(0.0, 128.0, 0.0),
+                ..default()
+            },
+            Player,
+            PlayerController,
+            Health(HEALTH),
+            MaxHealth(HEALTH),
+            PickaxePower(PICKAXE_POWER),
+            MeleePower(MELEE_POWER),
+            JumpController,
+            Velocity2::default(),
+            Direction2(Vec2::X),
+            Shape::Circle(PLAYER_SIZE * 0.5),
+        ))
+        .with_children(|parent| {
+            parent.spawn((
+                SpriteBundle {
+                    sprite: Sprite {
+                        color: Color::srgb(1.0, 0.0, 0.0),
+                        custom_size: Some(Vec2::new(PLAYER_SIZE, PLAYER_SIZE)),
+                        ..default()
+                    },
+                    ..default()
+                },
+                MINIMAP_LAYER,
+            ));
+        });
 }
 
 fn add_move_x(

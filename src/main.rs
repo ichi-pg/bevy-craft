@@ -21,6 +21,7 @@ mod item_selecting;
 mod item_sorting;
 mod item_stats;
 mod math;
+mod minimap;
 mod player;
 mod profiler;
 mod random;
@@ -47,6 +48,7 @@ fn main() {
             ..default()
         }))
         .add_plugins((
+            camera::CameraPlugin,
             input::InputPlugin,
             random::RandomPlugin,
             window::WindowPlugin,
@@ -54,8 +56,6 @@ fn main() {
             framerate::FrameratePlugin,
             ui_hovered::UIHoveredPlugin,
             ui_states::UIStatusPlugin,
-        ))
-        .add_plugins((
             collision::CollisionPlugin,
             velocity::VelocityPlugin,
             gravity::GravityPlugin,
@@ -69,8 +69,6 @@ fn main() {
             item_details::ItemDetailsPlugin,
             item_sorting::ItemSortingPlugin,
             item_stats::ItemStatsPlugin,
-        ))
-        .add_plugins((
             hotbar::HotbarPlugin,
             inventory::InventoryPlugin,
             storage::StoragePlugin,
@@ -78,9 +76,9 @@ fn main() {
             craft_recipe::CraftRecipePlugin,
             equipment::EquipmentPlugin,
             workbench::WorkbenchPlugin,
+            minimap::MinimapPlugin,
         ))
         .add_plugins((
-            camera::CameraPlugin,
             player::PlatformerPlayerPlugin,
             block::BlockPlugin,
             item::ItemPlugin,
@@ -92,12 +90,11 @@ fn main() {
     // switch, door, ladder, rope, bomb, barrel, raft, magnetic, torch, ...
 
     // TODO tame, mount
-    // TODO tools, potion
+    // TODO potion
     // TODO enchant(job building), skill(combo building)
-    // TODO housing, farmming, industry
+    // TODO housing, farmming, industry, fishing, pastoralism
     // TODO rogue dungeon
     // TODO enemy
-    // TODO minimap, fast travel
 
     // TODO durability with free repair
     // TODO weapon

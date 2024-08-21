@@ -5,6 +5,7 @@ use crate::item::*;
 use crate::item_node::*;
 use crate::item_selecting::*;
 use crate::item_stats::*;
+use crate::minimap::*;
 use crate::player::*;
 use crate::random::*;
 use crate::storage::*;
@@ -12,7 +13,7 @@ use crate::workbench::*;
 use bevy::prelude::*;
 use rand::RngCore;
 
-const BLOCK_SIZE: f32 = 128.0;
+pub const BLOCK_SIZE: f32 = 128.0;
 
 #[derive(Component)]
 pub struct Block;
@@ -71,13 +72,28 @@ fn spawn_blocks(mut commands: Commands, mut random: ResMut<Random>) {
                 continue;
             }
             let item_id = (random.next_u32() % 6) as u16 + 1;
-            commands.spawn(block_bundle(
-                item_id,
-                x as f32 * BLOCK_SIZE,
-                y as f32 * BLOCK_SIZE,
-                item_color(item_id),
-                random.next_u64(),
-            ));
+            let color = item_color(item_id);
+            commands
+                .spawn(block_bundle(
+                    item_id,
+                    x as f32 * BLOCK_SIZE,
+                    y as f32 * BLOCK_SIZE,
+                    color,
+                    random.next_u64(),
+                ))
+                .with_children(|parent| {
+                    parent.spawn((
+                        SpriteBundle {
+                            sprite: Sprite {
+                                color,
+                                custom_size: Some(Vec2::new(BLOCK_SIZE, BLOCK_SIZE)),
+                                ..default()
+                            },
+                            ..default()
+                        },
+                        MINIMAP_LAYER,
+                    ));
+                });
         }
     }
     // TODO texture

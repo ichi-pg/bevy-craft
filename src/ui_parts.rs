@@ -7,6 +7,7 @@ use std::slice::*;
 pub struct GridNode;
 
 const MARGIN: u16 = 10;
+pub const BACKGROUND_COLOR: BackgroundColor = BackgroundColor(Color::srgb(0.2, 0.2, 0.2));
 
 fn screen_node(y: u16, grids: u16, align_items: AlignItems) -> NodeBundle {
     NodeBundle {
@@ -57,7 +58,7 @@ fn grid_node(x: u16, y: u16, visibility: Visibility) -> (NodeBundle, Interaction
                 padding: UiRect::all(Val::Px(MARGIN as f32)),
                 ..default()
             },
-            background_color: BackgroundColor(Color::srgb(0.2, 0.2, 0.2)),
+            background_color: BACKGROUND_COLOR,
             visibility,
             ..default()
         },

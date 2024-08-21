@@ -30,4 +30,5 @@ impl Plugin for CraftRecipePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(PreStartup, spawn_recipes);
     }
+    // TODO using after?
 }

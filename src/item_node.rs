@@ -101,6 +101,7 @@ fn sync_children(
             }
         }
     }
+    // TODO with children, with parent?
 }
 
 fn sync_text(mut query: Query<(&ItemID, &ItemAmount, &mut Text), Changed<ItemAmount>>) {
