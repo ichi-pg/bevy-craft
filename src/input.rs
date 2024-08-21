@@ -16,8 +16,8 @@ macro_rules! define_pressed {
 }
 
 define_pressed!(
-    LeftClick, RightClick, Escape, Tab, Enter, Space, Alt, Shift, Control, KeyQ, KeyE, KeyR, KeyT,
-    KeyF, KeyG, KeyC, KeyV, KeyB, KeyM
+    Digit, LeftClick, RightClick, Escape, Tab, Enter, Space, Alt, Shift, Control, KeyQ, KeyE, KeyR,
+    KeyT, KeyF, KeyG, KeyC, KeyV, KeyB, KeyM
 );
 
 #[derive(Resource, Deref, DerefMut)]
@@ -33,7 +33,7 @@ pub struct LeftStick(pub Vec2);
 pub struct Wheel(pub i8);
 
 #[derive(Resource, Deref, DerefMut, Default)]
-pub struct KeyNum(pub [bool; 10]);
+pub struct Digits(pub [Digit; 10]);
 
 pub trait Pressed {
     fn pressed(&self) -> bool;
@@ -58,11 +58,12 @@ fn read_stick(mut left_stick: ResMut<LeftStick>, keyboard: Res<ButtonInput<KeyCo
     }
 }
 
-fn read_numbers(mut key_num: ResMut<KeyNum>, keyboard: Res<ButtonInput<KeyCode>>) {
+fn read_numbers(mut digits: ResMut<Digits>, keyboard: Res<ButtonInput<KeyCode>>) {
     macro_rules! number_pressed {
         ( $( ( $x:tt, $y:tt) ),* ) => {
             $(
-                key_num[$x] = keyboard.just_pressed(KeyCode::$y) && !key_num[$x];
+                digits[$x].just_pressed = keyboard.just_pressed(KeyCode::$y) && !digits[$x].just_pressed;
+                digits[$x].pressed = keyboard.pressed(KeyCode::$y);
             )*
         };
     }
@@ -168,7 +169,7 @@ impl Plugin for InputPlugin {
         app.insert_resource(LeftStick(Vec2::ZERO));
         app.insert_resource(LeftClick::default());
         app.insert_resource(RightClick::default());
-        app.insert_resource(KeyNum::default());
+        app.insert_resource(Digits::default());
         app.add_systems(
             PreUpdate,
             (
