@@ -16,27 +16,28 @@ pub struct ProductItem;
 #[derive(Component, Default)]
 pub struct CraftUI;
 
-fn spawn_items(query: Query<(&ItemID, &ItemAmount), With<CraftProduct>>, mut commands: Commands) {
-    commands
-        .spawn(screen_node(INVENTORY_Y + 1, 2, AlignItems::Center))
-        .with_children(|parent: &mut ChildBuilder| {
-            parent
-                .spawn(grid_space(INVENTORY_X, 2, JustifyContent::Start))
-                .with_children(|parent| {
-                    parent
-                        .spawn((grid_node(3, 2, Visibility::Hidden), CraftUI))
-                        .with_children(|parent| {
-                            let hash_set = HashSet::<u16>::from_iter([101, 102, 103]);
-                            for (index, (item_id, amount)) in query.iter().enumerate() {
-                                if !hash_set.contains(&item_id.0) {
-                                    continue;
-                                }
-                                build_item::<ProductItem>(parent, item_id.0, amount.0, index as u8);
-                            }
-                        });
-                });
-        });
-    // TODO can commonize with workbench
+fn spawn_items(query: Query<(&ItemID, &ItemAmount), With<CraftProduct>>, commands: Commands) {
+    build_spaced::<CraftUI>(
+        commands,
+        INVENTORY_Y + 1,
+        2,
+        AlignItems::Center,
+        INVENTORY_X,
+        2,
+        JustifyContent::Start,
+        3,
+        2,
+        Visibility::Hidden,
+        |parent| {
+            let item_ids = HashSet::<u16>::from_iter([101, 102, 103]);
+            for (index, (item_id, amount)) in query.iter().enumerate() {
+                if !item_ids.contains(&item_id.0) {
+                    continue;
+                }
+                build_item::<ProductItem>(parent, item_id.0, amount.0, index as u8);
+            }
+        },
+    );
 }
 
 fn click_recipe(

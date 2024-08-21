@@ -1,13 +1,14 @@
 use crate::item_node::*;
 use crate::ui_hovered::*;
 use bevy::prelude::*;
+use std::slice::*;
 
 #[derive(Component)]
 pub struct GridNode;
 
 const MARGIN: u16 = 10;
 
-pub fn screen_node(y: u16, containers: u16, align_items: AlignItems) -> NodeBundle {
+fn screen_node(y: u16, grids: u16, align_items: AlignItems) -> NodeBundle {
     NodeBundle {
         style: Style {
             width: Val::Percent(100.0),
@@ -20,7 +21,7 @@ pub fn screen_node(y: u16, containers: u16, align_items: AlignItems) -> NodeBund
                 Val::Px(MARGIN as f32),
                 Val::Px(MARGIN as f32),
                 Val::Px(MARGIN as f32),
-                Val::Px((MARGIN + containers * MARGIN * 2 + y * MARGIN + y * ITEM_SIZE) as f32),
+                Val::Px((MARGIN + grids * MARGIN * 2 + y * MARGIN + y * ITEM_SIZE) as f32),
             ),
             ..default()
         },
@@ -29,7 +30,7 @@ pub fn screen_node(y: u16, containers: u16, align_items: AlignItems) -> NodeBund
     // TODO ui root?
 }
 
-pub fn grid_space(x: u16, y: u16, justify_content: JustifyContent) -> NodeBundle {
+fn grid_space(x: u16, y: u16, justify_content: JustifyContent) -> NodeBundle {
     NodeBundle {
         style: Style {
             width: Val::Px((x * (ITEM_SIZE + MARGIN) + MARGIN) as f32),
@@ -43,11 +44,7 @@ pub fn grid_space(x: u16, y: u16, justify_content: JustifyContent) -> NodeBundle
     }
 }
 
-pub fn grid_node(
-    x: u16,
-    y: u16,
-    visibility: Visibility,
-) -> (NodeBundle, Interaction, UI, GridNode) {
+fn grid_node(x: u16, y: u16, visibility: Visibility) -> (NodeBundle, Interaction, UI, GridNode) {
     (
         NodeBundle {
             style: Style {
@@ -69,4 +66,80 @@ pub fn grid_node(
         GridNode,
     )
     // TODO split background and grid
+}
+
+pub fn build_grid<T: Component + Default>(
+    mut commands: Commands,
+    margin_x: u16,
+    margin_y: u16,
+    align_items: AlignItems,
+    size_x: u16,
+    size_y: u16,
+    visibility: Visibility,
+    with_children: impl FnOnce(&mut ChildBuilder),
+) {
+    commands
+        .spawn(screen_node(margin_x, margin_y, align_items))
+        .with_children(|parent| {
+            parent
+                .spawn((grid_node(size_x, size_y, visibility), T::default()))
+                .with_children(with_children);
+        });
+}
+
+pub fn build_spaced<T: Component + Default>(
+    mut commands: Commands,
+    margin_y: u16,
+    margin_grids: u16,
+    align_items: AlignItems,
+    space_x: u16,
+    space_y: u16,
+    justify_content: JustifyContent,
+    size_x: u16,
+    size_y: u16,
+    visibility: Visibility,
+    with_children: impl FnOnce(&mut ChildBuilder),
+) {
+    commands
+        .spawn(screen_node(margin_y, margin_grids, align_items))
+        .with_children(|parent| {
+            parent
+                .spawn(grid_space(space_x, space_y, justify_content))
+                .with_children(|parent| {
+                    parent
+                        .spawn((grid_node(size_x, size_y, visibility), T::default()))
+                        .with_children(with_children);
+                });
+        });
+}
+
+pub fn build_iter<T: Component + Default, U>(
+    mut commands: Commands,
+    margin_y: u16,
+    margin_grids: u16,
+    align_items: AlignItems,
+    space_x: u16,
+    space_y: u16,
+    justify_content: JustifyContent,
+    iter: Iter<'_, U>,
+    size_x: u16,
+    size_y: u16,
+    visibility: Visibility,
+    with_children: impl Fn(&mut ChildBuilder, &U),
+) {
+    commands
+        .spawn(screen_node(margin_y, margin_grids, align_items))
+        .with_children(|parent| {
+            parent
+                .spawn(grid_space(space_x, space_y, justify_content))
+                .with_children(|parent| {
+                    for i in iter {
+                        parent
+                            .spawn((grid_node(size_x, size_y, visibility), T::default()))
+                            .with_children(|parent| {
+                                with_children(parent, i);
+                            });
+                    }
+                });
+        });
 }

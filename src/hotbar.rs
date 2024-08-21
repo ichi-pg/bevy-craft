@@ -4,7 +4,7 @@ use crate::ui_parts::*;
 use bevy::prelude::*;
 use bevy_craft::*;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct Hotbar;
 
 #[derive(Component, Default, SelectableItem)]
@@ -22,18 +22,21 @@ pub struct HotbarPushedOut {
     pub amount: u16,
 }
 
-fn spawn_hotbar(mut commands: Commands) {
-    commands
-        .spawn(screen_node(0, 0, AlignItems::Center))
-        .with_children(|parent: &mut ChildBuilder| {
-            parent
-                .spawn((grid_node(10, 1, Visibility::Inherited), Hotbar))
-                .with_children(|parent| {
-                    for i in 0..10 {
-                        build_item::<HotbarItem>(parent, 0, 0, i as u8);
-                    }
-                });
-        });
+fn spawn_hotbar(commands: Commands) {
+    build_grid::<Hotbar>(
+        commands,
+        0,
+        0,
+        AlignItems::Center,
+        10,
+        1,
+        Visibility::Inherited,
+        |parent| {
+            for i in 0..10 {
+                build_item::<HotbarItem>(parent, 0, 0, i as u8);
+            }
+        },
+    );
 }
 
 pub struct HotbarPlugin;

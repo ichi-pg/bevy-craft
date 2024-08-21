@@ -10,7 +10,7 @@ use bevy_craft::*;
 #[derive(Component)]
 struct BackgroundItem;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct Storage;
 
 #[derive(Component, Default, NodeItem)]
@@ -30,18 +30,21 @@ pub struct StorageOverflowed {
     pub amount: u16,
 }
 
-fn spawn_storage(mut commands: Commands) {
-    commands
-        .spawn(screen_node(INVENTORY_Y + 1, 2, AlignItems::Center))
-        .with_children(|parent: &mut ChildBuilder| {
-            parent
-                .spawn((grid_node(12, 3, Visibility::Hidden), Storage))
-                .with_children(|parent| {
-                    for i in 0..36 {
-                        build_item::<StorageItem>(parent, 0, 0, i as u8);
-                    }
-                });
-        });
+fn spawn_storage(commands: Commands) {
+    build_grid::<Storage>(
+        commands,
+        INVENTORY_Y + 1,
+        2,
+        AlignItems::Center,
+        12,
+        3,
+        Visibility::Hidden,
+        |parent| {
+            for i in 0..36 {
+                build_item::<StorageItem>(parent, 0, 0, i as u8);
+            }
+        },
+    );
 }
 
 fn open_storage(

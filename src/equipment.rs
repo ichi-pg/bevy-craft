@@ -6,7 +6,7 @@ use crate::ui_states::*;
 use bevy::prelude::*;
 use bevy_craft::*;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct EquipmentUI;
 
 #[derive(Component, Default, NodeItem)]
@@ -15,22 +15,24 @@ pub struct EquipmentItem;
 #[derive(Event, Default)]
 pub struct EquipmentChanged;
 
-fn spawn_equipments(mut commands: Commands) {
-    commands
-        .spawn(screen_node(INVENTORY_Y + 1, 2, AlignItems::Center))
-        .with_children(|parent: &mut ChildBuilder| {
-            parent
-                .spawn(grid_space(INVENTORY_X, 4, JustifyContent::End))
-                .with_children(|parent| {
-                    parent
-                        .spawn((grid_node(3, 4, Visibility::Hidden), EquipmentUI))
-                        .with_children(|parent| {
-                            for i in 0..10 {
-                                build_item::<EquipmentItem>(parent, 0, 0, i);
-                            }
-                        });
-                });
-        });
+fn spawn_equipments(commands: Commands) {
+    build_spaced::<EquipmentUI>(
+        commands,
+        INVENTORY_Y + 1,
+        2,
+        AlignItems::Center,
+        INVENTORY_X,
+        4,
+        JustifyContent::End,
+        3,
+        4,
+        Visibility::Hidden,
+        |parent| {
+            for i in 0..10 {
+                build_item::<EquipmentItem>(parent, 0, 0, i);
+            }
+        },
+    );
     // TODO character preview
     // TODO stats preview
     // TODO ability preview

@@ -13,51 +13,74 @@ pub trait NodeItem {
 
 pub const ITEM_SIZE: u16 = 80;
 
+fn item_node<T: Component + Default + NodeItem>(
+    item_id: u16,
+    amount: u16,
+    index: u8,
+) -> (
+    ImageBundle,
+    Interaction,
+    ItemNode,
+    ItemID,
+    ItemAmount,
+    ItemIndex,
+    T,
+) {
+    (
+        ImageBundle {
+            style: Style {
+                width: Val::Px(ITEM_SIZE as f32),
+                height: Val::Px(ITEM_SIZE as f32),
+                flex_direction: FlexDirection::Column,
+                justify_content: JustifyContent::End,
+                align_items: AlignItems::End,
+                ..default()
+            },
+            ..default()
+        },
+        Interaction::None,
+        ItemNode,
+        ItemID(item_id),
+        ItemAmount(amount),
+        ItemIndex(index),
+        T::default(),
+    )
+    // TODO texture
+}
+
+fn item_text(item_id: u16, amount: u16) -> (TextBundle, ItemID, ItemAmount) {
+    (
+        TextBundle::from_section("", TextStyle { ..default() }),
+        ItemID(item_id),
+        ItemAmount(amount),
+    )
+}
+
+fn item_selected(index: u8) -> (TextBundle, ItemIndex) {
+    (
+        TextBundle {
+            visibility: Visibility::Hidden,
+            text: Text::from_section("Selected", TextStyle { ..default() }),
+            ..default()
+        },
+        ItemIndex(index),
+    )
+}
+
 pub fn build_item<T: Component + Default + NodeItem>(
     parent: &mut ChildBuilder,
     item_id: u16,
     amount: u16,
     index: u8,
-) -> Entity {
+) {
     parent
-        .spawn((
-            ImageBundle {
-                style: Style {
-                    width: Val::Px(ITEM_SIZE as f32),
-                    height: Val::Px(ITEM_SIZE as f32),
-                    flex_direction: FlexDirection::Column,
-                    justify_content: JustifyContent::End,
-                    align_items: AlignItems::End,
-                    ..default()
-                },
-                ..default()
-            },
-            Interaction::None,
-            ItemNode,
-            ItemID(item_id),
-            ItemAmount(amount),
-            ItemIndex(index),
-            T::default(),
-        ))
+        .spawn(item_node::<T>(item_id, amount, index))
         .with_children(|parent| {
             if T::default().selectable() {
-                parent.spawn((
-                    TextBundle {
-                        visibility: Visibility::Hidden,
-                        text: Text::from_section("Selected", TextStyle { ..default() }),
-                        ..default()
-                    },
-                    ItemIndex(index),
-                ));
+                parent.spawn(item_selected(index));
             }
-            parent.spawn((
-                TextBundle::from_section("", TextStyle { ..default() }),
-                ItemID(item_id),
-                ItemAmount(amount),
-            ));
-        })
-        .id()
-    // TODO texture
+            parent.spawn(item_text(item_id, amount));
+        });
 }
 
 fn sync_children(

@@ -91,6 +91,7 @@ fn sync_selected<T: Component + Stats>(
             player_stats.set(value);
         }
     }
+    // FIXME when putted in or consumed
 }
 
 pub struct ItemStatsPlugin;
@@ -106,5 +107,4 @@ impl Plugin for ItemStatsPlugin {
             ),
         );
     }
-    // FIXME consumed equipment or selected item
 }

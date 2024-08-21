@@ -8,7 +8,7 @@ use crate::ui_states::*;
 use bevy::prelude::*;
 use bevy_craft::*;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct Inventory;
 
 #[derive(Component, Default, NodeItem)]
@@ -35,21 +35,21 @@ pub enum InventoryOpened {
 pub const INVENTORY_X: u16 = 10;
 pub const INVENTORY_Y: u16 = 4;
 
-fn spawn_inventory(mut commands: Commands) {
-    commands
-        .spawn(screen_node(1, 1, AlignItems::Center))
-        .with_children(|parent: &mut ChildBuilder| {
-            parent
-                .spawn((
-                    grid_node(INVENTORY_X, INVENTORY_Y, Visibility::Hidden),
-                    Inventory,
-                ))
-                .with_children(|parent| {
-                    for i in 0..INVENTORY_X * INVENTORY_Y {
-                        build_item::<InventoryItem>(parent, 0, 0, i as u8);
-                    }
-                });
-        });
+fn spawn_inventory(commands: Commands) {
+    build_grid::<Inventory>(
+        commands,
+        1,
+        1,
+        AlignItems::Center,
+        INVENTORY_X,
+        INVENTORY_Y,
+        Visibility::Hidden,
+        |parent| {
+            for i in 0..INVENTORY_X * INVENTORY_Y {
+                build_item::<InventoryItem>(parent, 0, 0, i as u8);
+            }
+        },
+    );
 }
 
 pub struct InventoryPlugin;

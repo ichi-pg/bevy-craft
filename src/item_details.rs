@@ -7,28 +7,27 @@ use crate::ui_states::*;
 use bevy::prelude::*;
 use bevy_craft::*;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 struct ItemDetails;
 
 #[derive(Component, Default, NodeItem)]
 struct MaterialItem;
 
-fn spawn_details(mut commands: Commands) {
-    commands
-        .spawn(screen_node(0, 0, AlignItems::End))
-        .with_children(|parent: &mut ChildBuilder| {
-            parent
-                .spawn(NodeBundle { ..default() })
-                .with_children(|parent: &mut ChildBuilder| {
-                    parent
-                        .spawn((grid_node(3, 1, Visibility::Hidden), ItemDetails))
-                        .with_children(|parent| {
-                            for i in 0..3 {
-                                build_item::<MaterialItem>(parent, 0, 0, i);
-                            }
-                        });
-                });
-        });
+fn spawn_details(commands: Commands) {
+    build_grid::<ItemDetails>(
+        commands,
+        0,
+        0,
+        AlignItems::End,
+        3,
+        1,
+        Visibility::Hidden,
+        |parent| {
+            for i in 0..3 {
+                build_item::<MaterialItem>(parent, 0, 0, i);
+            }
+        },
+    );
 }
 
 fn interact_item(

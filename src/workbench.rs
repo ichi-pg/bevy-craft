@@ -14,36 +14,33 @@ pub struct WorkbenchUI;
 #[derive(Event)]
 pub struct WorkbenchClicked;
 
-fn spawn_items(query: Query<(&ItemID, &ItemAmount), With<CraftProduct>>, mut commands: Commands) {
-    commands
-        .spawn(screen_node(INVENTORY_Y + 1, 2, AlignItems::Center))
-        .with_children(|parent: &mut ChildBuilder| {
-            parent
-                .spawn(grid_space(INVENTORY_X, 2, JustifyContent::SpaceBetween))
-                .with_children(|parent| {
-                    for item_ids in [
-                        HashSet::<u16>::from_iter([101, 102, 103]),
-                        HashSet::<u16>::from_iter([]),
-                        HashSet::<u16>::from_iter([]),
-                    ] {
-                        parent
-                            .spawn((grid_node(3, 2, Visibility::Hidden), WorkbenchUI))
-                            .with_children(|parent| {
-                                for (index, (item_id, amount)) in query.iter().enumerate() {
-                                    if !item_ids.contains(&item_id.0) {
-                                        continue;
-                                    }
-                                    build_item::<ProductItem>(
-                                        parent,
-                                        item_id.0,
-                                        amount.0,
-                                        index as u8,
-                                    );
-                                }
-                            });
-                    }
-                });
-        });
+fn spawn_items(query: Query<(&ItemID, &ItemAmount), With<CraftProduct>>, commands: Commands) {
+    build_iter::<WorkbenchUI, HashSet<u16>>(
+        commands,
+        INVENTORY_Y + 1,
+        2,
+        AlignItems::Center,
+        INVENTORY_X,
+        2,
+        JustifyContent::SpaceBetween,
+        [
+            HashSet::<u16>::from_iter([101, 102, 103]),
+            HashSet::<u16>::from_iter([]),
+            HashSet::<u16>::from_iter([]),
+        ]
+        .iter(),
+        3,
+        2,
+        Visibility::Hidden,
+        |parent, item_ids| {
+            for (index, (item_id, amount)) in query.iter().enumerate() {
+                if !item_ids.contains(&item_id.0) {
+                    continue;
+                }
+                build_item::<ProductItem>(parent, item_id.0, amount.0, index as u8);
+            }
+        },
+    );
 }
 
 fn open_workbench(
