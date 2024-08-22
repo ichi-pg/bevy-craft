@@ -1,7 +1,6 @@
 extern crate proc_macro;
 use proc_macro::TokenStream;
 use quote::quote;
-use syn;
 
 #[proc_macro_derive(ItemAndAmount)]
 pub fn derive_item_and_amount(input: TokenStream) -> TokenStream {
