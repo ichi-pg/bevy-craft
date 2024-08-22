@@ -1,3 +1,4 @@
+use crate::camera::*;
 use crate::equipment::*;
 use crate::hotbar::*;
 use crate::input::*;
@@ -24,19 +25,22 @@ pub enum ItemDragged {
     PreDragged,
 }
 
-fn spawn_drag_area(mut commands: Commands) {
-    commands.spawn((
-        NodeBundle {
-            style: Style {
-                width: Val::Percent(100.0),
-                height: Val::Percent(100.0),
-                position_type: PositionType::Absolute,
+fn spawn_drag_area(camera_query: Query<Entity, With<PlayerCamera>>, mut commands: Commands) {
+    for entity in &camera_query {
+        commands.spawn((
+            NodeBundle {
+                style: Style {
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
+                    position_type: PositionType::Absolute,
+                    ..default()
+                },
                 ..default()
             },
-            ..default()
-        },
-        DragArea,
-    ));
+            DragArea,
+            TargetCamera(entity),
+        ));
+    }
 }
 
 fn drag_item<T: Component>(

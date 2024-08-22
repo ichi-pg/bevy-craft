@@ -1,3 +1,4 @@
+use crate::camera::*;
 use crate::craft_recipe::*;
 use crate::hotbar::*;
 use crate::input::*;
@@ -16,28 +17,36 @@ pub struct ProductItem;
 #[derive(Component, Default)]
 pub struct CraftUI;
 
-fn spawn_items(query: Query<(&ItemID, &ItemAmount), With<CraftProduct>>, commands: Commands) {
-    build_spaced::<CraftUI>(
-        commands,
-        INVENTORY_Y + 1,
-        2,
-        AlignItems::Center,
-        INVENTORY_X,
-        2,
-        JustifyContent::Start,
-        3,
-        2,
-        Visibility::Hidden,
-        |parent| {
-            let item_ids = HashSet::<u16>::from_iter([101, 102, 103]);
-            for (index, (item_id, amount)) in query.iter().enumerate() {
-                if !item_ids.contains(&item_id.0) {
-                    continue;
+fn spawn_items(
+    camera_query: Query<Entity, With<PlayerCamera>>,
+    query: Query<(&ItemID, &ItemAmount), With<CraftProduct>>,
+    commands: Commands,
+) {
+    match camera_query.get_single() {
+        Ok(entity) => build_spaced::<CraftUI>(
+            commands,
+            entity,
+            INVENTORY_Y + 1,
+            2,
+            AlignItems::Center,
+            INVENTORY_X,
+            2,
+            JustifyContent::Start,
+            3,
+            2,
+            Visibility::Hidden,
+            |parent| {
+                let item_ids = HashSet::<u16>::from_iter([101, 102, 103]);
+                for (index, (item_id, amount)) in query.iter().enumerate() {
+                    if !item_ids.contains(&item_id.0) {
+                        continue;
+                    }
+                    build_item::<ProductItem>(parent, item_id.0, amount.0, index as u8);
                 }
-                build_item::<ProductItem>(parent, item_id.0, amount.0, index as u8);
-            }
-        },
-    );
+            },
+        ),
+        Err(_) => todo!(),
+    }
 }
 
 fn click_recipe(

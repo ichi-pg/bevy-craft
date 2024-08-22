@@ -1,10 +1,13 @@
+use crate::camera::*;
 use bevy::diagnostic::*;
 use bevy::prelude::*;
 use iyes_perf_ui::entries::*;
 use iyes_perf_ui::*;
 
-fn spawn_profiler(mut commands: Commands) {
-    commands.spawn(PerfUiBundle::default());
+fn spawn_profiler(camera_query: Query<Entity, With<PlayerCamera>>, mut commands: Commands) {
+    for entity in &camera_query {
+        commands.spawn((PerfUiBundle::default(), TargetCamera(entity)));
+    }
 }
 
 pub struct ProfilerPlugin;

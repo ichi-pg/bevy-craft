@@ -1,3 +1,4 @@
+use crate::camera::PlayerCamera;
 use crate::craft::*;
 use crate::craft_recipe::*;
 use crate::inventory::*;
@@ -14,33 +15,41 @@ pub struct WorkbenchUI;
 #[derive(Event)]
 pub struct WorkbenchClicked;
 
-fn spawn_items(query: Query<(&ItemID, &ItemAmount), With<CraftProduct>>, commands: Commands) {
-    build_iter::<WorkbenchUI, HashSet<u16>>(
-        commands,
-        INVENTORY_Y + 1,
-        2,
-        AlignItems::Center,
-        INVENTORY_X,
-        2,
-        JustifyContent::SpaceBetween,
-        [
-            HashSet::<u16>::from_iter([101, 102, 103]),
-            HashSet::<u16>::from_iter([]),
-            HashSet::<u16>::from_iter([]),
-        ]
-        .iter(),
-        3,
-        2,
-        Visibility::Hidden,
-        |parent, item_ids| {
-            for (index, (item_id, amount)) in query.iter().enumerate() {
-                if !item_ids.contains(&item_id.0) {
-                    continue;
+fn spawn_items(
+    camera_query: Query<Entity, With<PlayerCamera>>,
+    query: Query<(&ItemID, &ItemAmount), With<CraftProduct>>,
+    commands: Commands,
+) {
+    match camera_query.get_single() {
+        Ok(entity) => build_iter::<WorkbenchUI, HashSet<u16>>(
+            commands,
+            entity,
+            INVENTORY_Y + 1,
+            2,
+            AlignItems::Center,
+            INVENTORY_X,
+            2,
+            JustifyContent::SpaceBetween,
+            [
+                HashSet::<u16>::from_iter([101, 102, 103]),
+                HashSet::<u16>::from_iter([]),
+                HashSet::<u16>::from_iter([]),
+            ]
+            .iter(),
+            3,
+            2,
+            Visibility::Hidden,
+            |parent, item_ids| {
+                for (index, (item_id, amount)) in query.iter().enumerate() {
+                    if !item_ids.contains(&item_id.0) {
+                        continue;
+                    }
+                    build_item::<ProductItem>(parent, item_id.0, amount.0, index as u8);
                 }
-                build_item::<ProductItem>(parent, item_id.0, amount.0, index as u8);
-            }
-        },
-    );
+            },
+        ),
+        Err(_) => todo!(),
+    }
 }
 
 fn open_workbench(

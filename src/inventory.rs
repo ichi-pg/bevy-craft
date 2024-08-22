@@ -1,3 +1,4 @@
+use crate::camera::*;
 use crate::craft::*;
 use crate::equipment::*;
 use crate::input::*;
@@ -35,21 +36,25 @@ pub enum InventoryOpened {
 pub const INVENTORY_X: u16 = 10;
 pub const INVENTORY_Y: u16 = 4;
 
-fn spawn_inventory(commands: Commands) {
-    build_grid::<Inventory>(
-        commands,
-        1,
-        1,
-        AlignItems::Center,
-        INVENTORY_X,
-        INVENTORY_Y,
-        Visibility::Hidden,
-        |parent| {
-            for i in 0..INVENTORY_X * INVENTORY_Y {
-                build_item::<InventoryItem>(parent, 0, 0, i as u8);
-            }
-        },
-    );
+fn spawn_inventory(camera_query: Query<Entity, With<PlayerCamera>>, commands: Commands) {
+    match camera_query.get_single() {
+        Ok(entity) => build_grid::<Inventory>(
+            commands,
+            entity,
+            1,
+            1,
+            AlignItems::Center,
+            INVENTORY_X,
+            INVENTORY_Y,
+            Visibility::Hidden,
+            |parent| {
+                for i in 0..INVENTORY_X * INVENTORY_Y {
+                    build_item::<InventoryItem>(parent, 0, 0, i as u8);
+                }
+            },
+        ),
+        Err(_) => todo!(),
+    }
 }
 
 pub struct InventoryPlugin;

@@ -11,8 +11,6 @@ struct MinimapCamera;
 
 const MINIMAP_ORDER: usize = 1;
 pub const MINIMAP_LAYER: RenderLayers = RenderLayers::layer(MINIMAP_ORDER);
-const UI_ORDER: usize = 2;
-const UI_LAYER: RenderLayers = RenderLayers::layer(UI_ORDER);
 
 pub const MINIMAP_ALPHA: f32 = 0.5;
 const MINIMAP_Z: f32 = -1.0;
@@ -51,16 +49,6 @@ fn spawn_minimap(query: Query<&Window, With<PrimaryWindow>>, mut commands: Comma
         ));
     }
     commands.spawn((
-        Camera2dBundle {
-            camera: Camera {
-                order: UI_ORDER as isize,
-                ..default()
-            },
-            ..default()
-        },
-        UI_LAYER,
-    ));
-    commands.spawn((
         SpriteBundle {
             sprite: Sprite {
                 color: Color::srgba(0.2, 0.2, 0.2, MINIMAP_ALPHA),
@@ -72,7 +60,6 @@ fn spawn_minimap(query: Query<&Window, With<PrimaryWindow>>, mut commands: Comma
         },
         MINIMAP_LAYER,
     ));
-    // TODO over other ui
 }
 
 fn init_zoom(mut query: Query<&mut OrthographicProjection, With<MinimapCamera>>) {

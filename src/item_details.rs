@@ -1,3 +1,4 @@
+use crate::camera::*;
 use crate::craft_recipe::*;
 use crate::item::*;
 use crate::item_dragging::*;
@@ -13,21 +14,25 @@ struct ItemDetails;
 #[derive(Component, Default, NodeItem)]
 struct MaterialItem;
 
-fn spawn_details(commands: Commands) {
-    build_grid::<ItemDetails>(
-        commands,
-        0,
-        0,
-        AlignItems::End,
-        3,
-        1,
-        Visibility::Hidden,
-        |parent| {
-            for i in 0..3 {
-                build_item::<MaterialItem>(parent, 0, 0, i);
-            }
-        },
-    );
+fn spawn_details(camera_query: Query<Entity, With<PlayerCamera>>, commands: Commands) {
+    match camera_query.get_single() {
+        Ok(entity) => build_grid::<ItemDetails>(
+            commands,
+            entity,
+            0,
+            0,
+            AlignItems::End,
+            3,
+            1,
+            Visibility::Hidden,
+            |parent| {
+                for i in 0..3 {
+                    build_item::<MaterialItem>(parent, 0, 0, i);
+                }
+            },
+        ),
+        Err(_) => todo!(),
+    }
 }
 
 fn interact_item(

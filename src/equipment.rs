@@ -1,3 +1,4 @@
+use crate::camera::*;
 use crate::inventory::*;
 use crate::item::*;
 use crate::item_node::*;
@@ -15,24 +16,28 @@ pub struct EquipmentItem;
 #[derive(Event, Default)]
 pub struct EquipmentChanged;
 
-fn spawn_equipments(commands: Commands) {
-    build_spaced::<EquipmentUI>(
-        commands,
-        INVENTORY_Y + 1,
-        2,
-        AlignItems::Center,
-        INVENTORY_X,
-        4,
-        JustifyContent::End,
-        3,
-        4,
-        Visibility::Hidden,
-        |parent| {
-            for i in 0..10 {
-                build_item::<EquipmentItem>(parent, 0, 0, i);
-            }
-        },
-    );
+fn spawn_equipments(camera_query: Query<Entity, With<PlayerCamera>>, commands: Commands) {
+    match camera_query.get_single() {
+        Ok(entity) => build_spaced::<EquipmentUI>(
+            commands,
+            entity,
+            INVENTORY_Y + 1,
+            2,
+            AlignItems::Center,
+            INVENTORY_X,
+            4,
+            JustifyContent::End,
+            3,
+            4,
+            Visibility::Hidden,
+            |parent| {
+                for i in 0..10 {
+                    build_item::<EquipmentItem>(parent, 0, 0, i);
+                }
+            },
+        ),
+        Err(_) => todo!(),
+    }
     // TODO character preview
     // TODO stats preview
     // TODO ability preview

@@ -1,4 +1,5 @@
 use crate::block::*;
+use crate::camera::*;
 use crate::inventory::*;
 use crate::item::*;
 use crate::item_node::*;
@@ -30,21 +31,25 @@ pub struct StorageOverflowed {
     pub amount: u16,
 }
 
-fn spawn_storage(commands: Commands) {
-    build_grid::<Storage>(
-        commands,
-        INVENTORY_Y + 1,
-        2,
-        AlignItems::Center,
-        12,
-        3,
-        Visibility::Hidden,
-        |parent| {
-            for i in 0..36 {
-                build_item::<StorageItem>(parent, 0, 0, i as u8);
-            }
-        },
-    );
+fn spawn_storage(camera_query: Query<Entity, With<PlayerCamera>>, commands: Commands) {
+    match camera_query.get_single() {
+        Ok(entity) => build_grid::<Storage>(
+            commands,
+            entity,
+            INVENTORY_Y + 1,
+            2,
+            AlignItems::Center,
+            12,
+            3,
+            Visibility::Hidden,
+            |parent| {
+                for i in 0..36 {
+                    build_item::<StorageItem>(parent, 0, 0, i as u8);
+                }
+            },
+        ),
+        Err(_) => todo!(),
+    }
 }
 
 fn open_storage(
