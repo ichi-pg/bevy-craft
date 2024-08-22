@@ -2,6 +2,7 @@ use crate::hit_test::*;
 use crate::input::*;
 use crate::item_dragging::*;
 use crate::ui_hovered::*;
+use crate::ui_states::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -25,7 +26,7 @@ fn left_click(
         return;
     }
     for (entity, transform, shape) in &query {
-        if point_test(world_cursor.0, transform.translation, *shape) {
+        if point_test(world_cursor.position, transform.translation, *shape) {
             commands.entity(entity).insert(LeftClicked);
             break;
         }
@@ -45,7 +46,7 @@ fn right_click(
     }
     let mut found = false;
     for (entity, transform, shape) in &query {
-        if point_test(world_cursor.0, transform.translation, *shape) {
+        if point_test(world_cursor.position, transform.translation, *shape) {
             commands.entity(entity).insert(RightClicked);
             found = true;
             break;
@@ -55,7 +56,7 @@ fn right_click(
         return;
     }
     event_writer.send(EmptyClicked {
-        pos: world_cursor.0,
+        pos: world_cursor.position,
     });
 }
 
@@ -67,6 +68,7 @@ impl Plugin for ClickShapePlugin {
         app.add_systems(
             Update,
             (left_click, right_click)
+                .run_if(not(in_state(UIStates::Minimap)))
                 .run_if(in_state(ItemDragged::None))
                 .run_if(in_state(UIHovered::None)),
         );

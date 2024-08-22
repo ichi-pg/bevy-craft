@@ -85,7 +85,7 @@ fn spawn_blocks(mut commands: Commands, mut random: ResMut<Random>) {
                     parent.spawn((
                         SpriteBundle {
                             sprite: Sprite {
-                                color,
+                                color: color.with_alpha(MINIMAP_ALPHA),
                                 custom_size: Some(Vec2::new(BLOCK_SIZE, BLOCK_SIZE)),
                                 ..default()
                             },

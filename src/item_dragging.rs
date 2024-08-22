@@ -83,8 +83,8 @@ fn drag_item<T: Component>(
 
 fn dragging_item(mut query: Query<&mut Style, With<DragItem>>, window_cursor: Res<WindowCursor>) {
     for mut style in &mut query {
-        style.left = Val::Px(window_cursor.x);
-        style.top = Val::Px(window_cursor.y);
+        style.left = Val::Px(window_cursor.position.x);
+        style.top = Val::Px(window_cursor.position.y);
     }
 }
 

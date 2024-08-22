@@ -1,3 +1,4 @@
+use crate::camera::*;
 use bevy::input::mouse::*;
 use bevy::prelude::*;
 use bevy::window::*;
@@ -6,7 +7,7 @@ use bevy_craft::*;
 macro_rules! define_pressed {
     ( $( $x:tt ),* ) => {
         $(
-            #[derive(Resource, Pressed, Default)]
+            #[derive(Resource, Default, Pressed)]
             pub struct $x {
                 pub pressed: bool,
                 pub just_pressed: bool,
@@ -20,11 +21,19 @@ define_pressed!(
     KeyT, KeyF, KeyG, KeyC, KeyV, KeyB, KeyM
 );
 
-#[derive(Resource, Deref, DerefMut)]
-pub struct WorldCursor(pub Vec2);
+macro_rules! define_cursor {
+    ( $( $x:tt ),* ) => {
+        $(
+            #[derive(Resource, Default)]
+            pub struct $x {
+                pub position: Vec2,
+                pub delta: Vec2,
+            }
+        )*
+    };
+}
 
-#[derive(Resource, Deref, DerefMut)]
-pub struct WindowCursor(pub Vec2);
+define_cursor!(WorldCursor, WindowCursor);
 
 #[derive(Resource, Deref, DerefMut)]
 pub struct LeftStick(pub Vec2);
@@ -115,7 +124,7 @@ fn read_cursor(
     mut mut_window_cursor: ResMut<WindowCursor>,
     mut mut_world_cursor: ResMut<WorldCursor>,
     window_query: Query<&Window, With<PrimaryWindow>>,
-    camera_query: Query<(&Camera, &GlobalTransform)>,
+    camera_query: Query<(&Camera, &GlobalTransform), With<PlayerCamera>>,
 ) {
     for (camera, transform) in &camera_query {
         for window in &window_query {
@@ -124,9 +133,11 @@ fn read_cursor(
                     .viewport_to_world(transform, window_cursor)
                     .map(|ray| ray.origin.truncate())
                 {
-                    mut_world_cursor.0 = world_cursor;
+                    mut_world_cursor.delta = world_cursor - mut_world_cursor.position;
+                    mut_world_cursor.position = world_cursor;
                 }
-                mut_window_cursor.0 = window_cursor;
+                mut_window_cursor.delta = window_cursor - mut_window_cursor.position;
+                mut_window_cursor.position = window_cursor;
             }
         }
     }
@@ -164,8 +175,8 @@ impl Plugin for InputPlugin {
             (KeyM, KeyM)
         );
         app.insert_resource(Wheel(0));
-        app.insert_resource(WindowCursor(Vec2::ZERO));
-        app.insert_resource(WorldCursor(Vec2::ZERO));
+        app.insert_resource(WindowCursor::default());
+        app.insert_resource(WorldCursor::default());
         app.insert_resource(LeftStick(Vec2::ZERO));
         app.insert_resource(LeftClick::default());
         app.insert_resource(RightClick::default());

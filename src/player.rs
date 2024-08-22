@@ -49,7 +49,7 @@ fn spawn_player(
             parent.spawn((
                 SpriteBundle {
                     sprite: Sprite {
-                        color: Color::srgb(1.0, 0.0, 0.0),
+                        color: Color::srgba(1.0, 0.0, 0.0, MINIMAP_ALPHA),
                         custom_size: Some(Vec2::new(PLAYER_SIZE, PLAYER_SIZE)),
                         ..default()
                     },
