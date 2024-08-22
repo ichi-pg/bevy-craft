@@ -19,7 +19,10 @@ fn sort_items<T: Component, U: Resource + Pressed>(
         }
         items.push((item_id.0, amount.0));
     }
-    items.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+    items.sort_by(|a, b| match a.0.partial_cmp(&b.0) {
+        Some(ordering) => ordering,
+        None => todo!(),
+    });
     let mut iter = query.iter_mut();
     for (sorted_item_id, sorted_amount) in items {
         match iter.next() {

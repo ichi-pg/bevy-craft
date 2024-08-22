@@ -10,11 +10,11 @@ pub struct RandomPlugin;
 
 impl Plugin for RandomPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(Random(ChaCha8Rng::seed_from_u64(
-            SystemTime::now()
-                .duration_since(SystemTime::UNIX_EPOCH)
-                .unwrap()
-                .as_secs(),
-        )));
+        match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
+            Ok(duration) => {
+                app.insert_resource(Random(ChaCha8Rng::seed_from_u64(duration.as_secs())));
+            }
+            Err(_) => todo!(),
+        }
     }
 }

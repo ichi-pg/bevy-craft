@@ -79,7 +79,10 @@ fn dynamic_collision<T: Component, U: Component>(
         if hits.is_empty() {
             continue;
         }
-        hits.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+        hits.sort_by(|a, b| match a.0.partial_cmp(&b.0) {
+            Some(ordering) => ordering,
+            None => todo!(),
+        });
         // Dynamics Phase
         let mut repulsions = Vec2::ZERO;
         for hit in hits.iter() {
