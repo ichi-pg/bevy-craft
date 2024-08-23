@@ -78,7 +78,7 @@ fn pick_up_item(
     mut commands: Commands,
 ) {
     for (entity, item_id, amount) in &query {
-        commands.entity(entity).despawn();
+        commands.entity(entity).despawn_recursive();
         event_writer.send(ItemPickedUp {
             item_id: item_id.0,
             amount: amount.0,

@@ -116,7 +116,7 @@ fn destroy_block(
             health.0 -= pickaxe_power.0 * time.delta_seconds();
         }
         if health.0 <= 0.0 {
-            commands.entity(entity).despawn();
+            commands.entity(entity).despawn_recursive();
             block_event_writer.send(BlockDestroied {
                 translation: transform.translation,
                 block_id: block_id.0,

@@ -119,7 +119,7 @@ fn sync_items(
                 continue;
             }
             if item_id.0 == 0 {
-                commands.entity(entity).despawn();
+                commands.entity(entity).despawn_recursive();
             } else {
                 background_item_id.0 = item_id.0;
                 background_amount.0 = amount.0;
@@ -161,7 +161,7 @@ fn destroy_items(
                     amount: amount.0,
                 });
             }
-            commands.entity(entity).despawn();
+            commands.entity(entity).despawn_recursive();
         }
     }
     // TODO optimize event mod depends
