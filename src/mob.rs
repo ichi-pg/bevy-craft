@@ -1,6 +1,7 @@
 use crate::collision::*;
 use crate::gravity::*;
 use crate::item_stats::*;
+use crate::math::*;
 use crate::velocity::*;
 use bevy::prelude::*;
 
@@ -22,7 +23,9 @@ fn mob_walk(mut query: Query<(&mut Velocity2, &Direction2, &MoveSpeed), With<Mob
     // TODO sometimes stop walk and look around
 }
 
-fn mob_collided(mut query: Query<(&mut Velocity2, &BlockCollided, &JumpPower), (With<MobWalk>, With<Grounded>)>) {
+fn mob_jump(
+    mut query: Query<(&mut Velocity2, &BlockCollided, &JumpPower), (With<MobWalk>, With<Grounded>)>,
+) {
     for (mut velocity, collided, jump_power) in &mut query {
         if collided.repulsion.y < collided.repulsion.x.abs() {
             velocity.y = jump_power.0;
@@ -44,8 +47,7 @@ fn mob_home_area(
     >,
 ) {
     for (mut direction, transform, position, distance_squared) in &mut query {
-        let distance = transform.translation.x - position.x;
-        if distance * distance > distance_squared.0 {
+        if (transform.translation.x - position.x).pow2() > distance_squared.0 {
             direction.x = -direction.x;
         }
     }
@@ -56,6 +58,7 @@ pub struct MobPlugin;
 
 impl Plugin for MobPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (mob_walk, mob_collided, mob_home_area));
+        app.add_systems(Update, (mob_walk, mob_jump, mob_home_area));
     }
+    // TODO A*
 }

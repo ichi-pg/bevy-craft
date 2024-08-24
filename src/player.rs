@@ -57,7 +57,7 @@ fn spawn_player(mut commands: Commands) {
     // TODO texture animation
 }
 
-fn add_move_x(
+fn player_move(
     mut query: Query<(&mut Velocity2, &mut Direction2, &MoveSpeed), With<PlayerController>>,
     left_stick: Res<LeftStick>,
 ) {
@@ -71,7 +71,7 @@ fn add_move_x(
     }
 }
 
-fn add_jump(
+fn player_jump(
     mut query: Query<(&mut Velocity2, &JumpPower), (With<PlayerController>, With<Grounded>)>,
     space: Res<Space>,
 ) {
@@ -87,6 +87,6 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_player);
-        app.add_systems(Update, (add_move_x, add_jump));
+        app.add_systems(Update, (player_move, player_jump));
     }
 }

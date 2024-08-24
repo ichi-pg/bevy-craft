@@ -13,3 +13,13 @@ impl Repeat<i8> for i8 {
         }
     }
 }
+
+pub trait Pow2<T> {
+    fn pow2(&self) -> T;
+}
+
+impl Pow2<f32> for f32 {
+    fn pow2(&self) -> f32 {
+        *self * *self
+    }
+}
