@@ -6,7 +6,7 @@ use bevy::prelude::*;
 #[derive(Component)]
 pub struct MobWalk;
 
-#[derive(Component)]
+#[derive(Component, Deref, DerefMut)]
 pub struct HomePosition(pub Vec2);
 
 #[derive(Component)]
@@ -27,7 +27,6 @@ fn mob_collided(mut query: Query<(&mut Velocity2, &BlockCollided, &JumpPower), W
             velocity.y = jump_power.0;
         }
     }
-    // FIXME stop velocity.x in second jumping
     // FIXME with grounded
     // TODO margin to wall
     // TODO too high wall
@@ -44,12 +43,13 @@ fn mob_home_area(
         With<MobWalk>,
     >,
 ) {
-    for (mut direction, transform, position, distance) in &mut query {
-        if transform.translation.xy().distance_squared(position.0) > distance.0 {
+    for (mut direction, transform, position, distance_squared) in &mut query {
+        let distance = transform.translation.x - position.x;
+        if distance * distance > distance_squared.0 {
             direction.x = -direction.x;
         }
     }
-    // FIXME y axis
+    // TODO y axis
 }
 
 pub struct MobPlugin;
