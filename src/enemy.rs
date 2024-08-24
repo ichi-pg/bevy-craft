@@ -32,6 +32,8 @@ fn spawn_enemies(mut commands: Commands) {
         JumpPower(1500.0),
         Velocity2::default(),
         Direction2(Vec2::X),
+        PrevPosition(home_position.xy()),
+        StackSeconds(0.0),
         Shape::Circle(size * 0.5),
     ));
     // TODO spawner
