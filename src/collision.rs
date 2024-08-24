@@ -65,7 +65,7 @@ fn collision<T: Component, U: Component, V: Component + Default + Collided>(
                 if repulsion == Vec2::ZERO {
                     continue;
                 }
-                match hits.try_push((repulsion.length_squared(), transform2, shape2, repulsion)) {
+                match hits.try_push((repulsion.length_squared(), transform2, shape2)) {
                     Ok(_) => {
                         let mut collided = V::default();
                         collided.set_repulsion(repulsion);
@@ -90,6 +90,7 @@ fn collision<T: Component, U: Component, V: Component + Default + Collided>(
                     });
                     let mut repulsions = Vec2::ZERO;
                     for hit in hits.iter() {
+                        // Merge repulsions
                         let repulsion = shape_and_shape(
                             transform1.translation.xy(),
                             *shape1,
@@ -99,13 +100,14 @@ fn collision<T: Component, U: Component, V: Component + Default + Collided>(
                         transform1.translation.x += repulsion.x;
                         transform1.translation.y += repulsion.y;
                         repulsions += repulsion;
-                    }
-                    let x_abs = repulsions.x.abs();
-                    if repulsions.y > x_abs {
-                        velocity.y = 0.0;
-                        commands.entity(entity1).insert(Grounded);
-                    } else if -repulsions.y > x_abs && velocity.y > 0.0 {
-                        velocity.y = 0.0;
+                        // Check grounded
+                        let x_abs = repulsion.x.abs();
+                        if repulsion.y > x_abs {
+                            velocity.y = 0.0;
+                            commands.entity(entity1).insert(Grounded);
+                        } else if -repulsion.y > x_abs && velocity.y > 0.0 {
+                            velocity.y = 0.0;
+                        }
                     }
                     let mut collided = V::default();
                     collided.set_repulsion(repulsions);
@@ -115,10 +117,9 @@ fn collision<T: Component, U: Component, V: Component + Default + Collided>(
         }
     }
     // FIXME jump out when placement block to player position
-    // FIXME not grounded on floor and wall
     // TODO chunk or sweep or tree
     // TODO dynamics gizmo
-    // TODO optimize to check grounded
+    // TODO optimize grounded and heading
 }
 
 fn clear_collided<T: Component + Collided>(query: Query<Entity, With<T>>, mut commands: Commands) {

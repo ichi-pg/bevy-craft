@@ -1,4 +1,5 @@
 use crate::collision::*;
+use crate::gravity::*;
 use crate::item_stats::*;
 use crate::velocity::*;
 use bevy::prelude::*;
@@ -21,13 +22,12 @@ fn mob_walk(mut query: Query<(&mut Velocity2, &Direction2, &MoveSpeed), With<Mob
     // TODO sometimes stop walk and look around
 }
 
-fn mob_collided(mut query: Query<(&mut Velocity2, &BlockCollided, &JumpPower), With<MobWalk>>) {
+fn mob_collided(mut query: Query<(&mut Velocity2, &BlockCollided, &JumpPower), (With<MobWalk>, With<Grounded>)>) {
     for (mut velocity, collided, jump_power) in &mut query {
         if collided.repulsion.y < collided.repulsion.x.abs() {
             velocity.y = jump_power.0;
         }
     }
-    // FIXME with grounded
     // TODO margin to wall
     // TODO too high wall
 }
