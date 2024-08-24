@@ -39,13 +39,14 @@ fn spawn_profiler(camera_query: Query<Entity, With<PlayerCamera>>, mut commands:
 
 fn sync_collision(
     mut query: Query<&mut Text, With<CollisionText>>,
-    counter: Res<CollisionCounter>,
+    mut counter: ResMut<CollisionCounter>,
 ) {
     for mut text in &mut query {
         for section in &mut text.sections {
             section.value = format!("{}", counter.0);
         }
     }
+    counter.0 = 0;
 }
 
 pub struct ProfilerPlugin;

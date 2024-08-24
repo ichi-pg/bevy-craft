@@ -28,9 +28,9 @@ fn mob_collided(mut query: Query<(&mut Velocity2, &BlockCollided, &JumpPower), W
         }
     }
     // FIXME stop velocity.x in second jumping
+    // FIXME with grounded
     // TODO margin to wall
     // TODO too high wall
-    // TODO with grounded
 }
 
 fn mob_home_area(
@@ -49,6 +49,7 @@ fn mob_home_area(
             direction.x = -direction.x;
         }
     }
+    // FIXME y axis
 }
 
 pub struct MobPlugin;
