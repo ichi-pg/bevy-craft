@@ -5,7 +5,6 @@ use crate::item_stats::*;
 use crate::minimap::*;
 use crate::velocity::*;
 use bevy::prelude::*;
-use bevy::sprite::*;
 
 #[derive(Component)]
 pub struct Player;
@@ -13,33 +12,31 @@ pub struct Player;
 #[derive(Component)]
 pub struct PlayerController;
 
-#[derive(Component, Deref, DerefMut)]
-pub struct Direction2(Vec2);
-
 const PLAYER_SIZE: f32 = 128.0;
-pub const HEALTH: f32 = 100.0;
-pub const PICKAXE_POWER: f32 = 100.0;
-pub const MELEE_POWER: f32 = 10.0;
+pub const PLAYER_HEALTH: f32 = 100.0;
+pub const PLAYER_PICKAXE_POWER: f32 = 100.0;
+pub const PLAYER_MOVE_SPEED: f32 = 400.0;
+pub const PLAYER_JUMP_POWER: f32 = 1500.0;
 
-fn spawn_player(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-) {
+fn spawn_player(mut commands: Commands) {
     commands
         .spawn((
-            MaterialMesh2dBundle {
-                mesh: Mesh2dHandle(meshes.add(Circle::new(PLAYER_SIZE * 0.5))),
-                material: materials.add(Color::WHITE),
-                transform: Transform::from_xyz(0.0, 128.0, 0.0),
+            SpriteBundle {
+                sprite: Sprite {
+                    color: Color::WHITE,
+                    custom_size: Some(Vec2::new(PLAYER_SIZE, PLAYER_SIZE)),
+                    ..default()
+                },
                 ..default()
             },
             Player,
             PlayerController,
-            Health(HEALTH),
-            MaxHealth(HEALTH),
-            PickaxePower(PICKAXE_POWER),
-            MeleePower(MELEE_POWER),
+            Health(PLAYER_HEALTH),
+            MaxHealth(PLAYER_HEALTH),
+            PickaxePower(PLAYER_PICKAXE_POWER),
+            AttackPower(0.0),
+            MoveSpeed(PLAYER_MOVE_SPEED),
+            JumpPower(PLAYER_JUMP_POWER),
             JumpController,
             Velocity2::default(),
             Direction2(Vec2::X),
@@ -58,16 +55,17 @@ fn spawn_player(
                 MINIMAP_LAYER,
             ));
         });
+    // TODO texture animation
 }
 
 fn add_move_x(
-    mut query: Query<(&mut Velocity2, &mut Direction2), With<PlayerController>>,
+    mut query: Query<(&mut Velocity2, &mut Direction2, &MoveSpeed), With<PlayerController>>,
     left_stick: Res<LeftStick>,
 ) {
-    for (mut velocity, mut direction) in &mut query {
+    for (mut velocity, mut direction, move_speed) in &mut query {
         if left_stick.x != 0.0 {
-            velocity.x = left_stick.x * 400.0;
             direction.x = left_stick.x;
+            velocity.x = direction.x * move_speed.0;
         } else {
             velocity.x = 0.0;
         }
@@ -75,15 +73,13 @@ fn add_move_x(
 }
 
 fn add_move_xy(
-    mut query: Query<(&mut Velocity2, &mut Direction2), With<PlayerController>>,
+    mut query: Query<(&mut Velocity2, &mut Direction2, &MoveSpeed), With<PlayerController>>,
     left_stick: Res<LeftStick>,
 ) {
-    for (mut velocity, mut direction) in &mut query {
+    for (mut velocity, mut direction, move_speed) in &mut query {
         if left_stick.0 != Vec2::ZERO {
-            let normal = left_stick.normalize();
-            velocity.0 = normal * 400.0;
-            direction.x = normal.x;
-            direction.y = normal.y;
+            direction.0 = left_stick.normalize();
+            velocity.0 = direction.0 * move_speed.0;
         } else {
             velocity.0 = Vec2::ZERO;
         }
@@ -91,12 +87,12 @@ fn add_move_xy(
 }
 
 fn add_jump(
-    mut query: Query<&mut Velocity2, (With<PlayerController>, With<Grounded>)>,
+    mut query: Query<(&mut Velocity2, &JumpPower), (With<PlayerController>, With<Grounded>)>,
     space: Res<Space>,
 ) {
-    for mut velocity in &mut query {
+    for (mut velocity, jump_power) in &mut query {
         if space.pressed {
-            velocity.y = 1500.0;
+            velocity.y = jump_power.0;
         } else {
             velocity.y = 0.0;
         }

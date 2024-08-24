@@ -21,7 +21,13 @@ pub struct MaxHealth(pub f32);
 pub struct PickaxePower(pub f32);
 
 #[derive(Component, Stats)]
-pub struct MeleePower(pub f32);
+pub struct AttackPower(pub f32);
+
+#[derive(Component)]
+pub struct MoveSpeed(pub f32);
+
+#[derive(Component)]
+pub struct JumpPower(pub f32);
 
 #[derive(Event, Default)]
 struct SelectedChanged;
@@ -107,8 +113,8 @@ impl Plugin for ItemStatsPlugin {
         app.add_systems(
             Update,
             (
-                sync_equipment::<MaxHealth>(HEALTH),
-                sync_selected::<PickaxePower>(PICKAXE_POWER),
+                sync_equipment::<MaxHealth>(PLAYER_HEALTH),
+                sync_selected::<PickaxePower>(PLAYER_PICKAXE_POWER),
                 sync_changed::<HotbarItem, ItemID, SelectedChanged>,
             ),
         );

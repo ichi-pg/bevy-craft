@@ -5,6 +5,7 @@ mod click_shape;
 mod collision;
 mod craft;
 mod craft_recipe;
+mod enemy;
 mod equipment;
 mod framerate;
 mod gravity;
@@ -82,6 +83,7 @@ fn main() {
             player::PlatformerPlayerPlugin,
             block::BlockPlugin,
             item::ItemPlugin,
+            enemy::PlatformerEnemyPlugin,
         ))
         .run();
 
@@ -94,7 +96,7 @@ fn main() {
     // TODO enchant(job building), skill(combo building)
     // TODO housing, farmming, industry, fishing, pastoralism
     // TODO rogue dungeon
-    // TODO enemy
+    // TODO boss
 
     // TODO durability with free repair
     // TODO weapon

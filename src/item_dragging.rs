@@ -8,6 +8,7 @@ use crate::item_node::*;
 use crate::player::*;
 use crate::storage::*;
 use crate::ui_hovered::*;
+use crate::velocity::*;
 use bevy::prelude::*;
 use bevy_craft::NodeItem;
 

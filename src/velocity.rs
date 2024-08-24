@@ -4,6 +4,9 @@ use bevy::prelude::*;
 #[derive(Component, Deref, DerefMut, Default)]
 pub struct Velocity2(pub Vec2);
 
+#[derive(Component, Deref, DerefMut)]
+pub struct Direction2(pub Vec2);
+
 pub fn add_velocity(
     mut query: Query<(Entity, &mut Transform, &Velocity2)>,
     time: Res<Time>,
@@ -13,11 +16,9 @@ pub fn add_velocity(
         if velocity.0 == Vec2::ZERO {
             continue;
         }
-        if velocity.y >= 0.0 {
-            commands.entity(entity).remove::<Grounded>();
-        }
         transform.translation.x += velocity.x * time.delta_seconds();
         transform.translation.y += velocity.y * time.delta_seconds();
+        commands.entity(entity).remove::<Grounded>();
     }
 }
 
