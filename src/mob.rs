@@ -173,7 +173,6 @@ impl Plugin for MobPlugin {
             ),
         );
     }
-    // TODO find player and chase
     // TODO sometimes stop walk and look around
     // TODO A*
 }
