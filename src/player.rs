@@ -72,20 +72,6 @@ fn add_move_x(
     }
 }
 
-fn add_move_xy(
-    mut query: Query<(&mut Velocity2, &mut Direction2, &MoveSpeed), With<PlayerController>>,
-    left_stick: Res<LeftStick>,
-) {
-    for (mut velocity, mut direction, move_speed) in &mut query {
-        if left_stick.0 != Vec2::ZERO {
-            direction.0 = left_stick.normalize();
-            velocity.0 = direction.0 * move_speed.0;
-        } else {
-            velocity.0 = Vec2::ZERO;
-        }
-    }
-}
-
 fn add_jump(
     mut query: Query<(&mut Velocity2, &JumpPower), (With<PlayerController>, With<Grounded>)>,
     space: Res<Space>,
@@ -99,20 +85,11 @@ fn add_jump(
     }
 }
 
-pub struct PlatformerPlayerPlugin;
+pub struct PlayerPlugin;
 
-impl Plugin for PlatformerPlayerPlugin {
+impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_player);
         app.add_systems(Update, (add_move_x, add_jump));
-    }
-}
-
-pub struct TopDownPlayerPlugin;
-
-impl Plugin for TopDownPlayerPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_player);
-        app.add_systems(Update, add_move_xy);
     }
 }

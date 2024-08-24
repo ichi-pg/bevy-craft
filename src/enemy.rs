@@ -1,22 +1,11 @@
-use crate::collision::*;
 use crate::hit_test::*;
 use crate::item_stats::*;
+use crate::mob::*;
 use crate::velocity::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
 pub struct Enemy;
-
-#[derive(Component)]
-struct HomePosition(Vec2);
-
-#[derive(Component)]
-struct HomeDistance(f32);
-
-#[derive(Component, PartialEq, Eq)]
-enum Behavior {
-    Walk,
-}
 
 fn spawn_enemies(mut commands: Commands) {
     let size = 128.0;
@@ -32,7 +21,7 @@ fn spawn_enemies(mut commands: Commands) {
             ..default()
         },
         Enemy,
-        Behavior::Walk,
+        MobWalk,
         HomePosition(home_position.xy()),
         HomeDistance(size * 10.0),
         Health(100.0),
@@ -48,33 +37,10 @@ fn spawn_enemies(mut commands: Commands) {
     // TODO texture animation
 }
 
-fn enemy_walk(mut query: Query<(&Behavior, &mut Velocity2, &Direction2, &MoveSpeed), With<Enemy>>) {
-    for (behavior, mut velocity, direction, move_speed) in &mut query {
-        if *behavior != Behavior::Walk {
-            continue;
-        }
-        velocity.x = direction.x * move_speed.0;
-    }
-    // TODO find player and chase
-    // TODO stay home area
-    // TODO sometimes stop walk and look around
-}
+pub struct EnemyPlugin;
 
-fn enemy_collided(mut query: Query<(&mut Direction2, &Collided), With<Enemy>>) {
-    for (mut direction, collided) in &mut query {
-        if collided.y < collided.x.abs() {
-            direction.x = -direction.x;
-        }
-    }
-    // TODO jump
-}
-
-pub struct PlatformerEnemyPlugin;
-
-impl Plugin for PlatformerEnemyPlugin {
+impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_enemies);
-        app.add_systems(Update, (enemy_walk, enemy_collided));
     }
-    // TODO state filter component?
 }

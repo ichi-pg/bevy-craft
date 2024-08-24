@@ -23,6 +23,7 @@ mod item_sorting;
 mod item_stats;
 mod math;
 mod minimap;
+mod mob;
 mod player;
 mod profiler;
 mod random;
@@ -80,10 +81,11 @@ fn main() {
             minimap::MinimapPlugin,
         ))
         .add_plugins((
-            player::PlatformerPlayerPlugin,
+            player::PlayerPlugin,
             block::BlockPlugin,
             item::ItemPlugin,
-            enemy::PlatformerEnemyPlugin,
+            mob::MobPlugin,
+            enemy::EnemyPlugin,
         ))
         .run();
 
