@@ -24,10 +24,26 @@ fn block_destroied(
     }
 }
 
+pub fn remove_grounded(mut query: Query<(Entity, &Velocity2)>, mut commands: Commands) {
+    for (entity, velocity) in &mut query {
+        if velocity.0 == Vec2::ZERO {
+            continue;
+        }
+        commands.entity(entity).remove::<Grounded>();
+    }
+}
+
 pub struct GravityPlugin;
 
 impl Plugin for GravityPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (add_gravity, block_destroied));
+        app.add_systems(
+            PostUpdate,
+            (
+                add_gravity,
+                (remove_grounded, block_destroied).before(add_gravity),
+            )
+                .before(add_velocity),
+        );
     }
 }

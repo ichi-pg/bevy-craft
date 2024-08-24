@@ -115,9 +115,10 @@ fn collision<T: Component, U: Component, V: Component + Default + Collided>(
         }
     }
     // FIXME jump out when placement block to player position
+    // FIXME not grounded on floor and wall
     // TODO chunk or sweep or tree
     // TODO dynamics gizmo
-    // TODO collision profiler
+    // TODO optimize to check grounded
 }
 
 fn clear_collided<T: Component + Collided>(query: Query<Entity, With<T>>, mut commands: Commands) {
