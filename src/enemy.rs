@@ -1,5 +1,6 @@
 use crate::hit_test::*;
 use crate::item_stats::*;
+use crate::math::Pow2;
 use crate::mob::*;
 use crate::velocity::*;
 use bevy::prelude::*;
@@ -21,20 +22,29 @@ fn spawn_enemies(mut commands: Commands) {
             transform: Transform::from_translation(home_position),
             ..default()
         },
-        Enemy,
-        MobWalk,
-        HomePosition(home_position.xy()),
-        HomeDistanceSquared(home_distance * home_distance),
-        Health(100.0),
-        MaxHealth(100.0),
-        MoveSpeed(200.0),
-        AttackPower(10.0),
-        JumpPower(1500.0),
-        Velocity2::default(),
-        Direction2(Vec2::X),
-        PrevPosition(home_position.xy()),
-        StackSeconds(0.0),
-        Shape::Circle(size * 0.5),
+        (
+            Enemy,
+            Velocity2::default(),
+            Direction2(Vec2::X),
+            Shape::Circle(size * 0.5),
+        ),
+        (
+            Health(100.0),
+            MaxHealth(100.0),
+            MoveSpeed(200.0),
+            AttackPower(10.0),
+            JumpPower(1500.0),
+        ),
+        (
+            MobWalk,
+            MobPatrol,
+            MobStroll,
+            HomePosition(home_position.xy()),
+            HomeDistanceSquared(home_distance * home_distance),
+            PatrolDistanceSquared((size * 4.0).pow2()),
+            PrevPosition(home_position.xy()),
+            StackSeconds(0.0),
+        ),
     ));
     // TODO spawner
     // TODO texture animation

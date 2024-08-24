@@ -2,6 +2,7 @@ use crate::collision::*;
 use crate::gravity::*;
 use crate::item_stats::*;
 use crate::math::*;
+use crate::player::*;
 use crate::random::*;
 use crate::velocity::*;
 use bevy::prelude::*;
@@ -10,11 +11,23 @@ use rand::RngCore;
 #[derive(Component)]
 pub struct MobWalk;
 
+#[derive(Component)]
+pub struct MobPatrol;
+
+#[derive(Component)]
+pub struct MobStroll;
+
+#[derive(Component)]
+pub struct MobChase;
+
 #[derive(Component, Deref, DerefMut)]
 pub struct HomePosition(pub Vec2);
 
 #[derive(Component)]
 pub struct HomeDistanceSquared(pub f32);
+
+#[derive(Component)]
+pub struct PatrolDistanceSquared(pub f32);
 
 #[derive(Component, Deref, DerefMut)]
 pub struct PrevPosition(pub Vec2);
@@ -43,7 +56,7 @@ fn mob_jump(
     // TODO too high wall
 }
 
-fn move_stack_filp(
+fn mob_stack_filp(
     mut query: Query<
         (
             &mut Direction2,
@@ -51,7 +64,7 @@ fn move_stack_filp(
             &mut PrevPosition,
             &mut StackSeconds,
         ),
-        With<MobWalk>,
+        With<MobStroll>,
     >,
     time: Res<Time>,
 ) {
@@ -71,7 +84,7 @@ fn move_stack_filp(
     }
 }
 
-fn move_random_flip(mut query: Query<&mut Direction2, With<MobWalk>>, mut random: ResMut<Random>) {
+fn mob_random_flip(mut query: Query<&mut Direction2, With<MobStroll>>, mut random: ResMut<Random>) {
     for mut direction in &mut query {
         if random.next_u32() % RANDOM_FLIP == 0 {
             direction.x = -direction.x;
@@ -87,14 +100,57 @@ fn mob_home_area(
             &HomePosition,
             &HomeDistanceSquared,
         ),
-        With<MobWalk>,
+        With<MobStroll>,
     >,
 ) {
-    for (mut direction, transform, position, distance_squared) in &mut query {
-        if (transform.translation.x - position.x).pow2() > distance_squared.0 {
+    for (mut direction, transform, position, distance) in &mut query {
+        if (transform.translation.x - position.x).pow2() > distance.0 {
             direction.x = -direction.x;
         }
     }
+    // TODO y axis
+}
+
+fn mob_patrol(
+    query: Query<(Entity, &Transform, &PatrolDistanceSquared), With<MobPatrol>>,
+    player_query: Query<&Transform, (With<Player>, Without<MobPatrol>)>,
+    mut commands: Commands,
+) {
+    for player_transform in &player_query {
+        for (entity, transform, distance) in &query {
+            if (player_transform.translation.x - transform.translation.x).pow2() < distance.0 {
+                commands.entity(entity).remove::<MobPatrol>();
+                commands.entity(entity).remove::<MobStroll>();
+                commands.entity(entity).insert(MobChase);
+            }
+        }
+    }
+    // TODO chunk or sweep or tree
+    // TODO y axis
+}
+
+fn mob_chase(
+    mut query: Query<(Entity, &mut Direction2, &Transform, &PatrolDistanceSquared), With<MobChase>>,
+    player_query: Query<&Transform, (With<Player>, Without<MobChase>)>,
+    mut commands: Commands,
+) {
+    for player_transform in &player_query {
+        for (entity, mut direction, transform, distance) in &mut query {
+            if (player_transform.translation.x - transform.translation.x).pow2() > distance.0 {
+                commands.entity(entity).insert(MobPatrol);
+                commands.entity(entity).insert(MobStroll);
+                commands.entity(entity).remove::<MobChase>();
+            } else {
+                direction.x = if transform.translation.x < player_transform.translation.x {
+                    1.0
+                } else {
+                    -1.0
+                }
+            }
+        }
+    }
+    // TODO split find and lost player distance
+    // TODO stop and attack
     // TODO y axis
 }
 
@@ -106,10 +162,13 @@ impl Plugin for MobPlugin {
             Update,
             (
                 mob_walk,
+                mob_chase,
                 mob_jump,
-                move_stack_filp,
-                move_random_flip,
+                mob_stack_filp,
+                mob_random_flip,
                 mob_home_area,
+                mob_patrol,
+                mob_chase,
             ),
         );
     }
