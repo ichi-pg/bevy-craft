@@ -122,3 +122,23 @@ fn impl_selectable_item(ast: &syn::DeriveInput) -> TokenStream {
     };
     gen.into()
 }
+
+#[proc_macro_derive(Collided)]
+pub fn derive_collided(input: TokenStream) -> TokenStream {
+    match syn::parse(input) {
+        Ok(ast) => impl_collided(&ast),
+        Err(_) => todo!(),
+    }
+}
+
+fn impl_collided(ast: &syn::DeriveInput) -> TokenStream {
+    let name = &ast.ident;
+    let gen = quote! {
+        impl Collided for #name {
+            fn set_repulsion(&mut self, repulsion: Vec2) {
+                self.repulsion = repulsion;
+            }
+        }
+    };
+    gen.into()
+}

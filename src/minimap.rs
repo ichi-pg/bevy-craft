@@ -68,7 +68,7 @@ fn init_zoom(mut query: Query<&mut OrthographicProjection, With<MinimapCamera>>)
     }
 }
 
-fn dragging_minimap(
+fn drag_minimap(
     mut query: Query<(&mut Transform, &OrthographicProjection), With<MinimapCamera>>,
     left_click: Res<LeftClick>,
     window_cursor: Res<WindowCursor>,
@@ -82,7 +82,10 @@ fn dragging_minimap(
     }
 }
 
-fn on_wheel(mut query: Query<&mut OrthographicProjection, With<MinimapCamera>>, wheel: Res<Wheel>) {
+fn zoom_minimap(
+    mut query: Query<&mut OrthographicProjection, With<MinimapCamera>>,
+    wheel: Res<Wheel>,
+) {
     if wheel.0 == 0 {
         return;
     }
@@ -127,8 +130,8 @@ impl Plugin for MinimapPlugin {
             (
                 change_ui_state::<KeyM>(UIStates::Minimap).run_if(not(in_state(UIStates::Minimap))),
                 change_ui_state::<KeyM>(UIStates::None).run_if(in_state(UIStates::Minimap)),
-                on_wheel,
-                dragging_minimap,
+                zoom_minimap,
+                drag_minimap,
             ),
         );
         app.add_systems(OnEnter(UIStates::Minimap), activate_minimap(true));

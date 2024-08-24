@@ -37,7 +37,6 @@ fn spawn_player(mut commands: Commands) {
             AttackPower(0.0),
             MoveSpeed(PLAYER_MOVE_SPEED),
             JumpPower(PLAYER_JUMP_POWER),
-            JumpController,
             Velocity2::default(),
             Direction2(Vec2::X),
             Shape::Circle(PLAYER_SIZE * 0.5),
@@ -79,8 +78,6 @@ fn add_jump(
     for (mut velocity, jump_power) in &mut query {
         if space.pressed {
             velocity.y = jump_power.0;
-        } else {
-            velocity.y = 0.0;
         }
     }
 }

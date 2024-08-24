@@ -40,10 +40,10 @@ fn put_in_item<T: Event + ItemAndAmount, U: Component, V: Event + Default + Item
             },
             // Overflow
             None => {
-                let mut e: V = V::default();
-                e.set_item_id(event.item_id());
-                e.set_amount(event.amount());
-                event_writer.send(e);
+                let mut overflowed: V = V::default();
+                overflowed.set_item_id(event.item_id());
+                overflowed.set_amount(event.amount());
+                event_writer.send(overflowed);
             }
         }
     }

@@ -73,7 +73,7 @@ fn spawn_item(mut event_reader: EventReader<ItemDropped>, mut commands: Commands
 }
 
 fn pick_up_item(
-    query: Query<(Entity, &ItemID, &ItemAmount), With<Collided>>,
+    query: Query<(Entity, &ItemID, &ItemAmount), With<ItemCollided>>,
     mut event_writer: EventWriter<ItemPickedUp>,
     mut commands: Commands,
 ) {

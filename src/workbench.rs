@@ -1,4 +1,4 @@
-use crate::camera::PlayerCamera;
+use crate::camera::*;
 use crate::craft::*;
 use crate::craft_recipe::*;
 use crate::inventory::*;

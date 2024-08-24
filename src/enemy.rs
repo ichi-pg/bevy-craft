@@ -10,6 +10,7 @@ pub struct Enemy;
 fn spawn_enemies(mut commands: Commands) {
     let size = 128.0;
     let home_position = Vec3::ZERO;
+    let home_distance = size * 5.0;
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
@@ -23,12 +24,12 @@ fn spawn_enemies(mut commands: Commands) {
         Enemy,
         MobWalk,
         HomePosition(home_position.xy()),
-        HomeDistance(size * 10.0),
+        HomeDistanceSquared(home_distance * home_distance),
         Health(100.0),
         MaxHealth(100.0),
         MoveSpeed(200.0),
         AttackPower(10.0),
-        // JumpController,
+        JumpPower(1500.0),
         Velocity2::default(),
         Direction2(Vec2::X),
         Shape::Circle(size * 0.5),
