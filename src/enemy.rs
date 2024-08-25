@@ -1,6 +1,6 @@
 use crate::hit_test::*;
 use crate::item_stats::*;
-use crate::math::Pow2;
+use crate::math::*;
 use crate::mob::*;
 use crate::velocity::*;
 use bevy::prelude::*;
@@ -11,7 +11,7 @@ pub struct Enemy;
 fn spawn_enemies(mut commands: Commands) {
     let size = 128.0;
     let home_position = Vec3::ZERO;
-    let home_distance = size * 5.0;
+    let home_distance = size * 6.0;
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
@@ -33,6 +33,9 @@ fn spawn_enemies(mut commands: Commands) {
             MaxHealth(100.0),
             MoveSpeed(200.0),
             AttackPower(10.0),
+            AttackSpeed(512.0),
+            AttackDelay(1.0),
+            AttackCoolDown(1.0),
             JumpPower(1500.0),
         ),
         (
@@ -41,9 +44,12 @@ fn spawn_enemies(mut commands: Commands) {
             MobStroll,
             HomePosition(home_position.xy()),
             HomeDistanceSquared(home_distance * home_distance),
-            PatrolDistanceSquared((size * 4.0).pow2()),
+            FindDistanceSquared((size * 5.0).pow2()),
+            LostDistanceSquared((size * 5.0).pow2()),
+            AttackDistanceSquared((size * 3.0).pow2()),
             PrevPosition(home_position.xy()),
-            StackSeconds(0.0),
+            StackTimer(0.0),
+            AttackTimer(0.0),
         ),
     ));
     // TODO spawner

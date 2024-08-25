@@ -24,6 +24,15 @@ pub struct PickaxePower(pub f32);
 pub struct AttackPower(pub f32);
 
 #[derive(Component)]
+pub struct AttackSpeed(pub f32);
+
+#[derive(Component)]
+pub struct AttackDelay(pub f32);
+
+#[derive(Component)]
+pub struct AttackCoolDown(pub f32);
+
+#[derive(Component)]
 pub struct MoveSpeed(pub f32);
 
 #[derive(Component)]

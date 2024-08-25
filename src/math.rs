@@ -23,3 +23,17 @@ impl Pow2<f32> for f32 {
         *self * *self
     }
 }
+
+pub trait LookAt<T> {
+    fn look_at(&self, x: f32) -> T;
+}
+
+impl LookAt<f32> for f32 {
+    fn look_at(&self, x: f32) -> f32 {
+        if *self < x {
+            1.0
+        } else {
+            -1.0
+        }
+    }
+}
