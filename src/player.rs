@@ -23,7 +23,7 @@ pub const PLAYER_HEALTH: f32 = 100.0;
 pub const PLAYER_PICKAXE_POWER: f32 = 100.0;
 pub const PLAYER_MOVE_SPEED: f32 = 400.0;
 pub const PLAYER_JUMP_POWER: f32 = 1500.0;
-const KNOCK_BACK_X: f32 = PLAYER_SIZE * 2.0;
+const KNOCK_BACK_X: f32 = 400.0;
 const KNOCK_BACK_Y: f32 = 1500.0;
 
 fn spawn_player(mut commands: Commands) {

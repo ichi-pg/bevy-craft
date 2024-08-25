@@ -130,7 +130,7 @@ pub fn build_grid<T: Component + Default>(
         .with_children(|parent| {
             build_children(parent);
         });
-    // TODO split background and grid
+    // TODO grid is child of panel
 }
 
 pub fn build_progress_bar<T: Component + Default>(parent: &mut ChildBuilder, color: Color) {

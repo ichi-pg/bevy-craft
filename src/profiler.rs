@@ -1,4 +1,7 @@
 use crate::camera::*;
+use crate::math::*;
+use crate::player::*;
+use crate::velocity::*;
 use bevy::diagnostic::*;
 use bevy::prelude::*;
 use iyes_perf_ui::entries::*;
@@ -8,7 +11,10 @@ use iyes_perf_ui::*;
 pub struct CollisionCounter(pub u64);
 
 #[derive(Component)]
-struct CollisionText;
+struct CollisionInfo;
+
+#[derive(Component)]
+struct PlayerInfo;
 
 fn spawn_profiler(camera_query: Query<Entity, With<PlayerCamera>>, mut commands: Commands) {
     for entity in &camera_query {
@@ -19,6 +25,10 @@ fn spawn_profiler(camera_query: Query<Entity, With<PlayerCamera>>, mut commands:
                     style: Style {
                         width: Val::Percent(100.0),
                         height: Val::Percent(100.0),
+                        flex_direction: FlexDirection::Column,
+                        justify_content: JustifyContent::End,
+                        align_items: AlignItems::Start,
+                        padding: UiRect::all(Val::Px(10.0)),
                         ..default()
                     },
                     ..default()
@@ -31,22 +41,46 @@ fn spawn_profiler(camera_query: Query<Entity, With<PlayerCamera>>, mut commands:
                         text: Text::from_section("", TextStyle::default()),
                         ..default()
                     },
-                    CollisionText,
+                    CollisionInfo,
+                ));
+                parent.spawn((
+                    TextBundle {
+                        text: Text::from_section("", TextStyle::default()),
+                        ..default()
+                    },
+                    PlayerInfo,
                 ));
             });
     }
 }
 
 fn sync_collision(
-    mut query: Query<&mut Text, With<CollisionText>>,
+    mut query: Query<&mut Text, With<CollisionInfo>>,
     mut counter: ResMut<CollisionCounter>,
 ) {
     for mut text in &mut query {
         for section in &mut text.sections {
-            section.value = format!("{}", counter.0);
+            section.value = format!("Collision {}", counter.0);
         }
     }
     counter.0 = 0;
+}
+
+fn sync_player(
+    mut query: Query<&mut Text, With<PlayerInfo>>,
+    player_query: Query<(&Transform, &Velocity2), With<PlayerController>>,
+) {
+    for (transform, velocity) in &player_query {
+        for mut text in &mut query {
+            for section in &mut text.sections {
+                section.value = format!(
+                    "Position:{} Velocity:{}",
+                    transform.translation.to_vec2i(),
+                    velocity.to_vec2i(),
+                );
+            }
+        }
+    }
 }
 
 pub struct ProfilerPlugin;
@@ -62,7 +96,7 @@ impl Plugin for ProfilerPlugin {
                 PerfUiPlugin,
             ));
             app.add_systems(Startup, spawn_profiler);
-            app.add_systems(Update, sync_collision);
+            app.add_systems(Update, (sync_collision, sync_player));
         }
         app.insert_resource(CollisionCounter(0));
     }
