@@ -1,3 +1,4 @@
+use crate::gravity::*;
 use bevy::prelude::*;
 
 #[derive(Component, Deref, DerefMut, Default)]
@@ -5,6 +6,9 @@ pub struct Velocity2(pub Vec2);
 
 #[derive(Component, Deref, DerefMut)]
 pub struct Direction2(pub Vec2);
+
+#[derive(Component)]
+pub struct KnockBack;
 
 pub fn add_velocity(mut query: Query<(&mut Transform, &Velocity2)>, time: Res<Time>) {
     for (mut transform, velocity) in &mut query {
@@ -16,10 +20,20 @@ pub fn add_velocity(mut query: Query<(&mut Transform, &Velocity2)>, time: Res<Ti
     }
 }
 
+fn remove_knock_back(
+    mut query: Query<Entity, (With<KnockBack>, With<Grounded>)>,
+    mut commands: Commands,
+) {
+    for entity in &mut query {
+        commands.entity(entity).remove::<KnockBack>();
+    }
+}
+
 pub struct VelocityPlugin;
 
 impl Plugin for VelocityPlugin {
     fn build(&self, app: &mut App) {
+        app.add_systems(Update, remove_knock_back);
         app.add_systems(PostUpdate, add_velocity);
     }
 }
