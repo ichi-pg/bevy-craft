@@ -14,24 +14,22 @@ struct ItemDetails;
 #[derive(Component, Default, NodeItem)]
 struct MaterialItem;
 
-fn spawn_details(camera_query: Query<Entity, With<PlayerCamera>>, commands: Commands) {
-    match camera_query.get_single() {
-        Ok(entity) => build_axis_grid::<ItemDetails>(
-            commands,
+fn spawn_details(camera_query: Query<Entity, With<PlayerCamera>>, mut commands: Commands) {
+    for entity in &camera_query {
+        commands.build_screen(
             entity,
             0,
             0,
+            JustifyContent::End,
             AlignItems::End,
-            3,
-            1,
-            Visibility::Hidden,
             |parent| {
-                for i in 0..3 {
-                    build_item::<MaterialItem>(parent, 0, 0, i);
-                }
+                build_grid::<ItemDetails>(parent, 3, 1, Visibility::Hidden, |parent| {
+                    for i in 0..3 {
+                        build_item::<MaterialItem>(parent, 0, 0, i);
+                    }
+                });
             },
-        ),
-        Err(_) => todo!(),
+        );
     }
 }
 

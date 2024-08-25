@@ -20,32 +20,29 @@ pub struct CraftUI;
 fn spawn_items(
     camera_query: Query<Entity, With<PlayerCamera>>,
     query: Query<(&ItemID, &ItemAmount), With<CraftProduct>>,
-    commands: Commands,
+    mut commands: Commands,
 ) {
-    match camera_query.get_single() {
-        Ok(entity) => build_side_grid::<CraftUI>(
-            commands,
+    for entity in &camera_query {
+        commands.build_screen(
             entity,
             INVENTORY_Y + 1,
             2,
+            JustifyContent::End,
             AlignItems::Center,
-            INVENTORY_X,
-            2,
-            JustifyContent::Start,
-            3,
-            2,
-            Visibility::Hidden,
             |parent| {
-                let item_ids = HashSet::<u16>::from_iter([101, 102, 103]);
-                for (index, (item_id, amount)) in query.iter().enumerate() {
-                    if !item_ids.contains(&item_id.0) {
-                        continue;
-                    }
-                    build_item::<ProductItem>(parent, item_id.0, amount.0, index as u8);
-                }
+                build_space(parent, INVENTORY_X, 2, JustifyContent::Start, |parent| {
+                    build_grid::<CraftUI>(parent, 3, 2, Visibility::Hidden, |parent| {
+                        let item_ids = HashSet::<u16>::from_iter([101, 102, 103]);
+                        for (index, (item_id, amount)) in query.iter().enumerate() {
+                            if !item_ids.contains(&item_id.0) {
+                                continue;
+                            }
+                            build_item::<ProductItem>(parent, item_id.0, amount.0, index as u8);
+                        }
+                    });
+                });
             },
-        ),
-        Err(_) => todo!(),
+        );
     }
 }
 

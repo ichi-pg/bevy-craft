@@ -16,27 +16,24 @@ pub struct EquipmentItem;
 #[derive(Event, Default)]
 pub struct EquipmentChanged;
 
-fn spawn_equipments(camera_query: Query<Entity, With<PlayerCamera>>, commands: Commands) {
-    match camera_query.get_single() {
-        Ok(entity) => build_side_grid::<EquipmentUI>(
-            commands,
+fn spawn_equipments(camera_query: Query<Entity, With<PlayerCamera>>, mut commands: Commands) {
+    for entity in &camera_query {
+        commands.build_screen(
             entity,
             INVENTORY_Y + 1,
             2,
-            AlignItems::Center,
-            INVENTORY_X,
-            4,
             JustifyContent::End,
-            3,
-            4,
-            Visibility::Hidden,
+            AlignItems::Center,
             |parent| {
-                for i in 0..10 {
-                    build_item::<EquipmentItem>(parent, 0, 0, i);
-                }
+                build_space(parent, INVENTORY_X, 4, JustifyContent::End, |parent| {
+                    build_grid::<EquipmentUI>(parent, 3, 4, Visibility::Hidden, |parent| {
+                        for i in 0..10 {
+                            build_item::<EquipmentItem>(parent, 0, 0, i);
+                        }
+                    });
+                });
             },
-        ),
-        Err(_) => todo!(),
+        );
     }
     // TODO character preview
     // TODO stats preview

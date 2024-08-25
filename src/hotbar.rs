@@ -23,24 +23,22 @@ pub struct HotbarPushedOut {
     pub amount: u16,
 }
 
-fn spawn_hotbar(camera_query: Query<Entity, With<PlayerCamera>>, commands: Commands) {
-    match camera_query.get_single() {
-        Ok(entity) => build_axis_grid::<Hotbar>(
-            commands,
+fn spawn_hotbar(camera_query: Query<Entity, With<PlayerCamera>>, mut commands: Commands) {
+    for entity in &camera_query {
+        commands.build_screen(
             entity,
             0,
             0,
+            JustifyContent::End,
             AlignItems::Center,
-            10,
-            1,
-            Visibility::Inherited,
             |parent| {
-                for i in 0..10 {
-                    build_item::<HotbarItem>(parent, 0, 0, i as u8);
-                }
+                build_grid::<Hotbar>(parent, 10, 1, Visibility::Inherited, |parent| {
+                    for i in 0..10 {
+                        build_item::<HotbarItem>(parent, 0, 0, i as u8);
+                    }
+                });
             },
-        ),
-        Err(_) => todo!(),
+        );
     }
 }
 

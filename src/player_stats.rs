@@ -8,21 +8,17 @@ use bevy::prelude::*;
 struct PlayerHealth;
 
 fn spawn_stats(camera_query: Query<Entity, With<PlayerCamera>>, mut commands: Commands) {
-    match camera_query.get_single() {
-        Ok(entity) => {
-            commands
-                .spawn(screen_node(
-                    entity,
-                    0,
-                    0,
-                    JustifyContent::Start,
-                    AlignItems::Start,
-                ))
-                .with_children(|parent| {
-                    build_progress_bar::<PlayerHealth>(parent, Color::srgb(0.9, 0.3, 0.3));
-                });
-        }
-        Err(_) => todo!(),
+    for entity in &camera_query {
+        commands.build_screen(
+            entity,
+            0,
+            0,
+            JustifyContent::Start,
+            AlignItems::Start,
+            |parent| {
+                build_progress_bar::<PlayerHealth>(parent, Color::srgb(0.9, 0.3, 0.3));
+            },
+        );
     }
 }
 

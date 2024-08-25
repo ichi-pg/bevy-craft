@@ -31,24 +31,22 @@ pub struct StorageOverflowed {
     pub amount: u16,
 }
 
-fn spawn_storage(camera_query: Query<Entity, With<PlayerCamera>>, commands: Commands) {
-    match camera_query.get_single() {
-        Ok(entity) => build_axis_grid::<Storage>(
-            commands,
+fn spawn_storage(camera_query: Query<Entity, With<PlayerCamera>>, mut commands: Commands) {
+    for entity in &camera_query {
+        commands.build_screen(
             entity,
             INVENTORY_Y + 1,
             2,
+            JustifyContent::End,
             AlignItems::Center,
-            12,
-            3,
-            Visibility::Hidden,
             |parent| {
-                for i in 0..36 {
-                    build_item::<StorageItem>(parent, 0, 0, i as u8);
-                }
+                build_grid::<Storage>(parent, 12, 3, Visibility::Hidden, |parent| {
+                    for i in 0..36 {
+                        build_item::<StorageItem>(parent, 0, 0, i as u8);
+                    }
+                });
             },
-        ),
-        Err(_) => todo!(),
+        );
     }
 }
 

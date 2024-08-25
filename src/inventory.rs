@@ -36,24 +36,28 @@ pub enum InventoryOpened {
 pub const INVENTORY_X: u16 = 10;
 pub const INVENTORY_Y: u16 = 4;
 
-fn spawn_inventory(camera_query: Query<Entity, With<PlayerCamera>>, commands: Commands) {
-    match camera_query.get_single() {
-        Ok(entity) => build_axis_grid::<Inventory>(
-            commands,
+fn spawn_inventory(camera_query: Query<Entity, With<PlayerCamera>>, mut commands: Commands) {
+    for entity in &camera_query {
+        commands.build_screen(
             entity,
             1,
             1,
+            JustifyContent::End,
             AlignItems::Center,
-            INVENTORY_X,
-            INVENTORY_Y,
-            Visibility::Hidden,
             |parent| {
-                for i in 0..INVENTORY_X * INVENTORY_Y {
-                    build_item::<InventoryItem>(parent, 0, 0, i as u8);
-                }
+                build_grid::<Inventory>(
+                    parent,
+                    INVENTORY_X,
+                    INVENTORY_Y,
+                    Visibility::Hidden,
+                    |parent| {
+                        for i in 0..INVENTORY_X * INVENTORY_Y {
+                            build_item::<InventoryItem>(parent, 0, 0, i as u8);
+                        }
+                    },
+                );
             },
-        ),
-        Err(_) => todo!(),
+        );
     }
 }
 
