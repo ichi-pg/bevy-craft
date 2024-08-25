@@ -1,5 +1,6 @@
 use crate::input::*;
 use crate::player::*;
+use crate::ui_parts::*;
 use crate::ui_states::*;
 use bevy::prelude::*;
 use bevy::render::camera::*;
@@ -51,7 +52,7 @@ fn spawn_minimap(query: Query<&Window, With<PrimaryWindow>>, mut commands: Comma
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
-                color: Color::srgba(0.2, 0.2, 0.2, MINIMAP_ALPHA),
+                color: BACKGROUND_COLOR.with_alpha(MINIMAP_ALPHA),
                 custom_size: Some(Vec2::new(WORLD_WIDTH, WORLD_HEIGHT)),
                 ..default()
             },
