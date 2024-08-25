@@ -1,3 +1,4 @@
+use crate::collision::*;
 use crate::hit_test::*;
 use crate::item_stats::*;
 use crate::math::*;
@@ -6,6 +7,7 @@ use crate::mob_jump_attack::*;
 use crate::mob_patrol::*;
 use crate::mob_stroll::*;
 use crate::mob_walk::*;
+use crate::player::*;
 use crate::velocity::*;
 use bevy::prelude::*;
 
@@ -60,10 +62,21 @@ fn spawn_enemies(mut commands: Commands) {
     // TODO texture animation
 }
 
+fn enemy_collided(
+    query: Query<&AttackPower, (With<Enemy>, With<EnemyCollided>)>,
+    mut event_writer: EventWriter<PlayerDamaged>,
+) {
+    for attack_power in &query {
+        event_writer.send(PlayerDamaged(attack_power.0));
+    }
+    // TODO which player?
+}
+
 pub struct EnemyPlugin;
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_enemies);
+        app.add_systems(Update, enemy_collided);
     }
 }

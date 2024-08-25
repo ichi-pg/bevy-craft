@@ -34,18 +34,18 @@ fn mob_jump_attack(
     mut commands: Commands,
     time: Res<Time>,
 ) {
-    for player_transform in &player_query {
-        for (
-            entity,
-            transform,
-            mut direction,
-            mut velocity,
-            mut timer,
-            attack_speed,
-            attack_delay,
-            jump_power,
-        ) in &mut query
-        {
+    for (
+        entity,
+        transform,
+        mut direction,
+        mut velocity,
+        mut timer,
+        attack_speed,
+        attack_delay,
+        jump_power,
+    ) in &mut query
+    {
+        for player_transform in &player_query {
             if timer.0 > attack_delay.0 {
                 velocity.x = direction.x * attack_speed.0;
                 velocity.y = jump_power.0;

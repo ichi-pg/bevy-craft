@@ -20,6 +20,11 @@ pub struct BlockCollided {
     pub repulsion: Vec2,
 }
 
+#[derive(Component, Default, Collided)]
+pub struct EnemyCollided {
+    pub repulsion: Vec2,
+}
+
 trait Collided {
     fn set_repulsion(&mut self, repulsion: Vec2);
 }
@@ -137,17 +142,21 @@ impl Plugin for CollisionPlugin {
             (
                 clear_collided::<ItemCollided>,
                 clear_collided::<BlockCollided>,
+                clear_collided::<EnemyCollided>,
                 (
                     collision::<Player, Item, ItemCollided>(Collision::Static),
+                    collision::<Enemy, Player, EnemyCollided>(Collision::Static),
                     collision::<Player, Block, BlockCollided>(Collision::Dynamic),
                     collision::<Item, Block, BlockCollided>(Collision::Dynamic),
                     collision::<Enemy, Block, BlockCollided>(Collision::Dynamic),
                 )
                     .after(clear_collided::<ItemCollided>)
                     .after(clear_collided::<BlockCollided>)
+                    .after(clear_collided::<EnemyCollided>)
                     .after(add_velocity),
             ),
         );
     }
     // TODO scaffold
+    // TODO both moved
 }

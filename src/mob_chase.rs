@@ -21,8 +21,8 @@ fn mob_chase(
     mut query: Query<(&mut Direction2, &Transform), (With<MobChase>, Without<Player>)>,
     player_query: Query<&Transform, With<Player>>,
 ) {
-    for player_transform in &player_query {
-        for (mut direction, transform) in &mut query {
+    for (mut direction, transform) in &mut query {
+        for player_transform in &player_query {
             direction.x = transform
                 .translation
                 .x
@@ -32,16 +32,20 @@ fn mob_chase(
 }
 
 fn mob_chase_lost(
-    query: Query<(Entity, &Transform, &LostDistanceSquared), (With<MobChase>, Without<Player>)>,
+    mut query: Query<
+        (Entity, &Transform, &LostDistanceSquared, &mut HomePosition),
+        (With<MobChase>, Without<Player>, With<Grounded>),
+    >,
     player_query: Query<&Transform, With<Player>>,
     mut commands: Commands,
 ) {
-    for player_transform in &player_query {
-        for (entity, transform, distance) in &query {
+    for (entity, transform, distance, mut home_position) in &mut query {
+        for player_transform in &player_query {
             if (player_transform.translation.x - transform.translation.x).pow2() > distance.0 {
                 commands.entity(entity).remove::<MobChase>();
                 commands.entity(entity).insert(MobPatrol);
                 commands.entity(entity).insert(MobStroll);
+                home_position.0 = transform.translation.xy();
             }
         }
     }
@@ -55,8 +59,8 @@ fn mob_chase_attack(
     player_query: Query<&Transform, With<Player>>,
     mut commands: Commands,
 ) {
-    for player_transform in &player_query {
-        for (entity, transform, distance, mut timer) in &mut query {
+    for (entity, transform, distance, mut timer) in &mut query {
+        for player_transform in &player_query {
             if (player_transform.translation.x - transform.translation.x).pow2() < distance.0 {
                 commands.entity(entity).remove::<MobChase>();
                 commands.entity(entity).remove::<MobWalk>();
@@ -79,4 +83,5 @@ impl Plugin for MobChasePlugin {
     // TODO which player?
     // TODO y axis
     // TODO filter components with states
+    // TODO flying without grounded
 }

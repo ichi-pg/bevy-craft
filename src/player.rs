@@ -12,6 +12,12 @@ pub struct Player;
 #[derive(Component)]
 pub struct PlayerController;
 
+#[derive(Component)]
+pub struct PlayerDead;
+
+#[derive(Event)]
+pub struct PlayerDamaged(pub f32);
+
 const PLAYER_SIZE: f32 = 128.0;
 pub const PLAYER_HEALTH: f32 = 100.0;
 pub const PLAYER_PICKAXE_POWER: f32 = 100.0;
@@ -82,11 +88,32 @@ fn player_jump(
     }
 }
 
+fn player_damaged(
+    mut query: Query<(Entity, &mut Health), (With<Player>, Without<PlayerDead>)>,
+    mut event_reader: EventReader<PlayerDamaged>,
+    mut commands: Commands,
+) {
+    for event in event_reader.read() {
+        for (entity, mut health) in &mut query {
+            health.0 -= event.0;
+            if health.0 <= 0.0 {
+                health.0 = 0.0;
+                commands.entity(entity).insert(PlayerDead);
+            }
+        }
+    }
+    // TODO nock back
+    // TODO nock down or invincibility time
+    // TODO damaged and dead effect
+    // TODO respawn
+}
+
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
+        app.add_event::<PlayerDamaged>();
         app.add_systems(Startup, spawn_player);
-        app.add_systems(Update, (player_move, player_jump));
+        app.add_systems(Update, (player_move, player_jump, player_damaged));
     }
 }

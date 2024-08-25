@@ -66,7 +66,7 @@ fn block_bundle(
 }
 
 fn spawn_blocks(mut commands: Commands, mut random: ResMut<Random>) {
-    for x in -9..10 {
+    for x in -19..20 {
         for y in -9..10 {
             if if x >= 0 { x } else { -x } <= y * 2 + 1 {
                 continue;

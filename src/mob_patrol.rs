@@ -15,8 +15,8 @@ fn mob_patrol(
     player_query: Query<&Transform, With<Player>>,
     mut commands: Commands,
 ) {
-    for player_transform in &player_query {
-        for (entity, transform, distance) in &query {
+    for (entity, transform, distance) in &query {
+        for player_transform in &player_query {
             if (player_transform.translation.x - transform.translation.x).pow2() < distance.0 {
                 commands.entity(entity).remove::<MobPatrol>();
                 commands.entity(entity).remove::<MobStroll>();
