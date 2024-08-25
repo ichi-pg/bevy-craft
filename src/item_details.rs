@@ -16,7 +16,7 @@ struct MaterialItem;
 
 fn spawn_details(camera_query: Query<Entity, With<PlayerCamera>>, commands: Commands) {
     match camera_query.get_single() {
-        Ok(entity) => build_grid::<ItemDetails>(
+        Ok(entity) => build_axis_grid::<ItemDetails>(
             commands,
             entity,
             0,

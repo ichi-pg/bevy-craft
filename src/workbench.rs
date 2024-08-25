@@ -21,7 +21,7 @@ fn spawn_items(
     commands: Commands,
 ) {
     match camera_query.get_single() {
-        Ok(entity) => build_iter::<WorkbenchUI, HashSet<u16>>(
+        Ok(entity) => build_iter_grid::<WorkbenchUI, HashSet<u16>>(
             commands,
             entity,
             INVENTORY_Y + 1,

@@ -18,7 +18,7 @@ pub struct EquipmentChanged;
 
 fn spawn_equipments(camera_query: Query<Entity, With<PlayerCamera>>, commands: Commands) {
     match camera_query.get_single() {
-        Ok(entity) => build_spaced::<EquipmentUI>(
+        Ok(entity) => build_side_grid::<EquipmentUI>(
             commands,
             entity,
             INVENTORY_Y + 1,

@@ -29,6 +29,7 @@ mod mob_patrol;
 mod mob_stroll;
 mod mob_walk;
 mod player;
+mod player_stats;
 mod profiler;
 mod random;
 mod storage;
@@ -75,6 +76,8 @@ fn main() {
             item_details::ItemDetailsPlugin,
             item_sorting::ItemSortingPlugin,
             item_stats::ItemStatsPlugin,
+        ))
+        .add_plugins((
             hotbar::HotbarPlugin,
             inventory::InventoryPlugin,
             storage::StoragePlugin,
@@ -83,6 +86,7 @@ fn main() {
             equipment::EquipmentPlugin,
             workbench::WorkbenchPlugin,
             minimap::MinimapPlugin,
+            player_stats::PlayerStatsPlugin,
         ))
         .add_plugins((
             player::PlayerPlugin,

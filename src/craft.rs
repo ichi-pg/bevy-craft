@@ -23,7 +23,7 @@ fn spawn_items(
     commands: Commands,
 ) {
     match camera_query.get_single() {
-        Ok(entity) => build_spaced::<CraftUI>(
+        Ok(entity) => build_side_grid::<CraftUI>(
             commands,
             entity,
             INVENTORY_Y + 1,

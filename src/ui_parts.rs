@@ -7,29 +7,47 @@ use std::slice::*;
 pub struct GridNode;
 
 const MARGIN: u16 = 10;
-pub const BACKGROUND_COLOR: BackgroundColor = BackgroundColor(Color::srgb(0.2, 0.2, 0.2));
+pub const BACKGROUND_COLOR: Color = Color::srgb(0.2, 0.2, 0.2);
 
-fn screen_node(
+pub fn screen_node(
     camera: Entity,
     y: u16,
     grids: u16,
+    justify_content: JustifyContent,
     align_items: AlignItems,
 ) -> (NodeBundle, TargetCamera) {
+    let padding = Val::Px((MARGIN + grids * MARGIN * 2 + y * MARGIN + y * ITEM_SIZE) as f32);
     (
         NodeBundle {
             style: Style {
                 width: Val::Percent(100.0),
                 height: Val::Percent(100.0),
                 flex_direction: FlexDirection::Column,
-                justify_content: JustifyContent::End,
+                justify_content,
                 align_items,
                 row_gap: Val::Px(MARGIN as f32),
-                padding: UiRect::new(
-                    Val::Px(MARGIN as f32),
-                    Val::Px(MARGIN as f32),
-                    Val::Px(MARGIN as f32),
-                    Val::Px((MARGIN + grids * MARGIN * 2 + y * MARGIN + y * ITEM_SIZE) as f32),
-                ),
+                padding: match justify_content {
+                    JustifyContent::Default => todo!(),
+                    JustifyContent::Start => UiRect::new(
+                        Val::Px(MARGIN as f32),
+                        Val::Px(MARGIN as f32),
+                        padding,
+                        Val::Px(MARGIN as f32),
+                    ),
+                    JustifyContent::End => UiRect::new(
+                        Val::Px(MARGIN as f32),
+                        Val::Px(MARGIN as f32),
+                        Val::Px(MARGIN as f32),
+                        padding,
+                    ),
+                    JustifyContent::FlexStart => todo!(),
+                    JustifyContent::FlexEnd => todo!(),
+                    JustifyContent::Center => todo!(),
+                    JustifyContent::Stretch => todo!(),
+                    JustifyContent::SpaceBetween => todo!(),
+                    JustifyContent::SpaceEvenly => todo!(),
+                    JustifyContent::SpaceAround => todo!(),
+                },
                 ..default()
             },
             ..default()
@@ -38,7 +56,7 @@ fn screen_node(
     )
 }
 
-fn grid_space(x: u16, y: u16, justify_content: JustifyContent) -> NodeBundle {
+fn space_node(x: u16, y: u16, justify_content: JustifyContent) -> NodeBundle {
     NodeBundle {
         style: Style {
             width: Val::Px((x * (ITEM_SIZE + MARGIN) + MARGIN) as f32),
@@ -65,7 +83,7 @@ fn grid_node(x: u16, y: u16, visibility: Visibility) -> (NodeBundle, Interaction
                 padding: UiRect::all(Val::Px(MARGIN as f32)),
                 ..default()
             },
-            background_color: BACKGROUND_COLOR,
+            background_color: BackgroundColor(BACKGROUND_COLOR),
             visibility,
             ..default()
         },
@@ -76,11 +94,38 @@ fn grid_node(x: u16, y: u16, visibility: Visibility) -> (NodeBundle, Interaction
     // TODO split background and grid
 }
 
-pub fn build_grid<T: Component + Default>(
+pub fn build_progress_bar<T: Component + Default>(parent: &mut ChildBuilder, color: Color) {
+    parent
+        .spawn(NodeBundle {
+            style: Style {
+                width: Val::Px(400.0),
+                height: Val::Px(30.0),
+                ..default()
+            },
+            background_color: BackgroundColor(BACKGROUND_COLOR),
+            ..default()
+        })
+        .with_children(|parent| {
+            parent.spawn((
+                NodeBundle {
+                    style: Style {
+                        width: Val::Percent(100.0),
+                        height: Val::Percent(100.0),
+                        ..default()
+                    },
+                    background_color: BackgroundColor(color),
+                    ..default()
+                },
+                T::default(),
+            ));
+        });
+}
+
+pub fn build_axis_grid<T: Component + Default>(
     mut commands: Commands,
     camera: Entity,
-    margin_x: u16,
     margin_y: u16,
+    margin_grids: u16,
     align_items: AlignItems,
     size_x: u16,
     size_y: u16,
@@ -88,7 +133,13 @@ pub fn build_grid<T: Component + Default>(
     with_children: impl FnOnce(&mut ChildBuilder),
 ) {
     commands
-        .spawn(screen_node(camera, margin_x, margin_y, align_items))
+        .spawn(screen_node(
+            camera,
+            margin_y,
+            margin_grids,
+            JustifyContent::End,
+            align_items,
+        ))
         .with_children(|parent| {
             parent
                 .spawn((grid_node(size_x, size_y, visibility), T::default()))
@@ -96,7 +147,7 @@ pub fn build_grid<T: Component + Default>(
         });
 }
 
-pub fn build_spaced<T: Component + Default>(
+pub fn build_side_grid<T: Component + Default>(
     mut commands: Commands,
     camera: Entity,
     margin_y: u16,
@@ -111,10 +162,16 @@ pub fn build_spaced<T: Component + Default>(
     with_children: impl FnOnce(&mut ChildBuilder),
 ) {
     commands
-        .spawn(screen_node(camera, margin_y, margin_grids, align_items))
+        .spawn(screen_node(
+            camera,
+            margin_y,
+            margin_grids,
+            JustifyContent::End,
+            align_items,
+        ))
         .with_children(|parent| {
             parent
-                .spawn(grid_space(space_x, space_y, justify_content))
+                .spawn(space_node(space_x, space_y, justify_content))
                 .with_children(|parent| {
                     parent
                         .spawn((grid_node(size_x, size_y, visibility), T::default()))
@@ -123,7 +180,7 @@ pub fn build_spaced<T: Component + Default>(
         });
 }
 
-pub fn build_iter<T: Component + Default, U>(
+pub fn build_iter_grid<T: Component + Default, U>(
     mut commands: Commands,
     camera: Entity,
     margin_y: u16,
@@ -139,10 +196,16 @@ pub fn build_iter<T: Component + Default, U>(
     with_children: impl Fn(&mut ChildBuilder, &U),
 ) {
     commands
-        .spawn(screen_node(camera, margin_y, margin_grids, align_items))
+        .spawn(screen_node(
+            camera,
+            margin_y,
+            margin_grids,
+            JustifyContent::End,
+            align_items,
+        ))
         .with_children(|parent| {
             parent
-                .spawn(grid_space(space_x, space_y, justify_content))
+                .spawn(space_node(space_x, space_y, justify_content))
                 .with_children(|parent| {
                     for i in iter {
                         parent

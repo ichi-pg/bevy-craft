@@ -33,7 +33,7 @@ pub struct StorageOverflowed {
 
 fn spawn_storage(camera_query: Query<Entity, With<PlayerCamera>>, commands: Commands) {
     match camera_query.get_single() {
-        Ok(entity) => build_grid::<Storage>(
+        Ok(entity) => build_axis_grid::<Storage>(
             commands,
             entity,
             INVENTORY_Y + 1,

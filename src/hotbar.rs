@@ -25,7 +25,7 @@ pub struct HotbarPushedOut {
 
 fn spawn_hotbar(camera_query: Query<Entity, With<PlayerCamera>>, commands: Commands) {
     match camera_query.get_single() {
-        Ok(entity) => build_grid::<Hotbar>(
+        Ok(entity) => build_axis_grid::<Hotbar>(
             commands,
             entity,
             0,

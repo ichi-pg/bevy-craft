@@ -38,7 +38,7 @@ pub const INVENTORY_Y: u16 = 4;
 
 fn spawn_inventory(camera_query: Query<Entity, With<PlayerCamera>>, commands: Commands) {
     match camera_query.get_single() {
-        Ok(entity) => build_grid::<Inventory>(
+        Ok(entity) => build_axis_grid::<Inventory>(
             commands,
             entity,
             1,
