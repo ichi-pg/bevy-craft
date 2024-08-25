@@ -23,7 +23,11 @@ mod item_sorting;
 mod item_stats;
 mod math;
 mod minimap;
-mod mob;
+mod mob_chase;
+mod mob_jump_attack;
+mod mob_patrol;
+mod mob_stroll;
+mod mob_walk;
 mod player;
 mod profiler;
 mod random;
@@ -84,8 +88,12 @@ fn main() {
             player::PlayerPlugin,
             block::BlockPlugin,
             item::ItemPlugin,
-            mob::MobPlugin,
             enemy::EnemyPlugin,
+            mob_walk::MobWalkPlugin,
+            mob_stroll::MobStrollPlugin,
+            mob_patrol::MobPatrolPlugin,
+            mob_chase::MobChasePlugin,
+            mob_jump_attack::MobJumpAttackPlugin,
         ))
         .run();
 
