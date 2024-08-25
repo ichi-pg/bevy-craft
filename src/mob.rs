@@ -285,7 +285,7 @@ impl Plugin for MobPlugin {
         );
     }
     // TODO sometimes stop walk and look around
-    // TODO A*
+    // TODO A*?
     // TODO which player?
     // TODO y axis
     // TODO melee or ranged
