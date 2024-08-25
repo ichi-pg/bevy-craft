@@ -102,8 +102,8 @@ fn player_damaged(
             }
         }
     }
-    // TODO nock back
-    // TODO nock down or invincibility time
+    // TODO knock back
+    // TODO knock down or invincibility time
     // TODO damaged and dead effect
     // TODO respawn
 }
