@@ -289,5 +289,6 @@ impl Plugin for MobPlugin {
     // TODO which player?
     // TODO y axis
     // TODO melee or ranged
-    // TODO filter with states
+    // TODO filter components with states
+    // TODO attack pattern value components to constants?
 }
