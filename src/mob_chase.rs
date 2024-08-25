@@ -80,6 +80,7 @@ impl Plugin for MobChasePlugin {
             (mob_chase, mob_chase, mob_chase_lost, mob_chase_attack),
         );
     }
+    // FIXME enemy don't move at end of find range
     // TODO which player?
     // TODO y axis
     // TODO filter components with states
