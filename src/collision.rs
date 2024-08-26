@@ -4,7 +4,7 @@ use crate::gravity::*;
 use crate::hit_test::*;
 use crate::item::*;
 use crate::player::*;
-use crate::profiler::CollisionCounter;
+use crate::profiler::*;
 use crate::velocity::*;
 use arrayvec::ArrayVec;
 use bevy::prelude::*;
@@ -20,6 +20,9 @@ pub struct BlockCollided {
 
 #[derive(Component, Collided)]
 pub struct EnemyCollided;
+
+#[derive(Component, Collided)]
+pub struct PlayerProjectileCollided;
 
 trait Collided {
     fn new(repulsion: Vec2) -> Self;
@@ -140,8 +143,12 @@ impl Plugin for CollisionPlugin {
                 clear_collided::<ItemCollided>,
                 clear_collided::<BlockCollided>,
                 clear_collided::<EnemyCollided>,
+                clear_collided::<PlayerProjectileCollided>,
                 (
                     collision::<Player, Item, ItemCollided>(Collision::Static),
+                    collision::<PlayerProjectile, Enemy, PlayerProjectileCollided>(
+                        Collision::Static,
+                    ),
                     collision::<Enemy, Player, EnemyCollided>(Collision::Static),
                     collision::<Player, Block, BlockCollided>(Collision::Dynamic),
                     collision::<Item, Block, BlockCollided>(Collision::Dynamic),
@@ -150,6 +157,7 @@ impl Plugin for CollisionPlugin {
                     .after(clear_collided::<ItemCollided>)
                     .after(clear_collided::<BlockCollided>)
                     .after(clear_collided::<EnemyCollided>)
+                    .after(clear_collided::<PlayerProjectileCollided>)
                     .after(add_velocity),
             ),
         );

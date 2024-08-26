@@ -22,7 +22,7 @@ struct PlayerAttack(pub f32);
 struct MeleeAxis(f32);
 
 #[derive(Component)]
-struct MeleeShape;
+pub struct PlayerProjectile;
 
 #[derive(Event)]
 pub struct PlayerDamaged(pub f32);
@@ -204,7 +204,7 @@ fn player_attack(
                                 transform: Transform::from_xyz(0.0, MELEE_OFFSET, 0.0),
                                 ..default()
                             },
-                            MeleeShape,
+                            PlayerProjectile,
                             Shape::Circle(MELEE_SIZE * 0.5),
                         ));
                     });

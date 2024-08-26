@@ -57,7 +57,7 @@ fn spawn_enemies(mut commands: Commands) {
     // TODO texture animation
 }
 
-fn enemy_collided(
+fn player_collided(
     query: Query<&AttackPower, (With<Enemy>, With<EnemyCollided>)>,
     mut event_writer: EventWriter<PlayerDamaged>,
 ) {
@@ -67,11 +67,31 @@ fn enemy_collided(
     // TODO which player?
 }
 
+fn projectile_collided(
+    mut query: Query<(Entity, &mut Health), (With<Enemy>, With<PlayerProjectileCollided>)>,
+    player_query: Query<&AttackPower, With<Player>>,
+    mut commands: Commands,
+) {
+    for (entity, mut health) in &mut query {
+        for attack_power in &player_query {
+            health.0 -= attack_power.0;
+            if health.0 <= 0.0 {
+                health.0 = 0.0;
+                commands.entity(entity).despawn_recursive();
+            }
+        }
+    }
+    // FIXME not emit collided
+    // TODO health gauge
+    // TODO damaged and dead effect
+    // TODO which player?
+}
+
 pub struct EnemyPlugin;
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_enemies);
-        app.add_systems(Update, enemy_collided);
+        app.add_systems(Update, (player_collided, projectile_collided));
     }
 }
