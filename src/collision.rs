@@ -33,7 +33,7 @@ enum Collision {
 fn collision<T: Component, U: Component, V: Component + Collided>(
     collision: Collision,
 ) -> impl FnMut(
-    Query<(Entity, &mut Transform, &Shape, &mut Velocity2), (With<T>, Changed<Transform>)>,
+    Query<(Entity, &mut Transform, &Shape, Option<&mut Velocity2>), (With<T>, Changed<Transform>)>,
     Query<(Entity, &Transform, &Shape), (With<U>, Without<T>)>,
     Commands,
     ResMut<CollisionCounter>,
@@ -101,11 +101,16 @@ fn collision<T: Component, U: Component, V: Component + Collided>(
                         repulsions += repulsion;
                         // Check grounded
                         let x_abs = repulsion.x.abs();
-                        if repulsion.y > x_abs {
-                            velocity.y = 0.0;
-                            commands.entity(entity1).insert(Grounded);
-                        } else if -repulsion.y > x_abs && velocity.y > 0.0 {
-                            velocity.y = 0.0;
+                        match velocity {
+                            Some(ref mut velocity) => {
+                                if repulsion.y > x_abs {
+                                    velocity.y = 0.0;
+                                    commands.entity(entity1).insert(Grounded);
+                                } else if -repulsion.y > x_abs && velocity.y > 0.0 {
+                                    velocity.y = 0.0;
+                                }
+                            }
+                            None => todo!(),
                         }
                     }
                     commands.entity(entity1).insert(V::new(repulsions));
@@ -151,4 +156,5 @@ impl Plugin for CollisionPlugin {
     }
     // TODO scaffold
     // TODO both moved
+    // TODO orbit ellipse?
 }

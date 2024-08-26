@@ -41,8 +41,10 @@ fn mob_jump_attack(
             if timer.0 > ATTACK_DELAY {
                 velocity.x = direction.x * CHARGE_POWER;
                 velocity.y = jump_power.0;
-                commands.entity(entity).remove::<MobJumpAttack>();
-                commands.entity(entity).insert(MobJumpAttacked(0.0));
+                commands
+                    .entity(entity)
+                    .remove::<MobJumpAttack>()
+                    .insert(MobJumpAttacked(0.0));
             } else {
                 direction.x = transform
                     .translation
@@ -62,9 +64,11 @@ fn mob_jump_attacked(
 ) {
     for (entity, mut velocity, mut timer, attack_speed) in &mut query {
         if timer.0 > COOL_DOWN {
-            commands.entity(entity).remove::<MobJumpAttacked>();
-            commands.entity(entity).insert(MobChase);
-            commands.entity(entity).insert(MobWalk);
+            commands
+                .entity(entity)
+                .remove::<MobJumpAttacked>()
+                .insert(MobChase)
+                .insert(MobWalk);
         } else {
             velocity.0 = Vec2::ZERO;
             timer.0 += time.delta_seconds() * attack_speed.0;

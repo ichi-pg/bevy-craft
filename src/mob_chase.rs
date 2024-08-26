@@ -42,9 +42,11 @@ fn mob_chase_lost(
     for (entity, transform, distance, mut home_position) in &mut query {
         for player_transform in &player_query {
             if (player_transform.translation.x - transform.translation.x).pow2() > distance.0 {
-                commands.entity(entity).remove::<MobChase>();
-                commands.entity(entity).insert(MobPatrol);
-                commands.entity(entity).insert(MobStroll(0.0));
+                commands
+                    .entity(entity)
+                    .remove::<MobChase>()
+                    .insert(MobPatrol)
+                    .insert(MobStroll(0.0));
                 home_position.0 = transform.translation.xy();
             }
         }
@@ -62,9 +64,11 @@ fn mob_chase_attack(
     for (entity, transform, distance) in &query {
         for player_transform in &player_query {
             if (player_transform.translation.x - transform.translation.x).pow2() < distance.0 {
-                commands.entity(entity).remove::<MobChase>();
-                commands.entity(entity).remove::<MobWalk>();
-                commands.entity(entity).insert(MobJumpAttack(0.0));
+                commands
+                    .entity(entity)
+                    .remove::<MobChase>()
+                    .remove::<MobWalk>()
+                    .insert(MobJumpAttack(0.0));
             }
         }
     }

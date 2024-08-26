@@ -18,6 +18,12 @@ struct PlayerDead;
 #[derive(Component)]
 struct PlayerAttack(pub f32);
 
+#[derive(Component)]
+struct MeleeAxis(f32);
+
+#[derive(Component)]
+struct MeleeShape;
+
 #[derive(Event)]
 pub struct PlayerDamaged(pub f32);
 
@@ -28,7 +34,10 @@ pub const PLAYER_MOVE_SPEED: f32 = 400.0;
 pub const PLAYER_JUMP_POWER: f32 = 1500.0;
 const KNOCK_BACK_X: f32 = 400.0;
 const KNOCK_BACK_Y: f32 = 1500.0;
-const ATTACK_INTERVAL: f32 = 1.0;
+const ATTACK_INTERVAL: f32 = 0.5;
+const MELEE_ROTATE: f32 = 2.0;
+const MELEE_SIZE: f32 = 100.0;
+const MELEE_OFFSET: f32 = 150.0;
 
 fn spawn_player(mut commands: Commands) {
     commands
@@ -72,7 +81,7 @@ fn spawn_player(mut commands: Commands) {
 
 fn player_move(
     mut query: Query<
-        (&mut Velocity2, &mut Direction2, &MoveSpeed),
+        (&mut Velocity2, &MoveSpeed),
         (
             With<PlayerController>,
             Without<PlayerDead>,
@@ -81,10 +90,9 @@ fn player_move(
     >,
     left_stick: Res<LeftStick>,
 ) {
-    for (mut velocity, mut direction, move_speed) in &mut query {
+    for (mut velocity, move_speed) in &mut query {
         if left_stick.x != 0.0 {
-            direction.x = left_stick.x;
-            velocity.x = direction.x * move_speed.0;
+            velocity.x = left_stick.x * move_speed.0;
         } else {
             velocity.x = 0.0;
         }
@@ -106,6 +114,19 @@ fn player_jump(
     for (mut velocity, jump_power) in &mut query {
         if space.pressed {
             velocity.y = jump_power.0;
+        }
+    }
+}
+
+fn player_direction(
+    mut query: Query<(&mut Direction2, &Transform), With<PlayerController>>,
+    cursor: Res<WorldCursor>,
+) {
+    for (mut direction, transform) in &mut query {
+        direction.x = if cursor.position.x > transform.translation.x {
+            1.0
+        } else {
+            -1.0
         }
     }
 }
@@ -151,7 +172,7 @@ fn player_respawn(
 
 fn player_attack(
     query: Query<
-        Entity,
+        (Entity, &Direction2),
         (
             With<PlayerController>,
             Without<PlayerAttack>,
@@ -165,20 +186,72 @@ fn player_attack(
     if !left_click.pressed {
         return;
     }
-    for entity in &query {
-        commands.entity(entity).insert(PlayerAttack(0.0));
+    for (entity, direction) in &query {
+        commands
+            .entity(entity)
+            .insert(PlayerAttack(0.0))
+            .with_children(|parent| {
+                parent
+                    .spawn((SpatialBundle::default(), MeleeAxis(-direction.x)))
+                    .with_children(|parent| {
+                        parent.spawn((
+                            SpriteBundle {
+                                sprite: Sprite {
+                                    color: Color::WHITE,
+                                    custom_size: Some(Vec2::new(MELEE_SIZE, MELEE_SIZE)),
+                                    ..default()
+                                },
+                                transform: Transform::from_xyz(0.0, MELEE_OFFSET, 0.0),
+                                ..default()
+                            },
+                            MeleeShape,
+                            Shape::Circle(MELEE_SIZE * 0.5),
+                        ));
+                    });
+            });
     }
 }
 
 fn player_attacked(
-    mut query: Query<(Entity, &mut PlayerAttack, &AttackSpeed)>,
+    mut query: Query<(Entity, &Children, &mut PlayerAttack, &AttackSpeed)>,
+    axis_query: Query<Entity, With<MeleeAxis>>,
     mut commands: Commands,
     time: Res<Time>,
 ) {
-    for (entity, mut timer, attack_speed) in &mut query {
+    for (entity, children, mut timer, attack_speed) in &mut query {
         timer.0 += time.delta_seconds() * attack_speed.0;
         if timer.0 > ATTACK_INTERVAL {
+            for child in children.iter() {
+                match axis_query.get(*child) {
+                    Ok(entity) => {
+                        commands.entity(entity).despawn_recursive();
+                    }
+                    Err(_) => continue,
+                }
+            }
             commands.entity(entity).remove::<PlayerAttack>();
+        }
+    }
+}
+
+fn rotate_melee(
+    player_query: Query<(&Children, &AttackSpeed), With<Player>>,
+    mut query: Query<(&mut Transform, &MeleeAxis)>,
+    time: Res<Time>,
+) {
+    for (children, attack_speed) in &player_query {
+        for child in children.iter() {
+            match query.get_mut(*child) {
+                Ok((mut transform, axis)) => {
+                    transform.rotate_z(
+                        MELEE_ROTATE / ATTACK_INTERVAL
+                            * time.delta_seconds()
+                            * axis.0
+                            * attack_speed.0,
+                    );
+                }
+                Err(_) => continue,
+            }
         }
     }
 }
@@ -191,7 +264,14 @@ impl Plugin for PlayerPlugin {
         app.add_systems(Startup, spawn_player);
         app.add_systems(
             Update,
-            (player_move, player_jump, player_attack, player_attacked),
+            (
+                player_move,
+                player_jump,
+                player_direction,
+                player_attack,
+                player_attacked,
+                rotate_melee,
+            ),
         );
         app.add_systems(PostUpdate, (player_damaged, player_respawn));
     }

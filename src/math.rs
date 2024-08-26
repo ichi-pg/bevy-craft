@@ -48,8 +48,6 @@ pub struct Vec2i {
 
 impl fmt::Display for Vec2i {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        // Customize so only `x` and `y` are denoted.
-        // `x`と`y`のみが明示的になるようにカスタマイズ
         write!(f, "[{}, {}]", self.x, self.y)
     }
 }

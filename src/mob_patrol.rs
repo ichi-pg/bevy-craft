@@ -18,9 +18,11 @@ fn mob_patrol(
     for (entity, transform, distance) in &query {
         for player_transform in &player_query {
             if (player_transform.translation.x - transform.translation.x).pow2() < distance.0 {
-                commands.entity(entity).remove::<MobPatrol>();
-                commands.entity(entity).remove::<MobStroll>();
-                commands.entity(entity).insert(MobChase);
+                commands
+                    .entity(entity)
+                    .remove::<MobPatrol>()
+                    .remove::<MobStroll>()
+                    .insert(MobChase);
             }
         }
     }

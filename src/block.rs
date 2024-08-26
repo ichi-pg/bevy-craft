@@ -129,8 +129,10 @@ fn destroy_block(
                 amount: 1,
             });
         } else {
-            commands.entity(entity).insert(Damaged);
-            commands.entity(entity).remove::<LeftClicked>();
+            commands
+                .entity(entity)
+                .insert(Damaged)
+                .remove::<LeftClicked>();
         }
     }
     // TODO pickaxe category
