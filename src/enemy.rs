@@ -3,7 +3,6 @@ use crate::hit_test::*;
 use crate::item_stats::*;
 use crate::math::*;
 use crate::mob_chase::*;
-use crate::mob_jump_attack::*;
 use crate::mob_patrol::*;
 use crate::mob_stroll::*;
 use crate::mob_walk::*;
@@ -39,23 +38,19 @@ fn spawn_enemies(mut commands: Commands) {
             MaxHealth(100.0),
             MoveSpeed(200.0),
             AttackPower(10.0),
-            AttackSpeed(512.0),
-            AttackDelay(1.0),
-            AttackCoolDown(1.0),
+            AttackSpeed(1.0),
             JumpPower(1500.0),
         ),
         (
             MobWalk,
             MobPatrol,
-            MobStroll,
+            MobStroll(0.0),
             HomePosition(home_position.xy()),
             HomeDistanceSquared(home_distance * home_distance),
             FindDistanceSquared((size * 5.0).pow2()),
             LostDistanceSquared((size * 5.0).pow2()),
             AttackDistanceSquared((size * 3.0).pow2()),
             PrevPosition(home_position.xy()),
-            StackTimer(0.0),
-            AttackTimer(0.0),
         ),
     ));
     // TODO spawner

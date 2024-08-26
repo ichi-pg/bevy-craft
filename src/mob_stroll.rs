@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use rand::RngCore;
 
 #[derive(Component)]
-pub struct MobStroll;
+pub struct MobStroll(pub f32);
 
 #[derive(Component, Deref, DerefMut)]
 pub struct HomePosition(pub Vec2);
@@ -16,22 +16,16 @@ pub struct HomeDistanceSquared(pub f32);
 #[derive(Component, Deref, DerefMut)]
 pub struct PrevPosition(pub Vec2);
 
-#[derive(Component)]
-pub struct StackTimer(pub f32);
-
 const STACK_SECONDS: f32 = 0.1;
 const RANDOM_FLIP: u32 = 1000;
 
 fn mob_stack_filp(
-    mut query: Query<
-        (
-            &mut Direction2,
-            &Transform,
-            &mut PrevPosition,
-            &mut StackTimer,
-        ),
-        With<MobStroll>,
-    >,
+    mut query: Query<(
+        &mut Direction2,
+        &Transform,
+        &mut PrevPosition,
+        &mut MobStroll,
+    )>,
     time: Res<Time>,
 ) {
     for (mut direction, transform, mut prev_position, mut timer) in &mut query {

@@ -30,6 +30,8 @@ pub struct BlockDestroied {
     pub block_id: u64,
 }
 
+const REPAIR_POWER: f32 = 10.0;
+
 fn block_bundle(
     item_id: u16,
     x: f32,
@@ -105,15 +107,15 @@ fn destroy_block(
         (Entity, &Transform, &ItemID, &BlockID, &mut Health),
         (With<Block>, With<LeftClicked>),
     >,
-    player_query: Query<&PickaxePower, With<PlayerController>>,
+    player_query: Query<(&PickaxePower, &AttackSpeed), With<PlayerController>>,
     mut commands: Commands,
     mut item_event_writer: EventWriter<ItemDropped>,
     mut block_event_writer: EventWriter<BlockDestroied>,
     time: Res<Time>,
 ) {
     for (entity, transform, item_id, block_id, mut health) in &mut query {
-        for pickaxe_power in &player_query {
-            health.0 -= pickaxe_power.0 * time.delta_seconds();
+        for (pickaxe_power, attack_speed) in &player_query {
+            health.0 -= pickaxe_power.0 * time.delta_seconds() * attack_speed.0;
         }
         if health.0 <= 0.0 {
             commands.entity(entity).despawn_recursive();
@@ -140,7 +142,7 @@ fn repair_health(
     time: Res<Time>,
 ) {
     for (entity, mut health, max_health) in &mut query {
-        health.0 += 10.0 * time.delta_seconds();
+        health.0 += REPAIR_POWER * time.delta_seconds();
         if health.0 >= max_health.0 {
             health.0 = max_health.0;
             commands.entity(entity).remove::<Damaged>();
