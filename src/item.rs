@@ -23,8 +23,7 @@ pub struct ItemDropped {
 pub trait ItemAndAmount {
     fn item_id(&self) -> u16;
     fn amount(&self) -> u16;
-    fn set_item_id(&mut self, item_id: u16);
-    fn set_amount(&mut self, item_id: u16);
+    fn new(item_id: u16, amount: u16) -> Self;
 }
 
 #[derive(Event, ItemAndAmount)]

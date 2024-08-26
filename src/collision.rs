@@ -10,23 +10,19 @@ use arrayvec::ArrayVec;
 use bevy::prelude::*;
 use bevy_craft::*;
 
-#[derive(Component, Default, Collided)]
-pub struct ItemCollided {
-    pub repulsion: Vec2,
-}
+#[derive(Component, Collided)]
+pub struct ItemCollided;
 
-#[derive(Component, Default, Collided)]
+#[derive(Component, RepulsionCollided)]
 pub struct BlockCollided {
     pub repulsion: Vec2,
 }
 
-#[derive(Component, Default, Collided)]
-pub struct EnemyCollided {
-    pub repulsion: Vec2,
-}
+#[derive(Component, Collided)]
+pub struct EnemyCollided;
 
 trait Collided {
-    fn set_repulsion(&mut self, repulsion: Vec2);
+    fn new(repulsion: Vec2) -> Self;
 }
 
 enum Collision {
@@ -34,7 +30,7 @@ enum Collision {
     Dynamic,
 }
 
-fn collision<T: Component, U: Component, V: Component + Default + Collided>(
+fn collision<T: Component, U: Component, V: Component + Collided>(
     collision: Collision,
 ) -> impl FnMut(
     Query<(Entity, &mut Transform, &Shape, &mut Velocity2), (With<T>, Changed<Transform>)>,
@@ -72,9 +68,7 @@ fn collision<T: Component, U: Component, V: Component + Default + Collided>(
                 }
                 match hits.try_push((repulsion.length_squared(), transform2, shape2)) {
                     Ok(_) => {
-                        let mut collided = V::default();
-                        collided.set_repulsion(repulsion);
-                        commands.entity(entity2).insert(collided);
+                        commands.entity(entity2).insert(V::new(repulsion));
                         repulsions.push(repulsion);
                         continue;
                     }
@@ -86,7 +80,7 @@ fn collision<T: Component, U: Component, V: Component + Default + Collided>(
             }
             match collision {
                 Collision::Static => {
-                    commands.entity(entity1).insert(V::default());
+                    commands.entity(entity1).insert(V::new(Vec2::ZERO));
                 }
                 Collision::Dynamic => {
                     hits.sort_by(|a, b| match a.0.partial_cmp(&b.0) {
@@ -114,9 +108,7 @@ fn collision<T: Component, U: Component, V: Component + Default + Collided>(
                             velocity.y = 0.0;
                         }
                     }
-                    let mut collided = V::default();
-                    collided.set_repulsion(repulsions);
-                    commands.entity(entity1).insert(collided);
+                    commands.entity(entity1).insert(V::new(repulsions));
                 }
             }
         }

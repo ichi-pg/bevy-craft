@@ -15,13 +15,13 @@ pub struct Inventory;
 #[derive(Component, Default, NodeItem)]
 pub struct InventoryItem;
 
-#[derive(Event, Default, ItemAndAmount)]
+#[derive(Event, ItemAndAmount)]
 pub struct InventoryOverflowed {
     pub item_id: u16,
     pub amount: u16,
 }
 
-#[derive(Event, Default, ItemAndAmount)]
+#[derive(Event, ItemAndAmount)]
 pub struct InventoryPushedOut {
     pub item_id: u16,
     pub amount: u16,

@@ -1,4 +1,5 @@
 use crate::item_node::*;
+use crate::stats::*;
 use crate::ui_hovered::*;
 use bevy::prelude::*;
 
@@ -158,4 +159,15 @@ pub fn build_progress_bar<T: Component + Default>(parent: &mut ChildBuilder, col
                 T::default(),
             ));
         });
+}
+
+pub fn sync_progress_bar<T: Component + Stats, U: Component + Stats, V: Component, W: Component>(
+    player_query: Query<(&T, &U), (With<V>, Changed<T>)>,
+    mut query: Query<&mut Style, With<W>>,
+) {
+    for (health, max_health) in &player_query {
+        for mut style in &mut query {
+            style.width = Val::Percent(health.get() / max_health.get() * 100.0);
+        }
+    }
 }

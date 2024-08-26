@@ -20,11 +20,11 @@ fn impl_item_and_amount(ast: &syn::DeriveInput) -> TokenStream {
             fn amount(&self) -> u16 {
                 self.amount
             }
-            fn set_item_id(&mut self, item_id: u16) {
-                self.item_id = item_id;
-            }
-            fn set_amount(&mut self, amount: u16) {
-                self.amount = amount;
+            fn new(item_id: u16, amount: u16) -> Self {
+                #name {
+                    item_id,
+                    amount,
+                }
             }
         }
     };
@@ -135,8 +135,30 @@ fn impl_collided(ast: &syn::DeriveInput) -> TokenStream {
     let name = &ast.ident;
     let gen = quote! {
         impl Collided for #name {
-            fn set_repulsion(&mut self, repulsion: Vec2) {
-                self.repulsion = repulsion;
+            fn new(repulsion: Vec2) -> Self {
+                #name
+            }
+        }
+    };
+    gen.into()
+}
+
+#[proc_macro_derive(RepulsionCollided)]
+pub fn derive_repulsion_collided(input: TokenStream) -> TokenStream {
+    match syn::parse(input) {
+        Ok(ast) => impl_repulsion_collided(&ast),
+        Err(_) => todo!(),
+    }
+}
+
+fn impl_repulsion_collided(ast: &syn::DeriveInput) -> TokenStream {
+    let name = &ast.ident;
+    let gen = quote! {
+        impl Collided for #name {
+            fn new(repulsion: Vec2) -> Self {
+                #name {
+                    repulsion,
+                }
             }
         }
     };

@@ -7,7 +7,7 @@ use crate::storage::*;
 use crate::ui_states::*;
 use bevy::prelude::*;
 
-fn put_in_item<T: Event + ItemAndAmount, U: Component, V: Event + Default + ItemAndAmount>(
+fn put_in_item<T: Event + ItemAndAmount, U: Component, V: Event + ItemAndAmount>(
     mut query: Query<(Entity, &mut ItemID, &mut ItemAmount), With<U>>,
     mut event_reader: EventReader<T>,
     mut event_writer: EventWriter<V>,
@@ -40,19 +40,15 @@ fn put_in_item<T: Event + ItemAndAmount, U: Component, V: Event + Default + Item
             },
             // Overflow
             None => {
-                let mut overflowed: V = V::default();
-                overflowed.set_item_id(event.item_id());
-                overflowed.set_amount(event.amount());
-                event_writer.send(overflowed);
+                event_writer.send(V::new(event.item_id(), event.amount()));
             }
         }
     }
-    // TODO refactor V::from
     // TODO which player?
     // TODO max item amount
 }
 
-fn push_out_item<T: Component, U: Event + Default + ItemAndAmount>(
+fn push_out_item<T: Component, U: Event + ItemAndAmount>(
     mut query: Query<(&Interaction, &mut ItemID, &mut ItemAmount), (With<T>, Changed<Interaction>)>,
     shift: Res<Shift>,
     mut event_writer: EventWriter<U>,
@@ -66,10 +62,7 @@ fn push_out_item<T: Component, U: Event + Default + ItemAndAmount>(
         }
         match intersection {
             Interaction::Pressed => {
-                let mut e: U = U::default();
-                e.set_item_id(item_id.0);
-                e.set_amount(amount.0);
-                event_writer.send(e);
+                event_writer.send(U::new(item_id.0, amount.0));
                 item_id.0 = 0;
                 amount.0 = 0;
             }
@@ -79,12 +72,7 @@ fn push_out_item<T: Component, U: Event + Default + ItemAndAmount>(
     }
 }
 
-fn bulk_push_out<
-    T: Component,
-    U: Event + Default + ItemAndAmount,
-    V: Component,
-    W: Resource + Pressed,
->(
+fn bulk_push_out<T: Component, U: Event + ItemAndAmount, V: Component, W: Resource + Pressed>(
     mut query: Query<(&mut ItemID, &mut ItemAmount), With<T>>,
     filter_query: Query<&ItemID, (With<V>, Without<T>)>,
     pressed: Res<W>,
@@ -110,10 +98,7 @@ fn bulk_push_out<
                 continue;
             }
         }
-        let mut e: U = U::default();
-        e.set_item_id(item_id.0);
-        e.set_amount(amount.0);
-        event_writer.send(e);
+        event_writer.send(U::new(item_id.0, amount.0));
         item_id.0 = 0;
         amount.0 = 0;
     }

@@ -5,14 +5,10 @@ use crate::item_node::*;
 use crate::item_selecting::*;
 use crate::player::*;
 use crate::stats::*;
-use crate::ui_states::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
 struct ItemStats;
-
-#[derive(Event, Default)]
-struct HotbarChanged;
 
 fn spawn_stats(mut commands: Commands) {
     for item in [(101, 100.0)] {
@@ -85,14 +81,12 @@ pub struct ItemStatsPlugin;
 
 impl Plugin for ItemStatsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<HotbarChanged>();
         app.add_systems(Startup, spawn_stats);
         app.add_systems(
             Update,
             (
                 sync_equipment::<MaxHealth>(PLAYER_HEALTH),
                 sync_selected::<PickaxePower>(PLAYER_PICKAXE_POWER),
-                sync_changed::<HotbarItem, ItemID, HotbarChanged>,
             ),
         );
     }

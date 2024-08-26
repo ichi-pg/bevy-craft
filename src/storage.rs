@@ -25,7 +25,7 @@ pub struct StorageClicked {
     pub block_id: u64,
 }
 
-#[derive(Event, Default, ItemAndAmount)]
+#[derive(Event, ItemAndAmount)]
 pub struct StorageOverflowed {
     pub item_id: u16,
     pub amount: u16,
