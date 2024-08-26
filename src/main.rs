@@ -32,6 +32,7 @@ mod player;
 mod player_stats;
 mod profiler;
 mod random;
+mod stats;
 mod storage;
 mod ui_hovered;
 mod ui_parts;

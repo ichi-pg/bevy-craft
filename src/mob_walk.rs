@@ -1,6 +1,6 @@
 use crate::collision::*;
 use crate::gravity::*;
-use crate::item_stats::*;
+use crate::stats::*;
 use crate::velocity::*;
 use bevy::prelude::*;
 

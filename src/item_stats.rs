@@ -4,41 +4,15 @@ use crate::item::*;
 use crate::item_node::*;
 use crate::item_selecting::*;
 use crate::player::*;
+use crate::stats::*;
 use crate::ui_states::*;
 use bevy::prelude::*;
-use bevy_craft::*;
 
 #[derive(Component)]
 struct ItemStats;
 
-#[derive(Component, Stats)]
-pub struct Health(pub f32);
-
-#[derive(Component, Stats)]
-pub struct MaxHealth(pub f32);
-
-#[derive(Component, Stats)]
-pub struct PickaxePower(pub f32);
-
-#[derive(Component, Stats)]
-pub struct AttackPower(pub f32);
-
-#[derive(Component)]
-pub struct AttackSpeed(pub f32);
-
-#[derive(Component)]
-pub struct MoveSpeed(pub f32);
-
-#[derive(Component)]
-pub struct JumpPower(pub f32);
-
 #[derive(Event, Default)]
-struct SelectedChanged;
-
-pub trait Stats {
-    fn get(&self) -> f32;
-    fn set(&mut self, stats: f32);
-}
+struct HotbarChanged;
 
 fn spawn_stats(mut commands: Commands) {
     for item in [(101, 100.0)] {
@@ -84,7 +58,7 @@ fn sync_selected<T: Component + Stats>(
     Query<(&ItemID, &T), With<ItemStats>>,
     Query<&mut T, (With<PlayerController>, Without<ItemStats>)>,
     Res<SelectedItem>,
-    EventReader<SelectedChanged>,
+    EventReader<HotbarChanged>,
 ) {
     move |hotbar_query, stats_query, mut player_query, selected, event_reader| {
         if !selected.is_changed() && event_reader.is_empty() {
@@ -111,14 +85,14 @@ pub struct ItemStatsPlugin;
 
 impl Plugin for ItemStatsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<SelectedChanged>();
+        app.add_event::<HotbarChanged>();
         app.add_systems(Startup, spawn_stats);
         app.add_systems(
             Update,
             (
                 sync_equipment::<MaxHealth>(PLAYER_HEALTH),
                 sync_selected::<PickaxePower>(PLAYER_PICKAXE_POWER),
-                sync_changed::<HotbarItem, ItemID, SelectedChanged>,
+                sync_changed::<HotbarItem, ItemID, HotbarChanged>,
             ),
         );
     }

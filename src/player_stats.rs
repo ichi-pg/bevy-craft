@@ -1,6 +1,6 @@
 use crate::camera::*;
-use crate::item_stats::{Health, MaxHealth};
-use crate::player::PlayerController;
+use crate::player::*;
+use crate::stats::*;
 use crate::ui_parts::*;
 use bevy::prelude::*;
 

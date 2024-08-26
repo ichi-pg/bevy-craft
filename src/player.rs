@@ -1,8 +1,8 @@
 use crate::gravity::*;
 use crate::hit_test::*;
 use crate::input::*;
-use crate::item_stats::*;
 use crate::minimap::*;
+use crate::stats::*;
 use crate::velocity::*;
 use bevy::prelude::*;
 
