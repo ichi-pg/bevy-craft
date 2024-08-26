@@ -35,7 +35,7 @@ pub const PLAYER_JUMP_POWER: f32 = 1500.0;
 const KNOCK_BACK_X: f32 = 400.0;
 const KNOCK_BACK_Y: f32 = 1500.0;
 const ATTACK_INTERVAL: f32 = 0.5;
-const MELEE_ROTATE: f32 = 2.0;
+const MELEE_ROTATE: f32 = 2.0 / ATTACK_INTERVAL;
 const MELEE_SIZE: f32 = 100.0;
 const MELEE_OFFSET: f32 = 150.0;
 
@@ -243,17 +243,14 @@ fn rotate_melee(
         for child in children.iter() {
             match query.get_mut(*child) {
                 Ok((mut transform, axis)) => {
-                    transform.rotate_z(
-                        MELEE_ROTATE / ATTACK_INTERVAL
-                            * time.delta_seconds()
-                            * axis.0
-                            * attack_speed.0,
-                    );
+                    transform
+                        .rotate_z(MELEE_ROTATE * time.delta_seconds() * axis.0 * attack_speed.0);
                 }
                 Err(_) => continue,
             }
         }
     }
+    // TODO cancel by any actions?
 }
 
 pub struct PlayerPlugin;
