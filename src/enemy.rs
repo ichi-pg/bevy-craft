@@ -13,6 +13,9 @@ use bevy::prelude::*;
 #[derive(Component)]
 pub struct Enemy;
 
+const KNOCK_BACK_X: f32 = 400.0;
+const KNOCK_BACK_Y: f32 = 1500.0;
+
 fn spawn_enemies(mut commands: Commands) {
     let size = 128.0;
     let home_position = Vec3::new(size * 10.0, size * 10.0, 0.0);
@@ -68,16 +71,23 @@ fn player_collided(
 }
 
 fn projectile_collided(
-    mut query: Query<(Entity, &mut Health), (With<Enemy>, With<PlayerProjectileCollided>)>,
+    mut query: Query<
+        (Entity, &mut Health, &mut Velocity2, &Direction2),
+        (With<Enemy>, With<PlayerProjectileCollided>),
+    >,
     player_query: Query<&AttackPower, With<Player>>,
     mut commands: Commands,
 ) {
-    for (entity, mut health) in &mut query {
+    for (entity, mut health, mut velocity, direction) in &mut query {
         for attack_power in &player_query {
             health.0 -= attack_power.0;
             if health.0 <= 0.0 {
                 health.0 = 0.0;
                 commands.entity(entity).despawn_recursive();
+            } else {
+                velocity.x = -direction.x * KNOCK_BACK_X;
+                velocity.y = KNOCK_BACK_Y;
+                commands.entity(entity).insert(KnockBack);
             }
         }
     }

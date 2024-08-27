@@ -7,14 +7,22 @@ use bevy::prelude::*;
 #[derive(Component)]
 pub struct MobWalk;
 
-fn mob_walk(mut query: Query<(&mut Velocity2, &Direction2, &MoveSpeed), With<MobWalk>>) {
+fn mob_walk(
+    mut query: Query<
+        (&mut Velocity2, &Direction2, &MoveSpeed),
+        (With<MobWalk>, Without<KnockBack>),
+    >,
+) {
     for (mut velocity, direction, move_speed) in &mut query {
         velocity.x = direction.x * move_speed.0;
     }
 }
 
 fn mob_jump(
-    mut query: Query<(&mut Velocity2, &BlockCollided, &JumpPower), (With<MobWalk>, With<Grounded>)>,
+    mut query: Query<
+        (&mut Velocity2, &BlockCollided, &JumpPower),
+        (With<MobWalk>, With<Grounded>, Without<KnockBack>),
+    >,
 ) {
     for (mut velocity, collided, jump_power) in &mut query {
         if collided.repulsion.y < collided.repulsion.x.abs() {
