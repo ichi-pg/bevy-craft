@@ -73,7 +73,11 @@ fn player_collided(
 fn projectile_collided(
     mut query: Query<
         (Entity, &mut Health, &mut Velocity2, &Direction2),
-        (With<Enemy>, With<PlayerProjectileCollided>),
+        (
+            With<Enemy>,
+            With<PlayerProjectileCollided>,
+            Without<KnockBack>,
+        ),
     >,
     player_query: Query<&AttackPower, With<Player>>,
     mut commands: Commands,
@@ -89,7 +93,6 @@ fn projectile_collided(
                 velocity.y = KNOCK_BACK_Y;
                 commands.entity(entity).insert(KnockBack);
             }
-            println!("{}", health.0);
         }
     }
     // TODO health gauge

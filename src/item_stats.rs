@@ -14,6 +14,9 @@ fn spawn_stats(mut commands: Commands) {
     for item in [(101, 100.0)] {
         commands.spawn((ItemStats, ItemID(item.0), PickaxePower(item.1)));
     }
+    for item in [(104, 10.0)] {
+        commands.spawn((ItemStats, ItemID(item.0), AttackPower(item.1)));
+    }
     // TODO merge craft materials and stats?
     // TODO item name
 }
@@ -87,6 +90,7 @@ impl Plugin for ItemStatsPlugin {
             (
                 sync_equipment::<MaxHealth>(PLAYER_HEALTH),
                 sync_selected::<PickaxePower>(PLAYER_PICKAXE_POWER),
+                sync_selected::<AttackPower>(0.0),
             ),
         );
     }

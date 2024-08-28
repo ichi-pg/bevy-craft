@@ -9,9 +9,10 @@ pub struct CraftMaterial;
 
 fn spawn_recipes(mut commands: Commands) {
     for item in [
-        (101, 1, vec![(2, 1), (3, 1)]),
-        (102, 1, vec![(101, 1), (4, 1)]),
-        (103, 1, vec![(101, 1), (5, 1), (6, 1)]),
+        (101, 1, vec![(1, 1)]),
+        (102, 1, vec![(2, 1)]),
+        (103, 1, vec![(3, 1)]),
+        (104, 1, vec![(4, 1)]),
     ] {
         commands
             .spawn((CraftProduct, ItemID(item.0), ItemAmount(item.1)))

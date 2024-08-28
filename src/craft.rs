@@ -32,7 +32,7 @@ fn spawn_items(
             |parent| {
                 build_space(parent, INVENTORY_X, 2, JustifyContent::Start, |parent| {
                     build_grid::<CraftUI>(parent, 3, 2, Visibility::Hidden, |parent| {
-                        let item_ids = HashSet::<u16>::from_iter([101, 102, 103]);
+                        let item_ids = HashSet::<u16>::from_iter([101, 102, 103, 104]);
                         for (index, (item_id, amount)) in query.iter().enumerate() {
                             if !item_ids.contains(&item_id.0) {
                                 continue;

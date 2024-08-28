@@ -1,8 +1,10 @@
 use crate::gravity::*;
 use crate::hit_test::*;
 use crate::input::*;
+use crate::item_dragging::*;
 use crate::minimap::*;
 use crate::stats::*;
+use crate::ui_states::*;
 use crate::velocity::*;
 use bevy::prelude::*;
 
@@ -175,7 +177,7 @@ fn player_respawn(
 
 fn player_attack(
     query: Query<
-        (Entity, &Direction2),
+        (Entity, &Direction2, &AttackPower),
         (
             With<PlayerController>,
             Without<PlayerAttack>,
@@ -189,7 +191,10 @@ fn player_attack(
     if !left_click.pressed {
         return;
     }
-    for (entity, direction) in &query {
+    for (entity, direction, attack_power) in &query {
+        if attack_power.0 <= 0.0 {
+            continue;
+        }
         commands
             .entity(entity)
             .insert(PlayerAttack(0.0))
@@ -217,6 +222,7 @@ fn player_attack(
             Shape::Circle(MELEE_SIZE * 0.5),
         ));
     }
+    // TODO weapon category
 }
 
 fn player_attacked(
@@ -290,7 +296,9 @@ impl Plugin for PlayerPlugin {
                 player_move,
                 player_jump,
                 player_direction,
-                player_attack,
+                player_attack
+                    .run_if(in_state(UIStates::None))
+                    .run_if(in_state(ItemDragged::None)),
                 player_attacked,
                 rotate_melee,
                 sync_projectile,

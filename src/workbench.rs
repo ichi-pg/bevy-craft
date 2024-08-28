@@ -35,7 +35,7 @@ fn spawn_items(
                     JustifyContent::SpaceBetween,
                     |parent| {
                         for item_ids in [
-                            HashSet::<u16>::from_iter([101, 102, 103]),
+                            HashSet::<u16>::from_iter([]),
                             HashSet::<u16>::from_iter([]),
                             HashSet::<u16>::from_iter([]),
                         ] {
