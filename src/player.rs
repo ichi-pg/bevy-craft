@@ -22,6 +22,9 @@ struct PlayerAttack(pub f32);
 struct MeleeAxis(f32);
 
 #[derive(Component)]
+pub struct MeleeProjectile;
+
+#[derive(Component)]
 pub struct PlayerProjectile;
 
 #[derive(Event)]
@@ -204,17 +207,22 @@ fn player_attack(
                                 transform: Transform::from_xyz(0.0, MELEE_OFFSET, 0.0),
                                 ..default()
                             },
-                            PlayerProjectile,
-                            Shape::Circle(MELEE_SIZE * 0.5),
+                            MeleeProjectile,
                         ));
                     });
             });
+        commands.spawn((
+            Transform::default(),
+            PlayerProjectile,
+            Shape::Circle(MELEE_SIZE * 0.5),
+        ));
     }
 }
 
 fn player_attacked(
     mut query: Query<(Entity, &Children, &mut PlayerAttack, &AttackSpeed)>,
     axis_query: Query<Entity, With<MeleeAxis>>,
+    projectile_query: Query<Entity, With<PlayerProjectile>>,
     mut commands: Commands,
     time: Res<Time>,
 ) {
@@ -225,6 +233,9 @@ fn player_attacked(
                 match axis_query.get(*child) {
                     Ok(entity) => {
                         commands.entity(entity).despawn_recursive();
+                        for entity in &projectile_query {
+                            commands.entity(entity).despawn_recursive();
+                        }
                     }
                     Err(_) => continue,
                 }
@@ -232,6 +243,7 @@ fn player_attacked(
             commands.entity(entity).remove::<PlayerAttack>();
         }
     }
+    // TODO link projectile
 }
 
 fn rotate_melee(
@@ -253,6 +265,19 @@ fn rotate_melee(
     // TODO cancel by any actions?
 }
 
+fn sync_projectile(
+    melee_query: Query<&GlobalTransform, (With<MeleeProjectile>, Without<PlayerProjectile>)>,
+    mut query: Query<&mut Transform, With<PlayerProjectile>>,
+) {
+    for global_transform in &melee_query {
+        for mut transform in &mut query {
+            let translation = global_transform.translation();
+            transform.translation.x = translation.x;
+            transform.translation.y = translation.y;
+        }
+    }
+}
+
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
@@ -268,6 +293,7 @@ impl Plugin for PlayerPlugin {
                 player_attack,
                 player_attacked,
                 rotate_melee,
+                sync_projectile,
             ),
         );
         app.add_systems(PostUpdate, (player_damaged, player_respawn));

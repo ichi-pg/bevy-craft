@@ -89,9 +89,9 @@ fn projectile_collided(
                 velocity.y = KNOCK_BACK_Y;
                 commands.entity(entity).insert(KnockBack);
             }
+            println!("{}", health.0);
         }
     }
-    // FIXME not emit collided
     // TODO health gauge
     // TODO damaged and dead effect
     // TODO which player?
