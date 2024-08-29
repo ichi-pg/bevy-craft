@@ -120,10 +120,11 @@ fn player_jump(
     >,
     space: Res<Space>,
 ) {
+    if !space.pressed {
+        return;
+    }
     for (mut velocity, jump_power) in &mut query {
-        if space.pressed {
-            velocity.y = jump_power.0;
-        }
+        velocity.y = jump_power.0;
     }
 }
 
