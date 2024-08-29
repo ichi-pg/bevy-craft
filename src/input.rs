@@ -197,4 +197,5 @@ impl Plugin for InputPlugin {
     // TODO other devices
     // TODO abstract names
     // TODO flexible key codes
+    // TODO using states?
 }
