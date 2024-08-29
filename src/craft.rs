@@ -19,7 +19,7 @@ pub struct CraftUI;
 fn spawn_items(
     camera_query: Query<Entity, With<PlayerCamera>>,
     mut commands: Commands,
-    recipes: Res<CraftRecipes>,
+    recipe_map: Res<CraftRecipeMap>,
 ) {
     for entity in &camera_query {
         commands.build_screen(
@@ -32,7 +32,7 @@ fn spawn_items(
                 build_space(parent, INVENTORY_X, 2, JustifyContent::Start, |parent| {
                     build_grid::<CraftUI>(parent, 3, 2, Visibility::Hidden, |parent| {
                         for (index, item_id) in [101, 102, 103, 104].iter().enumerate() {
-                            match recipes.get(item_id) {
+                            match recipe_map.get(item_id) {
                                 Some(recipe) => build_item::<ProductItem>(
                                     parent,
                                     *item_id,
@@ -72,7 +72,7 @@ fn click_recipe(
         ),
     >,
     control: Res<Control>,
-    recipes: Res<CraftRecipes>,
+    recipe_map: Res<CraftRecipeMap>,
 ) {
     for (intersection, intersection_item_id) in &intersection_query {
         for (item_id, _) in &drag_query {
@@ -81,7 +81,7 @@ fn click_recipe(
             }
         }
         match *intersection {
-            Interaction::Pressed => match recipes.get(&intersection_item_id.0) {
+            Interaction::Pressed => match recipe_map.get(&intersection_item_id.0) {
                 Some(recipe) => {
                     let mut times = if control.pressed { 10 } else { 1 };
                     for material in &recipe.materials {

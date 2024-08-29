@@ -43,7 +43,7 @@ fn interact_item(
     >,
     mut details_query: Query<&mut Visibility, With<ItemDetails>>,
     mut query: Query<(&mut ItemID, &mut ItemAmount), With<MaterialItem>>,
-    recipes: Res<CraftRecipes>,
+    recipe_map: Res<CraftRecipeMap>,
 ) {
     for (interaction, interaction_item_id) in &interaction_query {
         match *interaction {
@@ -58,7 +58,7 @@ fn interact_item(
                 for mut visibility in &mut details_query {
                     *visibility = Visibility::Inherited;
                 }
-                match recipes.get(&interaction_item_id.0) {
+                match recipe_map.get(&interaction_item_id.0) {
                     Some(recipe) => {
                         let mut iter = query.iter_mut();
                         for material in &recipe.materials {

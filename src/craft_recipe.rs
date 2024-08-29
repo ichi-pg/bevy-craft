@@ -11,17 +11,17 @@ pub struct CraftRecipe {
     pub materials: Vec<CraftMaterial>,
 }
 
-#[derive(Resource, Deref, DerefMut)]
-pub struct CraftRecipes(HashMap<u16, CraftRecipe>);
+#[derive(Resource, Deref, DerefMut, Default)]
+pub struct CraftRecipeMap(HashMap<u16, CraftRecipe>);
 
-fn spawn_recipes(mut recipes: ResMut<CraftRecipes>) {
+fn spawn_recipes(mut recipe_map: ResMut<CraftRecipeMap>) {
     for item in [
         (101, 1, vec![(1, 1)]),
         (102, 1, vec![(2, 1)]),
         (103, 1, vec![(3, 1)]),
         (104, 1, vec![(4, 1)]),
     ] {
-        recipes.insert(
+        recipe_map.insert(
             item.0,
             CraftRecipe {
                 amount: item.1,
@@ -42,7 +42,7 @@ pub struct CraftRecipePlugin;
 
 impl Plugin for CraftRecipePlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(CraftRecipes(HashMap::<u16, CraftRecipe>::default()));
+        app.insert_resource(CraftRecipeMap::default());
         app.add_systems(PreStartup, spawn_recipes);
     }
     // TODO using after?

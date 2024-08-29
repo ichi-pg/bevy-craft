@@ -60,29 +60,6 @@ fn impl_pressed(ast: &syn::DeriveInput) -> TokenStream {
     gen.into()
 }
 
-#[proc_macro_derive(Stats)]
-pub fn derive_stats(input: TokenStream) -> TokenStream {
-    match syn::parse(input) {
-        Ok(ast) => impl_stats(&ast),
-        Err(_) => todo!(),
-    }
-}
-
-fn impl_stats(ast: &syn::DeriveInput) -> TokenStream {
-    let name = &ast.ident;
-    let gen = quote! {
-        impl Stats for #name {
-            fn get(&self) -> f32 {
-                self.0
-            }
-            fn set(&mut self, stats: f32) {
-                self.0 = stats;
-            }
-        }
-    };
-    gen.into()
-}
-
 #[proc_macro_derive(NodeItem)]
 pub fn derive_node_item(input: TokenStream) -> TokenStream {
     match syn::parse(input) {
