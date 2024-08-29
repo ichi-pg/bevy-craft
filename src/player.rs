@@ -36,11 +36,14 @@ pub struct PlayerProjectile;
 #[derive(Event)]
 pub struct PlayerDamaged(pub f32);
 
-const PLAYER_SIZE: f32 = 128.0;
 pub const PLAYER_HEALTH: f32 = 100.0;
 pub const PLAYER_PICKAXE_POWER: f32 = 100.0;
+pub const PLAYER_ATTACK_POWER: f32 = 0.0;
+pub const PLAYER_ATTACK_SPEED: f32 = 1.0;
 pub const PLAYER_MOVE_SPEED: f32 = 400.0;
 pub const PLAYER_JUMP_POWER: f32 = 1500.0;
+
+const PLAYER_SIZE: f32 = 128.0;
 const KNOCK_BACK_X: f32 = 400.0;
 const KNOCK_BACK_Y: f32 = 1500.0;
 const ATTACK_INTERVAL: f32 = 0.5;
@@ -64,8 +67,8 @@ fn spawn_player(mut commands: Commands) {
             Health(PLAYER_HEALTH),
             MaxHealth(PLAYER_HEALTH),
             PickaxePower(PLAYER_PICKAXE_POWER),
-            AttackPower(0.0),
-            AttackSpeed(1.0),
+            AttackPower(PLAYER_ATTACK_POWER),
+            AttackSpeed(PLAYER_ATTACK_SPEED),
             MoveSpeed(PLAYER_MOVE_SPEED),
             JumpPower(PLAYER_JUMP_POWER),
             Velocity2::default(),

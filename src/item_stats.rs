@@ -43,19 +43,40 @@ fn spawn_stats(mut stats_map: ResMut<ItemStatsMap>) {
     // TODO item name
 }
 
-fn sync_equipment<T: Component + Stats>(
+fn sync_stats<T: Component + Stats>(
     init_value: f32,
 ) -> impl FnMut(
     Query<&ItemID, With<EquipmentItem>>,
+    Query<(&ItemID, &ItemIndex), With<HotbarItem>>,
     Query<&mut T, With<PlayerController>>,
     EventReader<EquipmentChanged>,
+    EventReader<HotbarChanged>,
+    Res<SelectedItem>,
     Res<ItemStatsMap>,
 ) {
-    move |equipment_query, mut player_query, event_reader, stats_map| {
-        if event_reader.is_empty() {
+    move |equipment_query,
+          hotbar_query,
+          mut player_query,
+          equipment_event_reader,
+          hotbar_event_reader,
+          selected,
+          stats_map| {
+        if !selected.is_changed()
+            && equipment_event_reader.is_empty()
+            && hotbar_event_reader.is_empty()
+        {
             return;
         }
         let mut value = init_value;
+        for (hotbar_item_id, index) in &hotbar_query {
+            if index.0 != selected.0 {
+                continue;
+            }
+            match stats_map.get(&hotbar_item_id.0) {
+                Some(stats) => value += T::get_item_stats(stats),
+                None => continue,
+            }
+        }
         for equipment_item_id in &equipment_query {
             match stats_map.get(&equipment_item_id.0) {
                 Some(stats) => value += T::get_item_stats(stats),
@@ -69,35 +90,9 @@ fn sync_equipment<T: Component + Stats>(
     // TODO attach defense to equipment item?
     // TODO which player?
     // TODO hash map with item id?
-}
-
-fn sync_selected<T: Component + Stats>(
-    init_value: f32,
-) -> impl FnMut(
-    Query<(&ItemID, &ItemIndex), With<HotbarItem>>,
-    Query<&mut T, With<PlayerController>>,
-    Res<SelectedItem>,
-    EventReader<HotbarChanged>,
-    Res<ItemStatsMap>,
-) {
-    move |hotbar_query, mut player_query, selected, event_reader, stats_map| {
-        if !selected.is_changed() && event_reader.is_empty() {
-            return;
-        }
-        let mut value = init_value;
-        for (hotbar_item_id, index) in &hotbar_query {
-            if index.0 != selected.0 {
-                continue;
-            }
-            match stats_map.get(&hotbar_item_id.0) {
-                Some(stats) => value += T::get_item_stats(stats),
-                None => continue,
-            }
-        }
-        for mut player_stats in &mut player_query {
-            player_stats.set(value);
-        }
-    }
+    // TODO buff
+    // TODO debuff
+    // TODO enchant
 }
 
 pub struct ItemStatsPlugin;
@@ -109,9 +104,12 @@ impl Plugin for ItemStatsPlugin {
         app.add_systems(
             Update,
             (
-                sync_equipment::<MaxHealth>(PLAYER_HEALTH),
-                sync_selected::<PickaxePower>(PLAYER_PICKAXE_POWER),
-                sync_selected::<AttackPower>(0.0),
+                sync_stats::<MaxHealth>(PLAYER_HEALTH),
+                sync_stats::<PickaxePower>(PLAYER_PICKAXE_POWER),
+                sync_stats::<AttackPower>(PLAYER_ATTACK_POWER),
+                sync_stats::<AttackSpeed>(PLAYER_ATTACK_SPEED),
+                sync_stats::<MoveSpeed>(PLAYER_MOVE_SPEED),
+                sync_stats::<JumpPower>(PLAYER_JUMP_POWER),
             ),
         );
     }
