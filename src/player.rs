@@ -1,7 +1,11 @@
 use crate::gravity::*;
 use crate::hit_test::*;
+use crate::hotbar::*;
 use crate::input::*;
+use crate::item::*;
 use crate::item_dragging::*;
+use crate::item_node::*;
+use crate::item_selecting::*;
 use crate::minimap::*;
 use crate::stats::*;
 use crate::ui_states::*;
@@ -24,7 +28,7 @@ struct PlayerAttack(pub f32);
 struct MeleeAxis(f32);
 
 #[derive(Component)]
-pub struct MeleeProjectile;
+struct MeleeProjectile;
 
 #[derive(Component)]
 pub struct PlayerProjectile;
@@ -177,7 +181,7 @@ fn player_respawn(
 
 fn player_attack(
     query: Query<
-        (Entity, &Direction2, &AttackPower),
+        (Entity, &Direction2),
         (
             With<PlayerController>,
             Without<PlayerAttack>,
@@ -185,44 +189,54 @@ fn player_attack(
             Without<KnockBack>,
         ),
     >,
+    item_query: Query<(&ItemID, &ItemIndex), With<HotbarItem>>,
     mut commands: Commands,
     left_click: Res<LeftClick>,
+    selected: Res<SelectedItem>,
 ) {
     if !left_click.pressed {
         return;
     }
-    for (entity, direction, attack_power) in &query {
-        if attack_power.0 <= 0.0 {
-            continue;
+    for (entity, direction) in &query {
+        let mut item_id = 0;
+        for (hotbar_item_id, index) in &item_query {
+            if selected.0 == index.0 {
+                item_id = hotbar_item_id.0;
+            }
         }
-        commands
-            .entity(entity)
-            .insert(PlayerAttack(0.0))
-            .with_children(|parent| {
-                parent
-                    .spawn((SpatialBundle::default(), MeleeAxis(-direction.x)))
-                    .with_children(|parent| {
-                        parent.spawn((
-                            SpriteBundle {
-                                sprite: Sprite {
-                                    color: Color::WHITE,
-                                    custom_size: Some(Vec2::new(MELEE_SIZE, MELEE_SIZE)),
+        if item_id == 101 || item_id == 104 {
+            commands
+                .entity(entity)
+                .insert(PlayerAttack(0.0))
+                .with_children(|parent| {
+                    parent
+                        .spawn((SpatialBundle::default(), MeleeAxis(-direction.x)))
+                        .with_children(|parent| {
+                            parent.spawn((
+                                SpriteBundle {
+                                    sprite: Sprite {
+                                        color: item_color(item_id),
+                                        custom_size: Some(Vec2::new(MELEE_SIZE, MELEE_SIZE)),
+                                        ..default()
+                                    },
+                                    transform: Transform::from_xyz(0.0, MELEE_OFFSET, 0.0),
                                     ..default()
                                 },
-                                transform: Transform::from_xyz(0.0, MELEE_OFFSET, 0.0),
-                                ..default()
-                            },
-                            MeleeProjectile,
-                        ));
-                    });
-            });
-        commands.spawn((
-            Transform::default(),
-            PlayerProjectile,
-            Shape::Circle(MELEE_SIZE * 0.5),
-        ));
+                                MeleeProjectile,
+                            ));
+                        });
+                });
+        }
+        if item_id == 104 {
+            commands.spawn((
+                Transform::default(),
+                PlayerProjectile,
+                Shape::Circle(MELEE_SIZE * 0.5),
+            ));
+        }
     }
-    // TODO weapon category
+    // TODO item hash map
+    // TODO projectile
 }
 
 fn player_attacked(
