@@ -42,16 +42,8 @@ fn interact_item(
         ),
     >,
     mut details_query: Query<&mut Visibility, With<ItemDetails>>,
-    mut query: Query<
-        (&mut ItemID, &mut ItemAmount),
-        (
-            With<MaterialItem>,
-            Without<CraftProduct>,
-            Without<CraftMaterial>,
-        ),
-    >,
-    product_query: Query<(&Children, &ItemID), With<CraftProduct>>,
-    material_query: Query<(&ItemID, &ItemAmount), With<CraftMaterial>>,
+    mut query: Query<(&mut ItemID, &mut ItemAmount), With<MaterialItem>>,
+    recipes: Res<CraftRecipes>,
 ) {
     for (interaction, interaction_item_id) in &interaction_query {
         match *interaction {
@@ -66,27 +58,24 @@ fn interact_item(
                 for mut visibility in &mut details_query {
                     *visibility = Visibility::Inherited;
                 }
-                for (children, product_item_id) in &product_query {
-                    if product_item_id.0 != interaction_item_id.0 {
-                        continue;
-                    }
-                    let mut iter = query.iter_mut();
-                    for child in children.iter() {
-                        match material_query.get(*child) {
-                            Ok((material_item_id, material_amount)) => match iter.next() {
+                match recipes.get(&interaction_item_id.0) {
+                    Some(recipe) => {
+                        let mut iter = query.iter_mut();
+                        for material in &recipe.materials {
+                            match iter.next() {
                                 Some((mut item_id, mut amount)) => {
-                                    item_id.0 = material_item_id.0;
-                                    amount.0 = material_amount.0;
+                                    item_id.0 = material.item_id;
+                                    amount.0 = material.amount;
                                 }
                                 None => todo!(),
-                            },
-                            Err(_) => todo!(),
+                            }
+                        }
+                        for (mut item_id, mut amount) in iter {
+                            item_id.0 = 0;
+                            amount.0 = 0;
                         }
                     }
-                    for (mut item_id, mut amount) in iter {
-                        item_id.0 = 0;
-                        amount.0 = 0;
-                    }
+                    None => continue,
                 }
             }
             Interaction::None => continue,

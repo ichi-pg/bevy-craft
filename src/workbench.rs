@@ -1,13 +1,8 @@
 use crate::camera::*;
-use crate::craft::*;
-use crate::craft_recipe::*;
 use crate::inventory::*;
-use crate::item::*;
-use crate::item_node::*;
 use crate::ui_parts::*;
 use crate::ui_states::*;
 use bevy::prelude::*;
-use std::collections::*;
 
 #[derive(Component, Default)]
 pub struct WorkbenchUI;
@@ -15,11 +10,7 @@ pub struct WorkbenchUI;
 #[derive(Event)]
 pub struct WorkbenchClicked;
 
-fn spawn_items(
-    camera_query: Query<Entity, With<PlayerCamera>>,
-    query: Query<(&ItemID, &ItemAmount), With<CraftProduct>>,
-    mut commands: Commands,
-) {
+fn spawn_items(camera_query: Query<Entity, With<PlayerCamera>>, mut commands: Commands) {
     for entity in &camera_query {
         commands.build_screen(
             entity,
@@ -34,24 +25,8 @@ fn spawn_items(
                     2,
                     JustifyContent::SpaceBetween,
                     |parent| {
-                        for item_ids in [
-                            HashSet::<u16>::from_iter([]),
-                            HashSet::<u16>::from_iter([]),
-                            HashSet::<u16>::from_iter([]),
-                        ] {
-                            build_grid::<WorkbenchUI>(parent, 3, 2, Visibility::Hidden, |parent| {
-                                for (index, (item_id, amount)) in query.iter().enumerate() {
-                                    if !item_ids.contains(&item_id.0) {
-                                        continue;
-                                    }
-                                    build_item::<ProductItem>(
-                                        parent,
-                                        item_id.0,
-                                        amount.0,
-                                        index as u8,
-                                    );
-                                }
-                            });
+                        for _ in 0..3 {
+                            build_grid::<WorkbenchUI>(parent, 3, 2, Visibility::Hidden, |_| {});
                         }
                     },
                 );

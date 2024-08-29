@@ -9,7 +9,6 @@ use crate::item_node::*;
 use crate::ui_parts::*;
 use bevy::prelude::*;
 use bevy_craft::*;
-use std::collections::*;
 
 #[derive(Component, Default, NodeItem)]
 pub struct ProductItem;
@@ -19,8 +18,8 @@ pub struct CraftUI;
 
 fn spawn_items(
     camera_query: Query<Entity, With<PlayerCamera>>,
-    query: Query<(&ItemID, &ItemAmount), With<CraftProduct>>,
     mut commands: Commands,
+    recipes: Res<CraftRecipes>,
 ) {
     for entity in &camera_query {
         commands.build_screen(
@@ -32,12 +31,16 @@ fn spawn_items(
             |parent| {
                 build_space(parent, INVENTORY_X, 2, JustifyContent::Start, |parent| {
                     build_grid::<CraftUI>(parent, 3, 2, Visibility::Hidden, |parent| {
-                        let item_ids = HashSet::<u16>::from_iter([101, 102, 103, 104]);
-                        for (index, (item_id, amount)) in query.iter().enumerate() {
-                            if !item_ids.contains(&item_id.0) {
-                                continue;
+                        for (index, item_id) in [101, 102, 103, 104].iter().enumerate() {
+                            match recipes.get(item_id) {
+                                Some(recipe) => build_item::<ProductItem>(
+                                    parent,
+                                    *item_id,
+                                    recipe.amount,
+                                    index as u8,
+                                ),
+                                None => todo!(),
                             }
-                            build_item::<ProductItem>(parent, item_id.0, amount.0, index as u8);
                         }
                     });
                 });
@@ -48,15 +51,11 @@ fn spawn_items(
 
 fn click_recipe(
     intersection_query: Query<(&Interaction, &ItemID), (With<ProductItem>, Changed<Interaction>)>,
-    product_query: Query<(&Children, &ItemID, &ItemAmount), With<CraftProduct>>,
-    material_query: Query<(&ItemID, &ItemAmount), With<CraftMaterial>>,
     mut query: Query<
         (&mut ItemID, &mut ItemAmount),
         (
             Or<(With<HotbarItem>, With<InventoryItem>)>,
             Without<ProductItem>,
-            Without<CraftProduct>,
-            Without<CraftMaterial>,
             Without<DragItem>,
         ),
     >,
@@ -68,13 +67,12 @@ fn click_recipe(
         (
             With<DragItem>,
             Without<ProductItem>,
-            Without<CraftProduct>,
-            Without<CraftMaterial>,
             Without<HotbarItem>,
             Without<InventoryItem>,
         ),
     >,
     control: Res<Control>,
+    recipes: Res<CraftRecipes>,
 ) {
     for (intersection, intersection_item_id) in &intersection_query {
         for (item_id, _) in &drag_query {
@@ -83,55 +81,42 @@ fn click_recipe(
             }
         }
         match *intersection {
-            Interaction::Pressed => {
-                for (children, product_item_id, product_amount) in &product_query {
-                    if product_item_id.0 != intersection_item_id.0 {
-                        continue;
-                    }
+            Interaction::Pressed => match recipes.get(&intersection_item_id.0) {
+                Some(recipe) => {
                     let mut times = if control.pressed { 10 } else { 1 };
-                    for child in children.iter() {
-                        match material_query.get(*child) {
-                            Ok((material_item_id, material_amount)) => {
-                                let mut sum = 0;
-                                for (item_id, amount) in &query {
-                                    if item_id.0 == material_item_id.0 {
-                                        sum += amount.0;
-                                    }
-                                }
-                                times = times.min(sum / material_amount.0);
-                                if times == 0 {
-                                    break;
-                                }
+                    for material in &recipe.materials {
+                        let mut sum = 0;
+                        for (item_id, amount) in &query {
+                            if item_id.0 == material.item_id {
+                                sum += amount.0;
                             }
-                            Err(_) => todo!(),
+                        }
+                        times = times.min(sum / material.amount);
+                        if times == 0 {
+                            break;
                         }
                     }
                     if times == 0 {
                         continue;
                     }
-                    for child in children.iter() {
-                        match material_query.get(*child) {
-                            Ok((material_item_id, material_amount)) => {
-                                let mut consume_amount = material_amount.0 * times;
-                                for (mut item_id, mut amount) in &mut query {
-                                    if item_id.0 == material_item_id.0 {
-                                        if amount.0 > consume_amount {
-                                            amount.0 -= consume_amount;
-                                            break;
-                                        } else {
-                                            consume_amount -= amount.0;
-                                            item_id.0 = 0;
-                                            amount.0 = 0;
-                                        }
-                                    }
+                    for material in &recipe.materials {
+                        let mut consume_amount = material.amount * times;
+                        for (mut item_id, mut amount) in &mut query {
+                            if item_id.0 == material.item_id {
+                                if amount.0 > consume_amount {
+                                    amount.0 -= consume_amount;
+                                    break;
+                                } else {
+                                    consume_amount -= amount.0;
+                                    item_id.0 = 0;
+                                    amount.0 = 0;
                                 }
                             }
-                            Err(_) => todo!(),
                         }
                     }
                     for (item_id, mut amount) in &mut drag_query {
-                        if item_id.0 == product_item_id.0 {
-                            amount.0 += product_amount.0 * times;
+                        if item_id.0 == intersection_item_id.0 {
+                            amount.0 += recipe.amount * times;
                             return;
                         }
                     }
@@ -139,15 +124,16 @@ fn click_recipe(
                         commands.entity(entity).with_children(|parent| {
                             build_item::<DragItem>(
                                 parent,
-                                product_item_id.0,
-                                product_amount.0 * times,
+                                intersection_item_id.0,
+                                recipe.amount * times,
                                 0,
                             );
                         });
                     }
                     next_state.set(ItemDragged::PreDragged);
                 }
-            }
+                None => todo!(),
+            },
             Interaction::Hovered => continue,
             Interaction::None => continue,
         }
