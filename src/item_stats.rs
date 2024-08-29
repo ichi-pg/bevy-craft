@@ -10,7 +10,6 @@ use std::collections::HashMap;
 
 #[derive(Default)]
 pub struct ItemStats {
-    pub health: f32,
     pub max_health: f32,
     pub pickaxe_power: f32,
     pub attack_power: f32,

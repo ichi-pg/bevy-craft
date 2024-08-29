@@ -29,7 +29,7 @@ macro_rules! define_stats {
 }
 
 define_stats!(
-    (Health, health),
+    (Health, max_health),
     (MaxHealth, max_health),
     (PickaxePower, pickaxe_power),
     (AttackPower, attack_power),
