@@ -4,6 +4,7 @@ use crate::gravity::*;
 use crate::hit_test::*;
 use crate::item::*;
 use crate::player::*;
+use crate::player_melee::*;
 use crate::profiler::*;
 use crate::velocity::*;
 use arrayvec::ArrayVec;

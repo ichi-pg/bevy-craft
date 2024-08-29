@@ -19,7 +19,7 @@ pub struct ItemStats {
 }
 
 #[derive(Resource, Deref, DerefMut, Default)]
-struct ItemStatsMap(HashMap<u16, ItemStats>);
+pub struct ItemStatsMap(HashMap<u16, ItemStats>);
 
 fn spawn_stats(mut stats_map: ResMut<ItemStatsMap>) {
     for item in [(101, 100.0)] {

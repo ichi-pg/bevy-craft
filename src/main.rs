@@ -29,6 +29,7 @@ mod mob_patrol;
 mod mob_stroll;
 mod mob_walk;
 mod player;
+mod player_melee;
 mod player_stats;
 mod profiler;
 mod random;
@@ -91,6 +92,7 @@ fn main() {
         ))
         .add_plugins((
             player::PlayerPlugin,
+            player_melee::PlayerMeleePlugin,
             block::BlockPlugin,
             item::ItemPlugin,
             enemy::EnemyPlugin,
