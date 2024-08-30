@@ -1,14 +1,12 @@
 use crate::equipment::*;
-use crate::hotbar::*;
 use crate::item::*;
-use crate::item_node::*;
 use crate::item_selecting::*;
 use crate::player::*;
 use crate::stats::*;
 use bevy::prelude::*;
 use std::collections::HashMap;
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct ItemStats {
     pub max_health: f32,
     pub pickaxe_power: f32,
@@ -47,36 +45,16 @@ fn sync_stats<T: Component + Stats>(
     init_value: f32,
 ) -> impl FnMut(
     Query<&ItemID, With<EquipmentItem>>,
-    Query<(&ItemID, &ItemIndex), With<HotbarItem>>,
     Query<&mut T, With<PlayerController>>,
     EventReader<EquipmentChanged>,
-    EventReader<HotbarChanged>,
     Res<SelectedItem>,
     Res<ItemStatsMap>,
 ) {
-    move |equipment_query,
-          hotbar_query,
-          mut player_query,
-          equipment_event_reader,
-          hotbar_event_reader,
-          selected,
-          stats_map| {
-        if !selected.is_changed()
-            && equipment_event_reader.is_empty()
-            && hotbar_event_reader.is_empty()
-        {
+    move |equipment_query, mut player_query, event_reader, selected, stats_map| {
+        if !selected.is_changed() && event_reader.is_empty() {
             return;
         }
-        let mut value = init_value;
-        for (hotbar_item_id, index) in &hotbar_query {
-            if index.0 != selected.0 {
-                continue;
-            }
-            match stats_map.get(&hotbar_item_id.0) {
-                Some(stats) => value += T::get_item_stats(stats),
-                None => continue,
-            }
-        }
+        let mut value = init_value + T::get_item_stats(&selected.stats);
         for equipment_item_id in &equipment_query {
             match stats_map.get(&equipment_item_id.0) {
                 Some(stats) => value += T::get_item_stats(stats),

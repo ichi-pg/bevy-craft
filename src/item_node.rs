@@ -5,6 +5,9 @@ use bevy::prelude::*;
 pub struct ItemNode;
 
 #[derive(Component)]
+pub struct ItemSelector;
+
+#[derive(Component)]
 pub struct ItemIndex(pub u8);
 
 pub trait NodeItem {
@@ -56,7 +59,7 @@ fn item_text(item_id: u16, amount: u16) -> (TextBundle, ItemID, ItemAmount) {
     )
 }
 
-fn item_selected(index: u8) -> (TextBundle, ItemIndex) {
+fn item_selected(index: u8) -> (TextBundle, ItemIndex, ItemSelector) {
     (
         TextBundle {
             visibility: Visibility::Hidden,
@@ -64,6 +67,7 @@ fn item_selected(index: u8) -> (TextBundle, ItemIndex) {
             ..default()
         },
         ItemIndex(index),
+        ItemSelector,
     )
 }
 

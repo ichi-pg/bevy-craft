@@ -27,6 +27,7 @@ fn remove_knock_back(
     for entity in &mut query {
         commands.entity(entity).remove::<KnockBack>();
     }
+    // TODO grounded or damage interval
 }
 
 pub struct VelocityPlugin;

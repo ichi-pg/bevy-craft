@@ -184,7 +184,7 @@ fn interact_block(
 }
 
 fn placement_block(
-    selected: Res<SelectedItem>,
+    selected: Res<SelectedIndex>,
     mut query: Query<(&mut ItemID, &mut ItemAmount, &ItemIndex), With<HotbarItem>>,
     mut event_reader: EventReader<EmptyClicked>,
     mut commands: Commands,
