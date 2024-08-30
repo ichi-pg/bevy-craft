@@ -111,16 +111,17 @@ fn main() {
     // gear, water, wind, spike, fall floor, moving floor, seesaw, spring, tarzan, warp,
     // switch, door, ladder, rope, bomb, barrel, raft, magnetic, torch, ...
 
-    // TODO tame, mount
+    // TODO mount
+    // TODO minion
+    // TODO drone
+
     // TODO potion
     // TODO enchant(job building), skill(combo building)
-    // TODO housing, farmming, industry, fishing, pastoralism
+    // TODO housing, farmming, industry, fishing, taming
     // TODO rogue dungeon
     // TODO boss
 
     // TODO durability with free repair
-    // TODO weapon
-    // sword, arrow, drone, ...
 
     // TODO level generate
     // forest and ruins, submerged city,
