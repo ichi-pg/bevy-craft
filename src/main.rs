@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+mod background;
 mod block;
 mod camera;
 mod click_shape;
@@ -70,6 +71,7 @@ fn main() {
             velocity::VelocityPlugin,
             gravity::GravityPlugin,
             click_shape::ClickShapePlugin,
+            background::BackgroundPlugin,
         ))
         .add_plugins((
             item_node::ItemNodePlugin,
@@ -131,7 +133,7 @@ fn main() {
     // TODO config (framerate, resolution, key bind, ...)
 
     // TODO visual making
-    // water, lighting, post effect, background layers, ...
+    // water, lighting, post effect, ...
     // ui animation, character animation, atlas, tilemap, ...
 
     // TODO search macro

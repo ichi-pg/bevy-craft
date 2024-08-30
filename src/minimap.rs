@@ -60,6 +60,8 @@ fn spawn_minimap(query: Query<&Window, With<PrimaryWindow>>, mut commands: Comma
         },
         MINIMAP_LAYER,
     ));
+    // TODO background trace camera or clear color
+    // TODO always small map
 }
 
 fn init_zoom(mut query: Query<&mut OrthographicProjection, With<MinimapCamera>>) {
