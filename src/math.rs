@@ -27,6 +27,12 @@ impl Pow2<f32> for f32 {
     }
 }
 
+impl Pow2<u32> for u32 {
+    fn pow2(&self) -> u32 {
+        *self * *self
+    }
+}
+
 pub trait LookAt<T> {
     fn look_at(&self, x: f32) -> T;
 }
