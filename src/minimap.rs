@@ -2,6 +2,7 @@ use crate::input::*;
 use crate::player::*;
 use crate::ui_parts::*;
 use crate::ui_states::*;
+use crate::z_sort::*;
 use bevy::prelude::*;
 use bevy::render::camera::*;
 use bevy::render::view::*;
@@ -10,14 +11,12 @@ use bevy::window::*;
 #[derive(Component)]
 struct MinimapCamera;
 
-const MINIMAP_ORDER: usize = 1;
 pub const MINIMAP_LAYER: RenderLayers = RenderLayers::layer(MINIMAP_ORDER);
-
 pub const MINIMAP_ALPHA: f32 = 0.5;
-const MINIMAP_Z: f32 = -1.0;
+
+const MINIMAP_ORDER: usize = 1;
 const WORLD_WIDTH: f32 = 1000000.0;
 const WORLD_HEIGHT: f32 = 1000000.0;
-
 const MINIMAP_WIDTH: u32 = 1600;
 const MINIMAP_HEIGHT: u32 = 900;
 
@@ -56,7 +55,7 @@ fn spawn_minimap(query: Query<&Window, With<PrimaryWindow>>, mut commands: Comma
                 custom_size: Some(Vec2::new(WORLD_WIDTH, WORLD_HEIGHT)),
                 ..default()
             },
-            transform: Transform::from_xyz(0.0, 0.0, MINIMAP_Z),
+            transform: Transform::from_xyz(0.0, 0.0, BACKGROUND_Z),
             ..default()
         },
         MINIMAP_LAYER,

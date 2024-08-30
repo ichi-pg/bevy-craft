@@ -7,7 +7,7 @@ pub enum Shape {
 }
 
 #[inline(always)]
-pub fn aabb_test(pos1: Vec3, shape1: Shape, pos2: Vec3, shape2: Shape) -> bool {
+pub fn aabb_test(pos1: Vec2, shape1: Shape, pos2: Vec2, shape2: Shape) -> bool {
     let w = match shape1 {
         Shape::Circle(radius) => radius,
         Shape::Rect(half_size) => half_size.x,
@@ -38,7 +38,7 @@ pub fn aabb_test(pos1: Vec3, shape1: Shape, pos2: Vec3, shape2: Shape) -> bool {
 }
 
 #[inline(always)]
-pub fn point_test(pos1: Vec2, pos2: Vec3, shape2: Shape) -> bool {
+pub fn point_test(pos1: Vec2, pos2: Vec2, shape2: Shape) -> bool {
     let w = match shape2 {
         Shape::Circle(radius) => radius,
         Shape::Rect(half_size) => half_size.x,

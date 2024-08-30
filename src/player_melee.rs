@@ -7,6 +7,7 @@ use crate::player::*;
 use crate::stats::*;
 use crate::ui_states::*;
 use crate::velocity::*;
+use crate::z_sort::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -50,7 +51,14 @@ fn player_attack(
                 .insert(PlayerAttack(0.0))
                 .with_children(|parent| {
                     parent
-                        .spawn((SpatialBundle::default(), MeleeAxis(-direction.x)))
+                        .spawn((
+                            SpatialBundle::from_transform(Transform::from_xyz(
+                                0.0,
+                                0.0,
+                                PROJECTILE_Z,
+                            )),
+                            MeleeAxis(-direction.x),
+                        ))
                         .with_children(|parent| {
                             parent.spawn((
                                 SpriteBundle {

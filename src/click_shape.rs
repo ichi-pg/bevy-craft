@@ -26,7 +26,7 @@ fn left_click(
         return;
     }
     for (entity, transform, shape) in &query {
-        if point_test(world_cursor.position, transform.translation, *shape) {
+        if point_test(world_cursor.position, transform.translation.xy(), *shape) {
             commands.entity(entity).insert(LeftClicked);
             break;
         }
@@ -46,7 +46,7 @@ fn right_click(
     }
     let mut found = false;
     for (entity, transform, shape) in &query {
-        if point_test(world_cursor.position, transform.translation, *shape) {
+        if point_test(world_cursor.position, transform.translation.xy(), *shape) {
             commands.entity(entity).insert(RightClicked);
             found = true;
             break;

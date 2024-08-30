@@ -1,6 +1,8 @@
 use crate::collision::*;
 use crate::hit_test::*;
+use crate::math::*;
 use crate::velocity::*;
+use crate::z_sort::*;
 use bevy::prelude::*;
 use bevy_craft::*;
 
@@ -15,7 +17,7 @@ pub struct ItemAmount(pub u16);
 
 #[derive(Event)]
 pub struct ItemDropped {
-    pub translation: Vec3,
+    pub position: Vec2,
     pub item_id: u16,
     pub amount: u16,
 }
@@ -59,7 +61,7 @@ fn spawn_item(mut event_reader: EventReader<ItemDropped>, mut commands: Commands
                     custom_size: Some(Vec2::new(64.0, 64.0)),
                     ..default()
                 },
-                transform: Transform::from_translation(event.translation),
+                transform: Transform::from_translation(event.position.with_z(ITEM_Z)),
                 ..default()
             },
             Shape::Circle(32.0),

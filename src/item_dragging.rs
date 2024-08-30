@@ -149,10 +149,9 @@ fn drop_item(
     for (entity, item_id, amount) in &query {
         for (transform, direction) in &player_query {
             event_writer.send(ItemDropped {
-                translation: Vec3::new(
+                position: Vec2::new(
                     transform.translation.x + direction.x * 200.0,
                     transform.translation.y + direction.y * 200.0,
-                    0.0,
                 ),
                 item_id: item_id.0,
                 amount: amount.0,

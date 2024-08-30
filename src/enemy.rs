@@ -8,6 +8,7 @@ use crate::mob_walk::*;
 use crate::player::*;
 use crate::stats::*;
 use crate::velocity::*;
+use crate::z_sort::CHARACTER_Z;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -18,7 +19,7 @@ const KNOCK_BACK_Y: f32 = 1500.0;
 
 fn spawn_enemies(mut commands: Commands) {
     let size = 128.0;
-    let home_position = Vec3::new(size * 10.0, size * 10.0, 0.0);
+    let home_position = Vec2::new(size * 10.0, size * 10.0);
     let home_distance = size * 6.0;
     commands.spawn((
         SpriteBundle {
@@ -27,7 +28,7 @@ fn spawn_enemies(mut commands: Commands) {
                 custom_size: Some(Vec2::new(size, size)),
                 ..default()
             },
-            transform: Transform::from_translation(home_position),
+            transform: Transform::from_translation(home_position.with_z(CHARACTER_Z)),
             ..default()
         },
         (
@@ -48,12 +49,12 @@ fn spawn_enemies(mut commands: Commands) {
             MobWalk,
             MobPatrol,
             MobStroll(0.0),
-            HomePosition(home_position.xy()),
+            HomePosition(home_position),
             HomeDistanceSquared(home_distance * home_distance),
             FindDistanceSquared((size * 5.0).pow2()),
             LostDistanceSquared((size * 5.0).pow2()),
             AttackDistanceSquared((size * 3.0).pow2()),
-            PrevPosition(home_position.xy()),
+            PrevPosition(home_position),
         ),
     ));
     // TODO spawner

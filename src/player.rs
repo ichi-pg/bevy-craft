@@ -4,6 +4,7 @@ use crate::input::*;
 use crate::minimap::*;
 use crate::stats::*;
 use crate::velocity::*;
+use crate::z_sort::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -28,6 +29,7 @@ pub const PLAYER_JUMP_POWER: f32 = 1500.0;
 const PLAYER_SIZE: f32 = 128.0;
 const KNOCK_BACK_X: f32 = 400.0;
 const KNOCK_BACK_Y: f32 = 1500.0;
+const RESPAWN_POSITION: Vec3 = Vec3::new(0.0, 0.0, CHARACTER_Z);
 
 fn spawn_player(mut commands: Commands) {
     commands
@@ -38,6 +40,7 @@ fn spawn_player(mut commands: Commands) {
                     custom_size: Some(Vec2::new(PLAYER_SIZE, PLAYER_SIZE)),
                     ..default()
                 },
+                transform: Transform::from_translation(RESPAWN_POSITION),
                 ..default()
             },
             Player,
@@ -154,7 +157,7 @@ fn player_respawn(
 ) {
     for (entity, mut transform, mut health, max_health) in &mut query {
         health.0 = max_health.0;
-        transform.translation = Vec3::ZERO;
+        transform.translation = RESPAWN_POSITION;
         commands.entity(entity).remove::<PlayerDead>();
     }
     // TODO you dead

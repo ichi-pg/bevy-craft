@@ -41,6 +41,7 @@ mod ui_states;
 mod velocity;
 mod window;
 mod workbench;
+mod z_sort;
 
 fn main() {
     App::new()

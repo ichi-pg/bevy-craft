@@ -73,3 +73,17 @@ impl ToVec2i<Vec2> for Vec2 {
         }
     }
 }
+
+pub trait WithZ {
+    fn with_z(&self, z: f32) -> Vec3;
+}
+
+impl WithZ for Vec2 {
+    fn with_z(&self, z: f32) -> Vec3 {
+        Vec3 {
+            x: self.x,
+            y: self.y,
+            z,
+        }
+    }
+}

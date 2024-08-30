@@ -154,7 +154,7 @@ fn destroy_items(
             }
             if item_id.0 != 0 {
                 event_writer.send(ItemDropped {
-                    translation: event.translation,
+                    position: event.position,
                     item_id: item_id.0,
                     amount: amount.0,
                 });

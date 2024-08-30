@@ -26,7 +26,7 @@ struct Damaged;
 
 #[derive(Event)]
 pub struct BlockDestroied {
-    pub translation: Vec3,
+    pub position: Vec2,
     pub block_id: u64,
 }
 
@@ -120,11 +120,11 @@ fn destroy_block(
         if health.0 <= 0.0 {
             commands.entity(entity).despawn_recursive();
             block_event_writer.send(BlockDestroied {
-                translation: transform.translation,
+                position: transform.translation.xy(),
                 block_id: block_id.0,
             });
             item_event_writer.send(ItemDropped {
-                translation: transform.translation,
+                position: transform.translation.xy(),
                 item_id: item_id.0,
                 amount: 1,
             });

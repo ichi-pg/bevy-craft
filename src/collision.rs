@@ -53,9 +53,9 @@ fn collision<T: Component, U: Component, V: Component + Collided>(
                 }
                 // Broad Phase
                 if !aabb_test(
-                    transform1.translation,
+                    transform1.translation.xy(),
                     *shape1,
-                    transform2.translation,
+                    transform2.translation.xy(),
                     *shape2,
                 ) {
                     continue;
