@@ -29,7 +29,7 @@ pub const PLAYER_JUMP_POWER: f32 = 1500.0;
 const PLAYER_SIZE: f32 = 128.0;
 const KNOCK_BACK_X: f32 = 400.0;
 const KNOCK_BACK_Y: f32 = 1500.0;
-const RESPAWN_POSITION: Vec3 = Vec3::new(0.0, 0.0, CHARACTER_Z);
+const RESPAWN_POSITION: Vec3 = Vec3::new(0.0, PLAYER_SIZE * 2.0, CHARACTER_Z);
 
 fn spawn_player(mut commands: Commands) {
     commands

@@ -19,7 +19,7 @@ const KNOCK_BACK_Y: f32 = 1500.0;
 
 fn spawn_enemies(mut commands: Commands) {
     let size = 128.0;
-    let home_position = Vec2::new(size * 10.0, size * 10.0);
+    let home_position = Vec2::new(size * 5.0, size * 10.0);
     let home_distance = size * 6.0;
     commands.spawn((
         SpriteBundle {
