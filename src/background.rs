@@ -41,6 +41,7 @@ fn build_clouds(parent: &mut ChildBuilder, mut random: ChaCha8Rng, z: f32, y1: u
                 }
             }
         });
+    // TODO merged texture
 }
 
 fn spawn_background(mut commands: Commands, random: Res<Random>) {
