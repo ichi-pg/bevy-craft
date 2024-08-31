@@ -163,7 +163,6 @@ impl Plugin for CollisionPlugin {
             ),
         );
     }
-    // TODO scaffold
     // TODO both moved
     // TODO orbit ellipse?
 }

@@ -36,6 +36,20 @@ fn spawn_recipes(mut recipe_map: ResMut<CraftRecipeMap>) {
             },
         );
     }
+    // TODO timber
+    // TODO flint
+    // TODO coal
+    // TODO charcoal
+    // TODO copper
+    // TODO iron
+    // TODO silver
+    // TODO gold
+    // TODO crystal
+    // TODO machine parts
+
+    // TODO pickaxe
+    // TODO sword
+    // TODO bow
 }
 
 pub struct CraftRecipePlugin;

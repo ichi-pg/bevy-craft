@@ -71,6 +71,7 @@ fn sync_stats<T: Component + Stats>(
     // TODO buff
     // TODO debuff
     // TODO enchant
+    // TODO skill
 }
 
 pub struct ItemStatsPlugin;

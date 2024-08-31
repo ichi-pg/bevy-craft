@@ -65,6 +65,24 @@ fn block_bundle(
         MaxHealth(100.0),
     )
     // TODO not overlap block id
+    // TODO plant growth
+
+    // TODO tree
+    // TODO flower
+    // TODO soil
+    // TODO stone
+    // TODO forge
+    // TODO enchant table
+
+    // TODO door
+    // TODO ladder (rope)
+    // TODO scaffold
+    // TODO steps
+
+    // TODO warp gate
+    // TODO belt conveyor
+    // TODO mechanical arm
+    // TODO assembly machine
 }
 
 fn spawn_blocks(mut commands: Commands, mut random: ResMut<Random>) {
