@@ -13,7 +13,8 @@ pub struct MobJumpAttack(pub f32);
 #[derive(Component)]
 pub struct MobJumpAttacked(pub f32);
 
-const CHARGE_POWER: f32 = 512.0;
+const CHARGE_POWER: f32 = 1.2;
+const MAX_CHARGE_POWER: f32 = 512.0;
 const ATTACK_DELAY: f32 = 1.0;
 const COOL_DOWN: f32 = 1.0;
 
@@ -39,7 +40,10 @@ fn mob_jump_attack(
     {
         for player_transform in &player_query {
             if timer.0 > ATTACK_DELAY {
-                velocity.x = direction.x * CHARGE_POWER;
+                velocity.x = direction.x
+                    * ((player_transform.translation.x - transform.translation.x) * CHARGE_POWER)
+                        .abs()
+                        .min(MAX_CHARGE_POWER);
                 velocity.y = jump_power.0;
                 commands
                     .entity(entity)
@@ -55,6 +59,7 @@ fn mob_jump_attack(
             }
         }
     }
+    // TODO calculate charge power with player position
 }
 
 fn mob_jump_attacked(
