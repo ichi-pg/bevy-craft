@@ -8,7 +8,7 @@ fn spawn_camera(mut commands: Commands) {
     commands.spawn((Camera2dBundle::default(), PlayerCamera));
 }
 
-fn move_camera(
+fn trace_player(
     mut query: Query<&mut Transform, With<PlayerCamera>>,
     player_query: Query<
         &Transform,
@@ -32,6 +32,6 @@ pub struct CameraPlugin;
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(PreStartup, spawn_camera);
-        app.add_systems(Update, move_camera);
+        app.add_systems(Update, trace_player);
     }
 }

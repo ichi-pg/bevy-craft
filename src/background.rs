@@ -10,9 +10,13 @@ use rand_chacha::ChaCha8Rng;
 struct Background;
 
 #[derive(Component)]
-struct BackgroundObject;
+struct BackgroundLayer;
+
+#[derive(Component)]
+struct BackgroundCloud;
 
 const SCROLL_SPEED: f32 = 0.03;
+const CLOUD_SPEED: f32 = 2.0;
 
 fn build_clouds(parent: &mut ChildBuilder, mut random: ChaCha8Rng, z: f32, y1: u32, y2: u32) {
     parent
@@ -21,22 +25,25 @@ fn build_clouds(parent: &mut ChildBuilder, mut random: ChaCha8Rng, z: f32, y1: u
                 transform: Transform::from_xyz(0.0, 0.0, z),
                 ..default()
             },
-            BackgroundObject,
+            BackgroundLayer,
         ))
         .with_children(|parent| {
             for x in -20..20 {
                 for y in y1..y2 {
                     if (y + 5).pow2() > random.next_u32() % 500 {
                         let y = y + random.next_u32() % 3;
-                        parent.spawn((SpriteBundle {
-                            sprite: Sprite {
-                                color: Color::WHITE,
-                                custom_size: Some(Vec2::new((y * 30) as f32, (y * 10) as f32)),
+                        parent.spawn((
+                            SpriteBundle {
+                                sprite: Sprite {
+                                    color: Color::WHITE,
+                                    custom_size: Some(Vec2::new((y * 30) as f32, (y * 10) as f32)),
+                                    ..default()
+                                },
+                                transform: Transform::from_xyz(96.0 * x as f32, 54.0 * y as f32, z),
                                 ..default()
                             },
-                            transform: Transform::from_xyz(96.0 * x as f32, 54.0 * y as f32, 0.0),
-                            ..default()
-                        },));
+                            BackgroundCloud,
+                        ));
                     }
                 }
             }
@@ -65,25 +72,26 @@ fn spawn_background(mut commands: Commands, random: Res<Random>) {
         });
 }
 
-fn move_background(
-    mut background_query: Query<&mut Transform, With<Background>>,
-    mut query: Query<&mut Transform, (With<BackgroundObject>, Without<Background>)>,
+fn trace_player(
+    mut query: Query<&mut Transform, With<Background>>,
+    mut layer_query: Query<&mut Transform, (With<BackgroundLayer>, Without<Background>)>,
     player_query: Query<
         &Transform,
         (
             With<PlayerController>,
             Without<Background>,
-            Without<BackgroundObject>,
+            Without<BackgroundLayer>,
+            Without<BackgroundCloud>,
             Changed<Transform>,
         ),
     >,
 ) {
     for player_transform in &player_query {
-        for mut transform in &mut background_query {
+        for mut transform in &mut query {
             transform.translation.x = player_transform.translation.x;
             transform.translation.y = player_transform.translation.y;
         }
-        for mut transform in &mut query {
+        for mut transform in &mut layer_query {
             transform.translation.x =
                 -player_transform.translation.x * transform.translation.z * SCROLL_SPEED;
             transform.translation.y =
@@ -94,11 +102,18 @@ fn move_background(
     // TODO change texture with environment
 }
 
+fn move_clouds(mut query: Query<&mut Transform, With<BackgroundCloud>>, time: Res<Time>) {
+    for mut transform in &mut query {
+        transform.translation.x += transform.translation.z * time.delta_seconds() * CLOUD_SPEED;
+    }
+    // TODO repeat
+}
+
 pub struct BackgroundPlugin;
 
 impl Plugin for BackgroundPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(PreStartup, spawn_background);
-        app.add_systems(Update, move_background);
+        app.add_systems(Update, (trace_player, move_clouds));
     }
 }
