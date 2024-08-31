@@ -71,14 +71,18 @@ fn block_bundle(
     // TODO flower
     // TODO soil
     // TODO stone
+    // TODO water
+    // TODO torch
+
     // TODO forge
     // TODO enchant table
-
     // TODO door
     // TODO ladder (rope)
     // TODO scaffold
     // TODO steps
 
+    // TODO rail
+    // TODO trolley
     // TODO warp gate
     // TODO belt conveyor
     // TODO mechanical arm

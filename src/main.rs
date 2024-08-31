@@ -108,8 +108,8 @@ fn main() {
         .run();
 
     // TODO gimmicks
-    // gear, water, wind, spike, fall floor, moving floor, seesaw, spring, tarzan, warp,
-    // switch, bomb, barrel, raft, magnetic, torch, ...
+    // gear, wind, spike, fall floor, moving floor, seesaw, spring, tarzan, warp,
+    // switch, bomb, barrel, raft, magnetic, ...
 
     // TODO mount
     // TODO minion
