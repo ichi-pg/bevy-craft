@@ -25,7 +25,7 @@ fn spawn_enemies(mut commands: Commands) {
         SpriteBundle {
             sprite: Sprite {
                 color: Color::srgb(0.5, 0.0, 1.0),
-                custom_size: Some(Vec2::new(size, size)),
+                custom_size: Some(Vec2::splat(size)),
                 ..default()
             },
             transform: Transform::from_translation(home_position.with_z(CHARACTER_Z)),

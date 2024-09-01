@@ -58,7 +58,7 @@ fn block_bundle(
     (
         SpriteBundle {
             sprite: Sprite {
-                custom_size: Some(Vec2::new(BLOCK_SIZE, BLOCK_SIZE)),
+                custom_size: Some(Vec2::splat(BLOCK_SIZE)),
                 ..default()
             },
             texture: atlas.texture.clone(),
@@ -134,7 +134,7 @@ fn spawn_blocks(
                         SpriteBundle {
                             sprite: Sprite {
                                 color: Color::WHITE.with_alpha(MINIMAP_ALPHA),
-                                custom_size: Some(Vec2::new(BLOCK_SIZE, BLOCK_SIZE)),
+                                custom_size: Some(Vec2::splat(BLOCK_SIZE)),
                                 ..default()
                             },
                             texture: atlas.texture.clone(),

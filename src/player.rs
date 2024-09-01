@@ -37,7 +37,7 @@ fn spawn_player(mut commands: Commands) {
             SpriteBundle {
                 sprite: Sprite {
                     color: Color::WHITE,
-                    custom_size: Some(Vec2::new(PLAYER_SIZE, PLAYER_SIZE)),
+                    custom_size: Some(Vec2::splat(PLAYER_SIZE)),
                     ..default()
                 },
                 transform: Transform::from_translation(RESPAWN_POSITION),
@@ -61,7 +61,7 @@ fn spawn_player(mut commands: Commands) {
                 SpriteBundle {
                     sprite: Sprite {
                         color: Color::srgba(1.0, 0.0, 0.0, MINIMAP_ALPHA),
-                        custom_size: Some(Vec2::new(PLAYER_SIZE, PLAYER_SIZE)),
+                        custom_size: Some(Vec2::splat(PLAYER_SIZE)),
                         ..default()
                     },
                     ..default()

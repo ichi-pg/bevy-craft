@@ -51,7 +51,7 @@ fn spawn_item(
         commands.spawn((
             SpriteBundle {
                 sprite: Sprite {
-                    custom_size: Some(Vec2::new(64.0, 64.0)),
+                    custom_size: Some(Vec2::splat(64.0)),
                     ..default()
                 },
                 texture: atlas.texture.clone(),

@@ -72,7 +72,7 @@ fn player_attack(
                             parent.spawn((
                                 SpriteBundle {
                                     sprite: Sprite {
-                                        custom_size: Some(Vec2::new(MELEE_SIZE, MELEE_SIZE)),
+                                        custom_size: Some(Vec2::splat(MELEE_SIZE)),
                                         ..default()
                                     },
                                     texture: atlas.texture.clone(),
