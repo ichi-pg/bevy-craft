@@ -15,11 +15,12 @@ use crate::workbench::*;
 use bevy::prelude::*;
 use rand::RngCore;
 
-pub const BLOCK_SIZE: f32 = 128.0;
 pub const WOOD_ID: u16 = 11 + 56;
 pub const GRASS_ID: u16 = 9 + 56;
 pub const SOIL_ID: u16 = 53 + 56;
 pub const STONE_ID: u16 = 40 + 56;
+
+const BLOCK_SIZE: f32 = 128.0;
 
 #[derive(Component)]
 pub struct Block;
