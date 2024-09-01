@@ -1,3 +1,5 @@
+use crate::block::*;
+use crate::item_stats::*;
 use bevy::prelude::*;
 use std::collections::HashMap;
 
@@ -17,10 +19,8 @@ pub struct CraftRecipeMap(HashMap<u16, CraftRecipe>);
 fn create_recipes() -> CraftRecipeMap {
     let mut recipes = HashMap::new();
     for (item_id, amount, materials) in [
-        (101, 1, vec![(1, 1)]),
-        (102, 1, vec![(2, 1)]),
-        (103, 1, vec![(3, 1)]),
-        (104, 1, vec![(4, 1)]),
+        (PICKAXE_ID, 1, vec![(WOOD_ID, 1)]),
+        (SWORD_ID, 1, vec![(WOOD_ID, 1)]),
     ] {
         recipes.insert(
             item_id,

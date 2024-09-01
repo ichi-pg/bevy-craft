@@ -1,8 +1,10 @@
+use crate::atlas::*;
 use crate::camera::*;
 use crate::craft::*;
 use crate::equipment::*;
 use crate::input::*;
 use crate::item::*;
+use crate::item_attribute::*;
 use crate::item_node::*;
 use crate::ui_parts::*;
 use crate::ui_states::*;
@@ -36,7 +38,18 @@ pub enum InventoryOpened {
 pub const INVENTORY_X: u16 = 10;
 pub const INVENTORY_Y: u16 = 4;
 
-fn spawn_inventory(camera_query: Query<Entity, With<PlayerCamera>>, mut commands: Commands) {
+fn spawn_inventory(
+    camera_query: Query<Entity, With<PlayerCamera>>,
+    mut commands: Commands,
+    attribute_map: Res<ItemAttributeMap>,
+    atlas_map: Res<AtlasMap>,
+) {
+    let Some(attribute) = attribute_map.get(&0) else {
+        return;
+    };
+    let Some(atlas) = atlas_map.get(&attribute.atlas_id) else {
+        return;
+    };
     for entity in &camera_query {
         commands.build_screen(
             entity,
@@ -52,7 +65,7 @@ fn spawn_inventory(camera_query: Query<Entity, With<PlayerCamera>>, mut commands
                     Visibility::Hidden,
                     |parent| {
                         for i in 0..INVENTORY_X * INVENTORY_Y {
-                            build_item::<InventoryItem>(parent, 0, 0, i as u8);
+                            build_item::<InventoryItem>(parent, 0, 0, i as u8, attribute, atlas);
                         }
                     },
                 );

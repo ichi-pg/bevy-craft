@@ -1,4 +1,6 @@
+use crate::atlas::*;
 use crate::item::*;
+use crate::item_attribute::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -20,8 +22,11 @@ fn item_node<T: Component + Default + NodeItem>(
     item_id: u16,
     amount: u16,
     index: u8,
+    attribute: &ItemAttribute,
+    atlas: &Atlas,
 ) -> (
     ImageBundle,
+    TextureAtlas,
     Interaction,
     ItemNode,
     ItemID,
@@ -39,7 +44,16 @@ fn item_node<T: Component + Default + NodeItem>(
                 align_items: AlignItems::End,
                 ..default()
             },
+            image: UiImage {
+                texture: atlas.texture.clone(),
+                ..default()
+            },
+            background_color: BackgroundColor(attribute.color),
             ..default()
+        },
+        TextureAtlas {
+            layout: atlas.layout.clone(),
+            index: attribute.atlas_index as usize,
         },
         Interaction::None,
         ItemNode,
@@ -48,7 +62,7 @@ fn item_node<T: Component + Default + NodeItem>(
         ItemIndex(index),
         T::default(),
     )
-    // TODO texture
+    // TODO layout of TRANSPARENT_IMAGE_HANDLE
 }
 
 fn item_text(item_id: u16, amount: u16) -> (TextBundle, ItemID, ItemAmount) {
@@ -76,9 +90,11 @@ pub fn build_item<T: Component + Default + NodeItem>(
     item_id: u16,
     amount: u16,
     index: u8,
+    attribute: &ItemAttribute,
+    atlas: &Atlas,
 ) {
     parent
-        .spawn(item_node::<T>(item_id, amount, index))
+        .spawn(item_node::<T>(item_id, amount, index, attribute, atlas))
         .with_children(|parent| {
             if T::default().selectable() {
                 parent.spawn(item_selected(index));
@@ -120,11 +136,31 @@ fn sync_text(mut query: Query<(&ItemID, &ItemAmount, &mut Text), Changed<ItemAmo
     }
 }
 
-fn sync_image(mut query: Query<(&ItemID, &mut BackgroundColor), (With<UiImage>, Changed<ItemID>)>) {
-    for (item_id, mut color) in &mut query {
-        color.0 = item_color(item_id.0);
+fn sync_image(
+    mut query: Query<
+        (
+            &ItemID,
+            &mut BackgroundColor,
+            &mut UiImage,
+            &mut TextureAtlas,
+        ),
+        Changed<ItemID>,
+    >,
+    attribute_map: Res<ItemAttributeMap>,
+    atlas_map: Res<AtlasMap>,
+) {
+    for (item_id, mut color, mut image, mut texture_atlas) in &mut query {
+        let Some(attribute) = attribute_map.get(&item_id.0) else {
+            continue;
+        };
+        let Some(atlas) = atlas_map.get(&attribute.atlas_id) else {
+            continue;
+        };
+        color.0 = attribute.color;
+        image.texture = atlas.texture.clone();
+        texture_atlas.layout = atlas.layout.clone();
+        texture_atlas.index = attribute.atlas_index as usize;
     }
-    // TODO texture
 }
 
 pub struct ItemNodePlugin;

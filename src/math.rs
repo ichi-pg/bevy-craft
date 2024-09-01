@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use std::fmt;
 
 pub trait Repeat<T> {
     fn repeat(&self, min: T, max: T) -> T;

@@ -6,6 +6,9 @@ use crate::stats::*;
 use bevy::prelude::*;
 use std::collections::HashMap;
 
+pub const SWORD_ID: u16 = 36;
+pub const PICKAXE_ID: u16 = 10;
+
 #[derive(Default, Clone)]
 pub struct ItemStats {
     pub max_health: f32,
@@ -21,7 +24,7 @@ pub struct ItemStatsMap(HashMap<u16, ItemStats>);
 
 fn create_stats() -> ItemStatsMap {
     let mut stats = HashMap::new();
-    for (item_id, pickaxe_power) in [(101, 100.0)] {
+    for (item_id, pickaxe_power) in [(PICKAXE_ID, 100.0)] {
         stats.insert(
             item_id,
             ItemStats {
@@ -30,7 +33,7 @@ fn create_stats() -> ItemStatsMap {
             },
         );
     }
-    for (item_id, attack_power) in [(104, 10.0)] {
+    for (item_id, attack_power) in [(SWORD_ID, 10.0)] {
         stats.insert(
             item_id,
             ItemStats {

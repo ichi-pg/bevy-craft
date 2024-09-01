@@ -1,11 +1,14 @@
+use crate::atlas::*;
 use crate::camera::*;
 use crate::craft_recipe::*;
 use crate::hotbar::*;
 use crate::input::*;
 use crate::inventory::*;
 use crate::item::*;
+use crate::item_attribute::*;
 use crate::item_dragging::*;
 use crate::item_node::*;
+use crate::item_stats::*;
 use crate::ui_parts::*;
 use bevy::prelude::*;
 use bevy_craft::*;
@@ -20,7 +23,15 @@ fn spawn_items(
     camera_query: Query<Entity, With<PlayerCamera>>,
     mut commands: Commands,
     recipe_map: Res<CraftRecipeMap>,
+    attribute_map: Res<ItemAttributeMap>,
+    atlas_map: Res<AtlasMap>,
 ) {
+    let Some(attribute) = attribute_map.get(&0) else {
+        return;
+    };
+    let Some(atlas) = atlas_map.get(&attribute.atlas_id) else {
+        return;
+    };
     for entity in &camera_query {
         commands.build_screen(
             entity,
@@ -31,13 +42,15 @@ fn spawn_items(
             |parent| {
                 build_space(parent, INVENTORY_X, 2, JustifyContent::Start, |parent| {
                     build_grid::<CraftUI>(parent, 3, 2, Visibility::Hidden, |parent| {
-                        for (index, item_id) in [101, 102, 103, 104].iter().enumerate() {
+                        for (index, item_id) in [PICKAXE_ID, SWORD_ID].iter().enumerate() {
                             match recipe_map.get(item_id) {
                                 Some(recipe) => build_item::<ProductItem>(
                                     parent,
                                     *item_id,
                                     recipe.amount,
                                     index as u8,
+                                    attribute,
+                                    atlas,
                                 ),
                                 None => todo!(),
                             }
@@ -73,6 +86,8 @@ fn click_recipe(
     >,
     control: Res<Control>,
     recipe_map: Res<CraftRecipeMap>,
+    attribute_map: Res<ItemAttributeMap>,
+    atlas_map: Res<AtlasMap>,
 ) {
     for (intersection, intersection_item_id) in &intersection_query {
         for (item_id, _) in &drag_query {
@@ -80,6 +95,12 @@ fn click_recipe(
                 return;
             }
         }
+        let Some(attribute) = attribute_map.get(&intersection_item_id.0) else {
+            return;
+        };
+        let Some(atlas) = atlas_map.get(&attribute.atlas_id) else {
+            return;
+        };
         match *intersection {
             Interaction::Pressed => match recipe_map.get(&intersection_item_id.0) {
                 Some(recipe) => {
@@ -127,6 +148,8 @@ fn click_recipe(
                                 intersection_item_id.0,
                                 recipe.amount * times,
                                 0,
+                                attribute,
+                                atlas,
                             );
                         });
                     }

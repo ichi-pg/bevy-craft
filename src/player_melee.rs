@@ -1,6 +1,7 @@
+use crate::atlas::*;
 use crate::hit_test::*;
 use crate::input::*;
-use crate::item::*;
+use crate::item_attribute::*;
 use crate::item_dragging::*;
 use crate::item_selecting::*;
 use crate::player::*;
@@ -40,10 +41,18 @@ fn player_attack(
     mut commands: Commands,
     left_click: Res<LeftClick>,
     selected: Res<SelectedItem>,
+    attribute_map: Res<ItemAttributeMap>,
+    atlas_map: Res<AtlasMap>,
 ) {
     if !left_click.pressed {
         return;
     }
+    let Some(attribute) = attribute_map.get(&selected.item_id) else {
+        return;
+    };
+    let Some(atlas) = atlas_map.get(&attribute.atlas_id) else {
+        return;
+    };
     for (entity, direction) in &query {
         if selected.stats.attack_power > 0.0 || selected.stats.pickaxe_power > 0.0 {
             commands
@@ -63,12 +72,16 @@ fn player_attack(
                             parent.spawn((
                                 SpriteBundle {
                                     sprite: Sprite {
-                                        color: item_color(selected.item_id),
                                         custom_size: Some(Vec2::new(MELEE_SIZE, MELEE_SIZE)),
                                         ..default()
                                     },
+                                    texture: atlas.texture.clone(),
                                     transform: Transform::from_xyz(0.0, MELEE_OFFSET, 0.0),
                                     ..default()
+                                },
+                                TextureAtlas {
+                                    layout: atlas.layout.clone(),
+                                    index: attribute.atlas_index as usize,
                                 },
                                 MeleeProjectile,
                             ));

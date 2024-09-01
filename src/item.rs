@@ -1,11 +1,12 @@
+use crate::atlas::*;
 use crate::collision::*;
 use crate::hit_test::*;
+use crate::item_attribute::*;
 use crate::math::*;
 use crate::velocity::*;
 use crate::z_sort::*;
 use bevy::prelude::*;
 use bevy_craft::*;
-
 #[derive(Component)]
 pub struct Item;
 
@@ -34,35 +35,32 @@ pub struct ItemPickedUp {
     pub amount: u16,
 }
 
-pub fn item_color(item_id: u16) -> Color {
-    match item_id {
-        0 => Color::srgb(0.1, 0.1, 0.1),
-        101 => Color::srgb(0.3, 0.3, 0.4),
-        102 => Color::srgb(0.5, 0.4, 0.3),
-        103 => Color::srgb(0.5, 0.3, 0.3),
-        104 => Color::srgb(0.3, 0.4, 0.5),
-        _ => {
-            let a = item_id as f32 * 0.1 + 0.2;
-            let b = a * 0.5;
-            match item_id % 3 {
-                0 => Color::srgb(a, a, a),
-                _ => Color::srgb(b, a, b),
-            }
-        }
-    }
-}
-
-fn spawn_item(mut event_reader: EventReader<ItemDropped>, mut commands: Commands) {
+fn spawn_item(
+    mut event_reader: EventReader<ItemDropped>,
+    mut commands: Commands,
+    attribute_map: Res<ItemAttributeMap>,
+    atlas_map: Res<AtlasMap>,
+) {
     for event in event_reader.read() {
+        let Some(attribute) = attribute_map.get(&event.item_id) else {
+            continue;
+        };
+        let Some(atlas) = atlas_map.get(&attribute.atlas_id) else {
+            continue;
+        };
         commands.spawn((
             SpriteBundle {
                 sprite: Sprite {
-                    color: item_color(event.item_id),
                     custom_size: Some(Vec2::new(64.0, 64.0)),
                     ..default()
                 },
+                texture: atlas.texture.clone(),
                 transform: Transform::from_translation(event.position.with_z(ITEM_Z)),
                 ..default()
+            },
+            TextureAtlas {
+                layout: atlas.layout.clone(),
+                index: attribute.atlas_index as usize,
             },
             Shape::Circle(32.0),
             Velocity2::default(),
@@ -71,7 +69,6 @@ fn spawn_item(mut event_reader: EventReader<ItemDropped>, mut commands: Commands
             ItemAmount(event.amount),
         ));
     }
-    // TODO texture
 }
 
 fn pick_up_item(

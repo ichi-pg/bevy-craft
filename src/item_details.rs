@@ -1,6 +1,8 @@
+use crate::atlas::*;
 use crate::camera::*;
 use crate::craft_recipe::*;
 use crate::item::*;
+use crate::item_attribute::*;
 use crate::item_dragging::*;
 use crate::item_node::*;
 use crate::ui_parts::*;
@@ -14,7 +16,18 @@ struct ItemDetails;
 #[derive(Component, Default, NodeItem)]
 struct MaterialItem;
 
-fn spawn_details(camera_query: Query<Entity, With<PlayerCamera>>, mut commands: Commands) {
+fn spawn_details(
+    camera_query: Query<Entity, With<PlayerCamera>>,
+    mut commands: Commands,
+    attribute_map: Res<ItemAttributeMap>,
+    atlas_map: Res<AtlasMap>,
+) {
+    let Some(attribute) = attribute_map.get(&0) else {
+        return;
+    };
+    let Some(atlas) = atlas_map.get(&attribute.atlas_id) else {
+        return;
+    };
     for entity in &camera_query {
         commands.build_screen(
             entity,
@@ -25,7 +38,7 @@ fn spawn_details(camera_query: Query<Entity, With<PlayerCamera>>, mut commands: 
             |parent| {
                 build_grid::<ItemDetails>(parent, 3, 1, Visibility::Hidden, |parent| {
                     for i in 0..3 {
-                        build_item::<MaterialItem>(parent, 0, 0, i);
+                        build_item::<MaterialItem>(parent, 0, 0, i, attribute, atlas);
                     }
                 });
             },

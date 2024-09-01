@@ -1,6 +1,8 @@
+use crate::atlas::*;
 use crate::camera::*;
 use crate::inventory::*;
 use crate::item::*;
+use crate::item_attribute::*;
 use crate::item_node::*;
 use crate::ui_parts::*;
 use crate::ui_states::*;
@@ -16,7 +18,18 @@ pub struct EquipmentItem;
 #[derive(Event, Default)]
 pub struct EquipmentChanged;
 
-fn spawn_equipments(camera_query: Query<Entity, With<PlayerCamera>>, mut commands: Commands) {
+fn spawn_equipments(
+    camera_query: Query<Entity, With<PlayerCamera>>,
+    mut commands: Commands,
+    attribute_map: Res<ItemAttributeMap>,
+    atlas_map: Res<AtlasMap>,
+) {
+    let Some(attribute) = attribute_map.get(&0) else {
+        return;
+    };
+    let Some(atlas) = atlas_map.get(&attribute.atlas_id) else {
+        return;
+    };
     for entity in &camera_query {
         commands.build_screen(
             entity,
@@ -28,7 +41,7 @@ fn spawn_equipments(camera_query: Query<Entity, With<PlayerCamera>>, mut command
                 build_space(parent, INVENTORY_X, 4, JustifyContent::End, |parent| {
                     build_grid::<EquipmentUI>(parent, 3, 4, Visibility::Hidden, |parent| {
                         for i in 0..10 {
-                            build_item::<EquipmentItem>(parent, 0, 0, i);
+                            build_item::<EquipmentItem>(parent, 0, 0, i, attribute, atlas);
                         }
                     });
                 });

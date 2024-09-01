@@ -1,7 +1,9 @@
+use crate::atlas::*;
 use crate::click_shape::*;
 use crate::hit_test::*;
 use crate::hotbar::*;
 use crate::item::*;
+use crate::item_attribute::*;
 use crate::item_node::*;
 use crate::item_selecting::*;
 use crate::minimap::*;
@@ -14,6 +16,10 @@ use bevy::prelude::*;
 use rand::RngCore;
 
 pub const BLOCK_SIZE: f32 = 128.0;
+pub const WOOD_ID: u16 = 11 + 56;
+pub const GRASS_ID: u16 = 9 + 56;
+pub const SOIL_ID: u16 = 53 + 56;
+pub const STONE_ID: u16 = 40 + 56;
 
 #[derive(Component)]
 pub struct Block;
@@ -36,10 +42,12 @@ fn block_bundle(
     item_id: u16,
     x: f32,
     y: f32,
-    color: Color,
     block_id: u64,
+    attribute: &ItemAttribute,
+    atlas: &Atlas,
 ) -> (
     SpriteBundle,
+    TextureAtlas,
     Shape,
     Block,
     BlockID,
@@ -50,12 +58,16 @@ fn block_bundle(
     (
         SpriteBundle {
             sprite: Sprite {
-                color,
                 custom_size: Some(Vec2::new(BLOCK_SIZE, BLOCK_SIZE)),
                 ..default()
             },
+            texture: atlas.texture.clone(),
             transform: Transform::from_xyz(x, y, 0.0),
             ..default()
+        },
+        TextureAtlas {
+            layout: atlas.layout.clone(),
+            index: attribute.atlas_index as usize,
         },
         Shape::Rect(Vec2::new(BLOCK_SIZE * 0.5, BLOCK_SIZE * 0.5)),
         Block,
@@ -89,31 +101,48 @@ fn block_bundle(
     // TODO assembly machine
 }
 
-fn spawn_blocks(mut commands: Commands, mut random: ResMut<Random>) {
+fn spawn_blocks(
+    mut commands: Commands,
+    mut random: ResMut<Random>,
+    attribute_map: Res<ItemAttributeMap>,
+    atlas_map: Res<AtlasMap>,
+) {
+    let blocks = [GRASS_ID, WOOD_ID, STONE_ID, SOIL_ID];
     for x in -19..20 {
         for y in -9..10 {
             if if x >= 0 { x } else { -x } <= y * 2 + 1 {
                 continue;
             }
-            let item_id = (random.next_u32() % 6) as u16 + 1;
-            let color = item_color(item_id);
+            let item_id = blocks[random.next_u32() as usize % blocks.len()];
+            let Some(attribute) = attribute_map.get(&item_id) else {
+                return;
+            };
+            let Some(atlas) = atlas_map.get(&attribute.atlas_id) else {
+                return;
+            };
             commands
                 .spawn(block_bundle(
                     item_id,
                     x as f32 * BLOCK_SIZE,
                     y as f32 * BLOCK_SIZE,
-                    color,
                     random.next_u64(),
+                    attribute,
+                    atlas,
                 ))
                 .with_children(|parent| {
                     parent.spawn((
                         SpriteBundle {
                             sprite: Sprite {
-                                color: color.with_alpha(MINIMAP_ALPHA),
+                                color: Color::WHITE.with_alpha(MINIMAP_ALPHA),
                                 custom_size: Some(Vec2::new(BLOCK_SIZE, BLOCK_SIZE)),
                                 ..default()
                             },
+                            texture: atlas.texture.clone(),
                             ..default()
+                        },
+                        TextureAtlas {
+                            layout: atlas.layout.clone(),
+                            index: attribute.atlas_index as usize,
                         },
                         MINIMAP_LAYER,
                     ));
@@ -203,6 +232,7 @@ fn interact_block(
         };
         commands.entity(entity).remove::<RightClicked>();
     }
+    // TODO resource
 }
 
 fn placement_block(
@@ -211,6 +241,8 @@ fn placement_block(
     mut event_reader: EventReader<EmptyClicked>,
     mut commands: Commands,
     mut random: ResMut<Random>,
+    attribute_map: Res<ItemAttributeMap>,
+    atlas_map: Res<AtlasMap>,
 ) {
     for event in event_reader.read() {
         for (mut item_id, mut amount, index) in &mut query {
@@ -220,12 +252,19 @@ fn placement_block(
             if item_id.0 == 0 {
                 continue;
             }
+            let Some(attribute) = attribute_map.get(&item_id.0) else {
+                return;
+            };
+            let Some(atlas) = atlas_map.get(&attribute.atlas_id) else {
+                return;
+            };
             commands.spawn(block_bundle(
                 item_id.0,
                 ((event.pos.x + BLOCK_SIZE * 0.5) / BLOCK_SIZE).floor() * BLOCK_SIZE,
                 ((event.pos.y + BLOCK_SIZE * 0.5) / BLOCK_SIZE).floor() * BLOCK_SIZE,
-                item_color(item_id.0),
                 random.next_u64(),
+                attribute,
+                atlas,
             ));
             amount.0 -= 1;
             if amount.0 == 0 {

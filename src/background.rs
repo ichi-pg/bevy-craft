@@ -113,7 +113,7 @@ pub struct BackgroundPlugin;
 
 impl Plugin for BackgroundPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PreStartup, spawn_background);
+        app.add_systems(Startup, spawn_background);
         app.add_systems(Update, (trace_player, move_clouds));
     }
 }

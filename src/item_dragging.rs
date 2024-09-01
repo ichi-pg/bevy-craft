@@ -1,9 +1,11 @@
+use crate::atlas::*;
 use crate::camera::*;
 use crate::equipment::*;
 use crate::hotbar::*;
 use crate::input::*;
 use crate::inventory::*;
 use crate::item::*;
+use crate::item_attribute::ItemAttributeMap;
 use crate::item_node::*;
 use crate::player::*;
 use crate::storage::*;
@@ -51,6 +53,8 @@ fn drag_item<T: Component>(
     mut commands: Commands,
     shift: Res<Shift>,
     control: Res<Control>,
+    attribute_map: Res<ItemAttributeMap>,
+    atlas_map: Res<AtlasMap>,
 ) {
     if shift.pressed {
         return;
@@ -59,6 +63,12 @@ fn drag_item<T: Component>(
         if item_id.0 == 0 {
             continue;
         }
+        let Some(attribute) = attribute_map.get(&item_id.0) else {
+            return;
+        };
+        let Some(atlas) = atlas_map.get(&attribute.atlas_id) else {
+            return;
+        };
         match intersection {
             Interaction::Pressed => {
                 let remain_amount = if control.pressed {
@@ -68,7 +78,14 @@ fn drag_item<T: Component>(
                 };
                 for entity in &area_query {
                     commands.entity(entity).with_children(|parent| {
-                        build_item::<DragItem>(parent, item_id.0, amount.0 - remain_amount, 0);
+                        build_item::<DragItem>(
+                            parent,
+                            item_id.0,
+                            amount.0 - remain_amount,
+                            0,
+                            attribute,
+                            atlas,
+                        );
                     });
                 }
                 if remain_amount == 0 {

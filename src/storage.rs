@@ -1,7 +1,9 @@
+use crate::atlas::*;
 use crate::block::*;
 use crate::camera::*;
 use crate::inventory::*;
 use crate::item::*;
+use crate::item_attribute::*;
 use crate::item_node::*;
 use crate::ui_parts::*;
 use crate::ui_states::*;
@@ -31,7 +33,18 @@ pub struct StorageOverflowed {
     pub amount: u16,
 }
 
-fn spawn_storage(camera_query: Query<Entity, With<PlayerCamera>>, mut commands: Commands) {
+fn spawn_storage(
+    camera_query: Query<Entity, With<PlayerCamera>>,
+    mut commands: Commands,
+    attribute_map: Res<ItemAttributeMap>,
+    atlas_map: Res<AtlasMap>,
+) {
+    let Some(attribute) = attribute_map.get(&0) else {
+        return;
+    };
+    let Some(atlas) = atlas_map.get(&attribute.atlas_id) else {
+        return;
+    };
     for entity in &camera_query {
         commands.build_screen(
             entity,
@@ -42,7 +55,7 @@ fn spawn_storage(camera_query: Query<Entity, With<PlayerCamera>>, mut commands: 
             |parent| {
                 build_grid::<Storage>(parent, 12, 3, Visibility::Hidden, |parent| {
                     for i in 0..36 {
-                        build_item::<StorageItem>(parent, 0, 0, i as u8);
+                        build_item::<StorageItem>(parent, 0, 0, i as u8, attribute, atlas);
                     }
                 });
             },
