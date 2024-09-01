@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+mod atlas;
 mod background;
 mod block;
 mod camera;
@@ -15,6 +16,7 @@ mod hotbar;
 mod input;
 mod inventory;
 mod item;
+mod item_attribute;
 mod item_details;
 mod item_dragging;
 mod item_node;
@@ -22,6 +24,7 @@ mod item_putting;
 mod item_selecting;
 mod item_sorting;
 mod item_stats;
+mod localization;
 mod math;
 mod minimap;
 mod mob_chase;
@@ -72,6 +75,8 @@ fn main() {
             gravity::GravityPlugin,
             click_shape::ClickShapePlugin,
             background::BackgroundPlugin,
+            atlas::AtlasPlugin,
+            localization::LocalizationPlugin,
         ))
         .add_plugins((
             item_node::ItemNodePlugin,
@@ -81,6 +86,7 @@ fn main() {
             item_details::ItemDetailsPlugin,
             item_sorting::ItemSortingPlugin,
             item_stats::ItemStatsPlugin,
+            item_attribute::ItemAttributePlugin,
         ))
         .add_plugins((
             hotbar::HotbarPlugin,

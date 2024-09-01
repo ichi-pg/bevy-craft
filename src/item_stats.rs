@@ -16,12 +16,13 @@ pub struct ItemStats {
     pub jump_power: f32,
 }
 
-#[derive(Resource, Deref, DerefMut, Default)]
+#[derive(Resource, Deref, DerefMut)]
 pub struct ItemStatsMap(HashMap<u16, ItemStats>);
 
-fn spawn_stats(mut stats_map: ResMut<ItemStatsMap>) {
+fn create_stats() -> ItemStatsMap {
+    let mut stats = HashMap::new();
     for item in [(101, 100.0)] {
-        stats_map.insert(
+        stats.insert(
             item.0,
             ItemStats {
                 pickaxe_power: item.1,
@@ -30,7 +31,7 @@ fn spawn_stats(mut stats_map: ResMut<ItemStatsMap>) {
         );
     }
     for item in [(104, 10.0)] {
-        stats_map.insert(
+        stats.insert(
             item.0,
             ItemStats {
                 attack_power: item.1,
@@ -38,7 +39,7 @@ fn spawn_stats(mut stats_map: ResMut<ItemStatsMap>) {
             },
         );
     }
-    // TODO item name
+    ItemStatsMap(stats)
 }
 
 fn sync_stats<T: Component + Stats>(
@@ -78,8 +79,7 @@ pub struct ItemStatsPlugin;
 
 impl Plugin for ItemStatsPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(ItemStatsMap::default());
-        app.add_systems(Startup, spawn_stats);
+        app.insert_resource(create_stats());
         app.add_systems(
             Update,
             (
