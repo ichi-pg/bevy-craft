@@ -122,7 +122,7 @@ fn main() {
     // TODO drone
 
     // TODO potion
-    // TODO housing, farmming, industry, fishing, taming
+    // TODO housing, farmming, industry, fishing, taming, cooking
     // TODO rogue dungeon
     // TODO boss
 

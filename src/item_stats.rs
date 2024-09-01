@@ -21,20 +21,20 @@ pub struct ItemStatsMap(HashMap<u16, ItemStats>);
 
 fn create_stats() -> ItemStatsMap {
     let mut stats = HashMap::new();
-    for item in [(101, 100.0)] {
+    for (item_id, pickaxe_power) in [(101, 100.0)] {
         stats.insert(
-            item.0,
+            item_id,
             ItemStats {
-                pickaxe_power: item.1,
+                pickaxe_power,
                 ..default()
             },
         );
     }
-    for item in [(104, 10.0)] {
+    for (item_id, attack_power) in [(104, 10.0)] {
         stats.insert(
-            item.0,
+            item_id,
             ItemStats {
-                attack_power: item.1,
+                attack_power,
                 ..default()
             },
         );

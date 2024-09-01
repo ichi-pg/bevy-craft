@@ -16,18 +16,17 @@ pub struct CraftRecipeMap(HashMap<u16, CraftRecipe>);
 
 fn create_recipes() -> CraftRecipeMap {
     let mut recipes = HashMap::new();
-    for item in [
+    for (item_id, amount, materials) in [
         (101, 1, vec![(1, 1)]),
         (102, 1, vec![(2, 1)]),
         (103, 1, vec![(3, 1)]),
         (104, 1, vec![(4, 1)]),
     ] {
         recipes.insert(
-            item.0,
+            item_id,
             CraftRecipe {
-                amount: item.1,
-                materials: item
-                    .2
+                amount,
+                materials: materials
                     .iter()
                     .map(|(item_id, amount)| CraftMaterial {
                         item_id: *item_id,

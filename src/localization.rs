@@ -10,11 +10,11 @@ pub struct LocalTextMap(pub HashMap<u16, LocalText>);
 
 fn create_local_texts() -> LocalTextMap {
     let mut texts = HashMap::new();
-    for item in [(1, "")] {
+    for (local_text_id, text) in [(1, "")] {
         texts.insert(
-            item.0,
+            local_text_id,
             LocalText {
-                text: String::from(item.1),
+                text: String::from(text),
             },
         );
     }

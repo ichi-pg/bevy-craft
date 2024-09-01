@@ -47,24 +47,13 @@ impl LookAt<f32> for f32 {
     }
 }
 
-pub struct Vec2i {
-    pub x: i32,
-    pub y: i32,
-}
-
-impl fmt::Display for Vec2i {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "[{}, {}]", self.x, self.y)
-    }
-}
-
 pub trait ToVec2i<T> {
-    fn to_vec2i(&self) -> Vec2i;
+    fn to_vec2i(&self) -> IVec2;
 }
 
 impl ToVec2i<Vec3> for Vec3 {
-    fn to_vec2i(&self) -> Vec2i {
-        Vec2i {
+    fn to_vec2i(&self) -> IVec2 {
+        IVec2 {
             x: self.x as i32,
             y: self.y as i32,
         }
@@ -72,8 +61,8 @@ impl ToVec2i<Vec3> for Vec3 {
 }
 
 impl ToVec2i<Vec2> for Vec2 {
-    fn to_vec2i(&self) -> Vec2i {
-        Vec2i {
+    fn to_vec2i(&self) -> IVec2 {
+        IVec2 {
             x: self.x as i32,
             y: self.y as i32,
         }

@@ -15,4 +15,8 @@ wasm-bindgen --no-typescript --target web --out-dir ./web/ --out-name "bevy-craf
 
 ## Web
 
-<https://ichi-pg.github.io/bevy-craft/web/>
+* <https://ichi-pg.github.io/bevy-craft/web/>
+
+## Assets
+
+* <https://kenney.nl/assets/voxel-pack>
