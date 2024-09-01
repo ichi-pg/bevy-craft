@@ -59,7 +59,7 @@ fn mob_jump_attack(
             }
         }
     }
-    // TODO calculate charge power with player position
+    // FIXME cancel by knock back
 }
 
 fn mob_jump_attacked(
