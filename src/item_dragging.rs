@@ -12,9 +12,8 @@ use crate::storage::*;
 use crate::ui_hovered::*;
 use crate::velocity::*;
 use bevy::prelude::*;
-use bevy_craft::NodeItem;
 
-#[derive(Component, Default, NodeItem)]
+#[derive(Component, Default)]
 pub struct DragItem;
 
 #[derive(Component)]

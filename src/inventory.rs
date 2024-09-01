@@ -14,7 +14,7 @@ use bevy_craft::*;
 #[derive(Component, Default)]
 pub struct Inventory;
 
-#[derive(Component, Default, NodeItem)]
+#[derive(Component, Default)]
 pub struct InventoryItem;
 
 #[derive(Event, ItemAndAmount)]

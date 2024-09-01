@@ -12,13 +12,9 @@ pub struct ItemSelector;
 #[derive(Component)]
 pub struct ItemIndex(pub u8);
 
-pub trait NodeItem {
-    fn selectable(&self) -> bool;
-}
-
 pub const ITEM_SIZE: u16 = 80;
 
-fn item_node<T: Component + Default + NodeItem>(
+fn item_node<T: Component + Default>(
     item_id: u16,
     amount: u16,
     index: u8,
@@ -48,7 +44,7 @@ fn item_node<T: Component + Default + NodeItem>(
                 texture: atlas.texture.clone(),
                 ..default()
             },
-            background_color: BackgroundColor(attribute.color),
+            background_color: BackgroundColor(atlas.color),
             ..default()
         },
         TextureAtlas {
@@ -73,19 +69,38 @@ fn item_text(item_id: u16, amount: u16) -> (TextBundle, ItemID, ItemAmount) {
     )
 }
 
-fn item_selected(index: u8) -> (TextBundle, ItemIndex, ItemSelector) {
+fn item_selector(
+    index: u8,
+    atlas: &Atlas,
+    atlas_index: u8,
+) -> (ImageBundle, TextureAtlas, ItemIndex, ItemSelector) {
     (
-        TextBundle {
+        ImageBundle {
+            style: Style {
+                width: Val::Px(ITEM_SIZE as f32),
+                height: Val::Px(ITEM_SIZE as f32),
+                position_type: PositionType::Absolute,
+                ..default()
+            },
+            image: UiImage {
+                color: Color::srgba(0.9, 0.3, 0.3, 0.5),
+                texture: atlas.texture.clone(),
+                ..default()
+            },
+            background_color: BackgroundColor(atlas.color),
             visibility: Visibility::Hidden,
-            text: Text::from_section("Selected", TextStyle { ..default() }),
             ..default()
+        },
+        TextureAtlas {
+            layout: atlas.layout.clone(),
+            index: atlas_index as usize,
         },
         ItemIndex(index),
         ItemSelector,
     )
 }
 
-pub fn build_item<T: Component + Default + NodeItem>(
+pub fn build_item<T: Component + Default>(
     parent: &mut ChildBuilder,
     item_id: u16,
     amount: u16,
@@ -96,9 +111,24 @@ pub fn build_item<T: Component + Default + NodeItem>(
     parent
         .spawn(item_node::<T>(item_id, amount, index, attribute, atlas))
         .with_children(|parent| {
-            if T::default().selectable() {
-                parent.spawn(item_selected(index));
-            }
+            parent.spawn(item_text(item_id, amount));
+        });
+}
+
+pub fn build_hotbar_item<T: Component + Default>(
+    parent: &mut ChildBuilder,
+    item_id: u16,
+    amount: u16,
+    index: u8,
+    attribute: &ItemAttribute,
+    atlas: &Atlas,
+    selector_atlas: &Atlas,
+    selector_index: u8,
+) {
+    parent
+        .spawn(item_node::<T>(item_id, amount, index, attribute, atlas))
+        .with_children(|parent| {
+            parent.spawn(item_selector(index, selector_atlas, selector_index));
             parent.spawn(item_text(item_id, amount));
         });
 }
@@ -124,13 +154,13 @@ fn sync_children(
     // TODO with children, with parent?
 }
 
-fn sync_text(mut query: Query<(&ItemID, &ItemAmount, &mut Text), Changed<ItemAmount>>) {
-    for (item_id, amount, mut text) in &mut query {
+fn sync_text(mut query: Query<(&ItemAmount, &mut Text), Changed<ItemAmount>>) {
+    for (amount, mut text) in &mut query {
         for section in &mut text.sections {
             section.value = if amount.0 == 0 {
                 String::new()
             } else {
-                format!("{} x{}", item_id.0, amount.0)
+                format!("{}", amount.0)
             };
         }
     }
@@ -156,7 +186,7 @@ fn sync_image(
         let Some(atlas) = atlas_map.get(&attribute.atlas_id) else {
             continue;
         };
-        color.0 = attribute.color;
+        color.0 = atlas.color;
         image.texture = atlas.texture.clone();
         texture_atlas.layout = atlas.layout.clone();
         texture_atlas.index = attribute.atlas_index as usize;

@@ -16,7 +16,7 @@ struct BackgroundItem;
 #[derive(Component, Default)]
 pub struct Storage;
 
-#[derive(Component, Default, NodeItem)]
+#[derive(Component, Default)]
 pub struct StorageItem;
 
 #[derive(Resource)]

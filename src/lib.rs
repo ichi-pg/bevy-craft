@@ -60,46 +60,6 @@ fn impl_pressed(ast: &syn::DeriveInput) -> TokenStream {
     gen.into()
 }
 
-#[proc_macro_derive(NodeItem)]
-pub fn derive_node_item(input: TokenStream) -> TokenStream {
-    match syn::parse(input) {
-        Ok(ast) => impl_node_item(&ast),
-        Err(_) => todo!(),
-    }
-}
-
-fn impl_node_item(ast: &syn::DeriveInput) -> TokenStream {
-    let name = &ast.ident;
-    let gen = quote! {
-        impl NodeItem for #name {
-            fn selectable(&self) -> bool {
-                false
-            }
-        }
-    };
-    gen.into()
-}
-
-#[proc_macro_derive(SelectableItem)]
-pub fn derive_selectable_item(input: TokenStream) -> TokenStream {
-    match syn::parse(input) {
-        Ok(ast) => impl_selectable_item(&ast),
-        Err(_) => todo!(),
-    }
-}
-
-fn impl_selectable_item(ast: &syn::DeriveInput) -> TokenStream {
-    let name = &ast.ident;
-    let gen = quote! {
-        impl NodeItem for #name {
-            fn selectable(&self) -> bool {
-                true
-            }
-        }
-    };
-    gen.into()
-}
-
 #[proc_macro_derive(Collided)]
 pub fn derive_collided(input: TokenStream) -> TokenStream {
     match syn::parse(input) {

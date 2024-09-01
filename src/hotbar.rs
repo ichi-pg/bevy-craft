@@ -11,7 +11,7 @@ use bevy_craft::*;
 #[derive(Component, Default)]
 pub struct Hotbar;
 
-#[derive(Component, Default, SelectableItem)]
+#[derive(Component, Default)]
 pub struct HotbarItem;
 
 #[derive(Event, Default)]
@@ -41,6 +41,9 @@ fn spawn_hotbar(
     let Some(atlas) = atlas_map.get(&attribute.atlas_id) else {
         return;
     };
+    let Some(selector_atlas) = atlas_map.get(&2) else {
+        return;
+    };
     for entity in &camera_query {
         commands.build_screen(
             entity,
@@ -51,7 +54,16 @@ fn spawn_hotbar(
             |parent| {
                 build_grid::<Hotbar>(parent, 10, 1, Visibility::Inherited, |parent| {
                     for i in 0..10 {
-                        build_item::<HotbarItem>(parent, 0, 0, i as u8, attribute, atlas);
+                        build_hotbar_item::<HotbarItem>(
+                            parent,
+                            0,
+                            0,
+                            i as u8,
+                            attribute,
+                            atlas,
+                            selector_atlas,
+                            87,
+                        );
                     }
                 });
             },

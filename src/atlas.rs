@@ -5,6 +5,7 @@ use std::collections::HashMap;
 pub struct Atlas {
     pub texture: Handle<Image>,
     pub layout: Handle<TextureAtlasLayout>,
+    pub color: Color,
 }
 
 #[derive(Resource, Deref, DerefMut, Default)]
@@ -15,10 +16,31 @@ fn setup_atlas(
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     mut atlas_map: ResMut<AtlasMap>,
 ) {
-    for (atlas_id, texture, tile_size, columns, rows) in [
-        (0, TRANSPARENT_IMAGE_HANDLE, 1, 1, 1),
-        (1, asset_server.load("spritesheet_items.png"), 128, 7, 8),
-        (2, asset_server.load("spritesheet_tiles.png"), 128, 9, 10),
+    for (atlas_id, texture, tile_size, columns, rows, color) in [
+        (
+            0,
+            TRANSPARENT_IMAGE_HANDLE,
+            1,
+            1,
+            1,
+            Color::srgb(0.1, 0.1, 0.1),
+        ),
+        (
+            1,
+            asset_server.load("spritesheet_items.png"),
+            128,
+            7,
+            8,
+            Color::NONE,
+        ),
+        (
+            2,
+            asset_server.load("spritesheet_tiles.png"),
+            128,
+            9,
+            10,
+            Color::NONE,
+        ),
     ] {
         atlas_map.insert(
             atlas_id,
@@ -31,6 +53,7 @@ fn setup_atlas(
                     None,
                     None,
                 )),
+                color,
             },
         );
     }

@@ -8,12 +8,11 @@ use crate::item_node::*;
 use crate::ui_parts::*;
 use crate::ui_states::*;
 use bevy::prelude::*;
-use bevy_craft::*;
 
 #[derive(Component, Default)]
 struct ItemDetails;
 
-#[derive(Component, Default, NodeItem)]
+#[derive(Component, Default)]
 struct MaterialItem;
 
 fn spawn_details(

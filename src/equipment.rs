@@ -7,12 +7,11 @@ use crate::item_node::*;
 use crate::ui_parts::*;
 use crate::ui_states::*;
 use bevy::prelude::*;
-use bevy_craft::*;
 
 #[derive(Component, Default)]
 pub struct EquipmentUI;
 
-#[derive(Component, Default, NodeItem)]
+#[derive(Component, Default)]
 pub struct EquipmentItem;
 
 #[derive(Event, Default)]
