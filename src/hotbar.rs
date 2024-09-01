@@ -52,7 +52,7 @@ fn spawn_hotbar(
             JustifyContent::End,
             AlignItems::Center,
             |parent| {
-                build_grid::<Hotbar>(parent, 10, 1, Visibility::Inherited, |parent| {
+                build_panel_grid::<Hotbar>(parent, 10, 1, Visibility::Inherited, |parent| {
                     for i in 0..10 {
                         build_hotbar_item::<HotbarItem>(
                             parent,

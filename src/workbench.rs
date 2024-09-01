@@ -26,7 +26,13 @@ fn spawn_items(camera_query: Query<Entity, With<PlayerCamera>>, mut commands: Co
                     JustifyContent::SpaceBetween,
                     |parent| {
                         for _ in 0..3 {
-                            build_grid::<WorkbenchUI>(parent, 3, 2, Visibility::Hidden, |_| {});
+                            build_panel_grid::<WorkbenchUI>(
+                                parent,
+                                3,
+                                2,
+                                Visibility::Hidden,
+                                |_| {},
+                            );
                         }
                     },
                 );

@@ -53,7 +53,7 @@ fn spawn_storage(
             JustifyContent::End,
             AlignItems::Center,
             |parent| {
-                build_grid::<Storage>(parent, 12, 3, Visibility::Hidden, |parent| {
+                build_panel_grid::<Storage>(parent, 12, 3, Visibility::Hidden, |parent| {
                     for i in 0..36 {
                         build_item::<StorageItem>(parent, 0, 0, i as u8, attribute, atlas);
                     }

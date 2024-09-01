@@ -40,7 +40,7 @@ fn spawn_items(
             AlignItems::Center,
             |parent| {
                 build_space(parent, INVENTORY_X, 2, JustifyContent::Start, |parent| {
-                    build_grid::<CraftUI>(parent, 3, 2, Visibility::Hidden, |parent| {
+                    build_panel_grid::<CraftUI>(parent, 3, 2, Visibility::Hidden, |parent| {
                         for (index, item_id) in [PICKAXE_ID, SWORD_ID].iter().enumerate() {
                             match recipe_map.get(item_id) {
                                 Some(recipe) => build_item::<ProductItem>(

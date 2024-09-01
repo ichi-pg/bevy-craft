@@ -15,6 +15,12 @@ struct ItemDetails;
 #[derive(Component, Default)]
 struct MaterialItem;
 
+#[derive(Component)]
+struct ItemName;
+
+#[derive(Component)]
+struct ItemDescription;
+
 fn spawn_details(
     camera_query: Query<Entity, With<PlayerCamera>>,
     mut commands: Commands,
@@ -35,10 +41,34 @@ fn spawn_details(
             JustifyContent::End,
             AlignItems::End,
             |parent| {
-                build_grid::<ItemDetails>(parent, 3, 1, Visibility::Hidden, |parent| {
-                    for i in 0..3 {
-                        build_item::<MaterialItem>(parent, 0, 0, i, attribute, atlas);
-                    }
+                build_panel::<ItemDetails>(parent, 3, 2, Visibility::Hidden, |parent| {
+                    parent.spawn((
+                        TextBundle::from_section("Item Name", TextStyle::default()),
+                        ItemName,
+                    ));
+                    parent.spawn((
+                        TextBundle::from_section("Item Description", TextStyle::default()),
+                        ItemDescription,
+                    ));
+                    parent
+                        .spawn(NodeBundle {
+                            style: Style {
+                                width: Val::Percent(100.0),
+                                height: Val::Percent(100.0),
+                                flex_direction: FlexDirection::Column,
+                                justify_content: JustifyContent::End,
+                                align_items: AlignItems::Start,
+                                ..default()
+                            },
+                            ..default()
+                        })
+                        .with_children(|parent| {
+                            build_grid(parent, 3, 1, |parent| {
+                                for i in 0..3 {
+                                    build_item::<MaterialItem>(parent, 0, 0, i, attribute, atlas);
+                                }
+                            });
+                        });
                 });
             },
         );

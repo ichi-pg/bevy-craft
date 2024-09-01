@@ -38,7 +38,7 @@ fn spawn_equipments(
             AlignItems::Center,
             |parent| {
                 build_space(parent, INVENTORY_X, 4, JustifyContent::End, |parent| {
-                    build_grid::<EquipmentUI>(parent, 3, 4, Visibility::Hidden, |parent| {
+                    build_panel_grid::<EquipmentUI>(parent, 3, 4, Visibility::Hidden, |parent| {
                         for i in 0..10 {
                             build_item::<EquipmentItem>(parent, 0, 0, i, attribute, atlas);
                         }

@@ -99,7 +99,7 @@ pub fn build_space(
         });
 }
 
-pub fn build_grid<T: Component + Default>(
+pub fn build_panel<T: Component + Default>(
     parent: &mut ChildBuilder,
     x: u16,
     y: u16,
@@ -112,11 +112,10 @@ pub fn build_grid<T: Component + Default>(
                 style: Style {
                     width: Val::Px((x * (ITEM_SIZE + MARGIN) + MARGIN) as f32),
                     height: Val::Px((y * (ITEM_SIZE + MARGIN) + MARGIN) as f32),
-                    display: Display::Grid,
-                    grid_template_columns: RepeatedGridTrack::flex(x, 1.0),
-                    row_gap: Val::Px(MARGIN as f32),
-                    column_gap: Val::Px(MARGIN as f32),
                     padding: UiRect::all(Val::Px(MARGIN as f32)),
+                    flex_direction: FlexDirection::Column,
+                    justify_content: JustifyContent::Start,
+                    align_items: AlignItems::Start,
                     ..default()
                 },
                 background_color: BackgroundColor(BACKGROUND_COLOR),
@@ -131,7 +130,42 @@ pub fn build_grid<T: Component + Default>(
         .with_children(|parent| {
             build_children(parent);
         });
-    // TODO grid is child of panel
+}
+
+pub fn build_grid(
+    parent: &mut ChildBuilder,
+    x: u16,
+    y: u16,
+    build_children: impl FnOnce(&mut ChildBuilder),
+) {
+    parent
+        .spawn((NodeBundle {
+            style: Style {
+                width: Val::Px((x * ITEM_SIZE + (x - 1) * MARGIN) as f32),
+                height: Val::Px((y * ITEM_SIZE + (y - 1) * MARGIN) as f32),
+                display: Display::Grid,
+                grid_template_columns: RepeatedGridTrack::flex(x, 1.0),
+                row_gap: Val::Px(MARGIN as f32),
+                column_gap: Val::Px(MARGIN as f32),
+                ..default()
+            },
+            ..default()
+        },))
+        .with_children(|parent| {
+            build_children(parent);
+        });
+}
+
+pub fn build_panel_grid<T: Component + Default>(
+    parent: &mut ChildBuilder,
+    x: u16,
+    y: u16,
+    visibility: Visibility,
+    build_children: impl FnOnce(&mut ChildBuilder),
+) {
+    build_panel::<T>(parent, x, y, visibility, |parent| {
+        build_grid(parent, x, y, build_children);
+    });
 }
 
 pub fn build_progress_bar<T: Component + Default>(parent: &mut ChildBuilder, color: Color) {

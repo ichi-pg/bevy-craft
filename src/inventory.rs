@@ -58,7 +58,7 @@ fn spawn_inventory(
             JustifyContent::End,
             AlignItems::Center,
             |parent| {
-                build_grid::<Inventory>(
+                build_panel_grid::<Inventory>(
                     parent,
                     INVENTORY_X,
                     INVENTORY_Y,

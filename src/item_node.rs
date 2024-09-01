@@ -63,7 +63,7 @@ fn item_node<T: Component + Default>(
 
 fn item_text(item_id: u16, amount: u16) -> (TextBundle, ItemID, ItemAmount) {
     (
-        TextBundle::from_section("", TextStyle { ..default() }),
+        TextBundle::from_section("", TextStyle::default()),
         ItemID(item_id),
         ItemAmount(amount),
     )
