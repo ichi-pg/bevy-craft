@@ -31,6 +31,7 @@ fn build_clouds(parent: &mut ChildBuilder, mut random: ChaCha8Rng, z: f32, y1: u
             for x in -20..20 {
                 for y in y1..y2 {
                     if (y + 5).pow2() > random.next_u32() % 500 {
+                        let x = x + random.next_u32() as i32 % 7 - 3;
                         let y = y + random.next_u32() % 3;
                         parent.spawn((
                             SpriteBundle {
