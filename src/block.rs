@@ -4,6 +4,7 @@ use crate::hit_test::*;
 use crate::hotbar::*;
 use crate::item::*;
 use crate::item_attribute::*;
+use crate::item_id::*;
 use crate::item_node::*;
 use crate::item_selecting::*;
 use crate::minimap::*;
@@ -15,12 +16,8 @@ use crate::workbench::*;
 use bevy::prelude::*;
 use rand::RngCore;
 
-pub const WOOD_ID: u16 = 11 + 56;
-pub const GRASS_ID: u16 = 9 + 56;
-pub const SOIL_ID: u16 = 53 + 56;
-pub const STONE_ID: u16 = 40 + 56;
-
 const BLOCK_SIZE: f32 = 128.0;
+const REPAIR_POWER: f32 = 10.0;
 
 #[derive(Component)]
 pub struct Block;
@@ -36,8 +33,6 @@ pub struct BlockDestroied {
     pub position: Vec2,
     pub block_id: u64,
 }
-
-const REPAIR_POWER: f32 = 10.0;
 
 fn block_bundle(
     item_id: u16,

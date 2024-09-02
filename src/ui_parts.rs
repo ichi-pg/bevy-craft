@@ -139,7 +139,7 @@ pub fn build_grid(
     build_children: impl FnOnce(&mut ChildBuilder),
 ) {
     parent
-        .spawn((NodeBundle {
+        .spawn(NodeBundle {
             style: Style {
                 width: Val::Px((x * ITEM_SIZE + (x - 1) * MARGIN) as f32),
                 height: Val::Px((y * ITEM_SIZE + (y - 1) * MARGIN) as f32),
@@ -150,7 +150,7 @@ pub fn build_grid(
                 ..default()
             },
             ..default()
-        },))
+        })
         .with_children(|parent| {
             build_children(parent);
         });
@@ -192,6 +192,29 @@ pub fn build_progress_bar<T: Component + Default>(parent: &mut ChildBuilder, col
                 },
                 T::default(),
             ));
+        });
+}
+
+pub fn build_flex(
+    parent: &mut ChildBuilder,
+    justify_content: JustifyContent,
+    align_items: AlignItems,
+    build_children: impl FnOnce(&mut ChildBuilder),
+) {
+    parent
+        .spawn(NodeBundle {
+            style: Style {
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                flex_direction: FlexDirection::Column,
+                justify_content,
+                align_items,
+                ..default()
+            },
+            ..default()
+        })
+        .with_children(|parent| {
+            build_children(parent);
         });
 }
 

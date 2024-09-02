@@ -83,7 +83,7 @@ fn item_selector(
                 ..default()
             },
             image: UiImage {
-                color: Color::srgba(0.9, 0.3, 0.3, 0.5),
+                color: Color::srgb(0.9, 0.3, 0.3),
                 texture: atlas.texture.clone(),
                 ..default()
             },
@@ -98,6 +98,7 @@ fn item_selector(
         ItemIndex(index),
         ItemSelector,
     )
+    // TODO colored texture
 }
 
 pub fn build_item<T: Component + Default>(
@@ -151,7 +152,6 @@ fn sync_children(
             }
         }
     }
-    // TODO with children, with parent?
 }
 
 fn sync_text(mut query: Query<(&ItemAmount, &mut Text), Changed<ItemAmount>>) {

@@ -7,8 +7,8 @@ use crate::inventory::*;
 use crate::item::*;
 use crate::item_attribute::*;
 use crate::item_dragging::*;
+use crate::item_id::*;
 use crate::item_node::*;
-use crate::item_stats::*;
 use crate::ui_parts::*;
 use bevy::prelude::*;
 
@@ -41,7 +41,8 @@ fn spawn_items(
             |parent| {
                 build_space(parent, INVENTORY_X, 2, JustifyContent::Start, |parent| {
                     build_panel_grid::<CraftUI>(parent, 3, 2, Visibility::Hidden, |parent| {
-                        for (index, item_id) in [PICKAXE_ID, SWORD_ID].iter().enumerate() {
+                        for (index, item_id) in [WOOD_PICKAXE_ID, WOOD_SWORD_ID].iter().enumerate()
+                        {
                             match recipe_map.get(item_id) {
                                 Some(recipe) => build_item::<ProductItem>(
                                     parent,

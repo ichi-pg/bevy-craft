@@ -19,6 +19,7 @@ mod item;
 mod item_attribute;
 mod item_details;
 mod item_dragging;
+mod item_id;
 mod item_node;
 mod item_putting;
 mod item_selecting;

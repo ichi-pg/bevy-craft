@@ -1,5 +1,8 @@
+use crate::item_id::*;
 use bevy::prelude::*;
 use std::collections::HashMap;
+
+const EMPTY_ITEM_OFFSET: u16 = 1;
 
 pub struct LocalText {
     pub text: String,
@@ -10,9 +13,34 @@ pub struct LocalTextMap(pub HashMap<u16, LocalText>);
 
 fn create_local_texts() -> LocalTextMap {
     let mut texts = HashMap::new();
-    for (local_text_id, text) in [(1, "")] {
+    for (local_text_id, text) in [
+        (WOOD_PICKAXE_ID, "Wood pickaxe"),
+        (WOOD_PICKAXE_ID + ITEMS_COUNT, "Basic pickaxe made by wood."),
+        (WOOD_SWORD_ID, "Wood sword"),
+        (WOOD_SWORD_ID + ITEMS_COUNT, "Basic sword made by wood."),
+        (WOOD_ID + ITEMS_COUNT, "Wood"),
+        (
+            WOOD_ID + ITEMS_COUNT + BLOCKS_COUNT,
+            "Basic material from tree.",
+        ),
+        (SOIL_ID + ITEMS_COUNT, "Soil"),
+        (
+            SOIL_ID + ITEMS_COUNT + BLOCKS_COUNT,
+            "Basic material from soil.",
+        ),
+        (STONE_ID + ITEMS_COUNT, "Stone"),
+        (
+            STONE_ID + ITEMS_COUNT + BLOCKS_COUNT,
+            "Basic material from stone.",
+        ),
+        (GRASS_ID + ITEMS_COUNT, "Grass"),
+        (
+            GRASS_ID + ITEMS_COUNT + BLOCKS_COUNT,
+            "Basic material from grass.",
+        ),
+    ] {
         texts.insert(
-            local_text_id,
+            local_text_id + EMPTY_ITEM_OFFSET,
             LocalText {
                 text: String::from(text),
             },
@@ -20,6 +48,7 @@ fn create_local_texts() -> LocalTextMap {
     }
     LocalTextMap(texts)
     // TODO switch with country code
+    // TODO unnecessary item description?
 }
 
 pub struct LocalizationPlugin;

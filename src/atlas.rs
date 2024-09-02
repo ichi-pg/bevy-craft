@@ -1,6 +1,10 @@
+use crate::item_id::*;
 use bevy::prelude::*;
 use bevy::render::texture::TRANSPARENT_IMAGE_HANDLE;
 use std::collections::HashMap;
+
+const ITEMS_X: u16 = 7;
+const BLOCKS_X: u16 = 9;
 
 pub struct Atlas {
     pub texture: Handle<Image>,
@@ -29,16 +33,16 @@ fn setup_atlas(
             1,
             asset_server.load("spritesheet_items.png"),
             128,
-            7,
-            8,
+            ITEMS_X,
+            ITEMS_COUNT / ITEMS_X,
             Color::NONE,
         ),
         (
             2,
             asset_server.load("spritesheet_tiles.png"),
             128,
-            9,
-            10,
+            BLOCKS_X,
+            BLOCKS_COUNT / BLOCKS_X,
             Color::NONE,
         ),
     ] {
@@ -48,8 +52,8 @@ fn setup_atlas(
                 texture,
                 layout: texture_atlas_layouts.add(TextureAtlasLayout::from_grid(
                     UVec2::splat(tile_size),
-                    columns,
-                    rows,
+                    columns as u32,
+                    rows as u32,
                     None,
                     None,
                 )),
