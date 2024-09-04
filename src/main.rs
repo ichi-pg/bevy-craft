@@ -3,6 +3,7 @@ mod atlas;
 mod background;
 mod block;
 mod camera;
+mod chunk;
 mod click_shape;
 mod collision;
 mod craft;
@@ -63,19 +64,11 @@ fn main() {
             ..default()
         }))
         .add_plugins((
-            camera::CameraPlugin,
             input::InputPlugin,
             random::RandomPlugin,
             window::WindowPlugin,
             profiler::ProfilerPlugin,
             framerate::FrameratePlugin,
-            ui_hovered::UIHoveredPlugin,
-            ui_states::UIStatusPlugin,
-            collision::CollisionPlugin,
-            velocity::VelocityPlugin,
-            gravity::GravityPlugin,
-            click_shape::ClickShapePlugin,
-            background::BackgroundPlugin,
             atlas::AtlasPlugin,
             localization::LocalizationPlugin,
         ))
@@ -90,6 +83,8 @@ fn main() {
             item_attribute::ItemAttributePlugin,
         ))
         .add_plugins((
+            ui_hovered::UIHoveredPlugin,
+            ui_states::UIStatusPlugin,
             hotbar::HotbarPlugin,
             inventory::InventoryPlugin,
             storage::StoragePlugin,
@@ -99,6 +94,15 @@ fn main() {
             workbench::WorkbenchPlugin,
             minimap::MinimapPlugin,
             player_stats::PlayerStatsPlugin,
+        ))
+        .add_plugins((
+            camera::CameraPlugin,
+            background::BackgroundPlugin,
+            collision::CollisionPlugin,
+            click_shape::ClickShapePlugin,
+            velocity::VelocityPlugin,
+            gravity::GravityPlugin,
+            chunk::ChunkPlugin,
         ))
         .add_plugins((
             player::PlayerPlugin,

@@ -1,3 +1,4 @@
+use crate::chunk::InChunk;
 use crate::hit_test::*;
 use crate::input::*;
 use crate::item_dragging::*;
@@ -17,7 +18,7 @@ pub struct EmptyClicked {
 }
 
 fn left_click(
-    query: Query<(Entity, &Transform, &Shape)>,
+    query: Query<(Entity, &Transform, &Shape), With<InChunk>>,
     left_click: Res<LeftClick>,
     world_cursor: Res<WorldCursor>,
     mut commands: Commands,
@@ -31,11 +32,11 @@ fn left_click(
             break;
         }
     }
-    // TODO chunk or sweep or tree
+    // TODO sweep or tree?
 }
 
 fn right_click(
-    query: Query<(Entity, &Transform, &Shape)>,
+    query: Query<(Entity, &Transform, &Shape), With<InChunk>>,
     right_click: Res<RightClick>,
     world_cursor: Res<WorldCursor>,
     mut commands: Commands,

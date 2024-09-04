@@ -1,3 +1,4 @@
+use crate::chunk::*;
 use crate::gravity::*;
 use bevy::prelude::*;
 
@@ -10,7 +11,10 @@ pub struct Direction2(pub Vec2);
 #[derive(Component)]
 pub struct KnockBack;
 
-pub fn add_velocity(mut query: Query<(&mut Transform, &Velocity2)>, time: Res<Time>) {
+pub fn add_velocity(
+    mut query: Query<(&mut Transform, &Velocity2), With<InChunk>>,
+    time: Res<Time>,
+) {
     for (mut transform, velocity) in &mut query {
         if velocity.0 == Vec2::ZERO {
             continue;
