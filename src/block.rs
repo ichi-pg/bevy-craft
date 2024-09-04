@@ -1,4 +1,5 @@
 use crate::atlas::*;
+use crate::chunk::*;
 use crate::click_shape::*;
 use crate::hit_test::*;
 use crate::hotbar::*;
@@ -50,6 +51,7 @@ fn block_bundle(
     ItemID,
     Health,
     MaxHealth,
+    InChunk,
 ) {
     (
         SpriteBundle {
@@ -71,6 +73,7 @@ fn block_bundle(
         ItemID(item_id),
         Health(100.0),
         MaxHealth(100.0),
+        InChunk,
     )
     // TODO not overlap block id
     // TODO plant growth
