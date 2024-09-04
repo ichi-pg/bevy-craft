@@ -25,11 +25,11 @@ pub const PLAYER_ATTACK_POWER: f32 = 0.0;
 pub const PLAYER_ATTACK_SPEED: f32 = 1.0;
 pub const PLAYER_MOVE_SPEED: f32 = 400.0;
 pub const PLAYER_JUMP_POWER: f32 = 1500.0;
+pub const PLAYER_RESPAWN_POSITION: Vec3 = Vec3::new(0.0, PLAYER_SIZE * 2.0, CHARACTER_Z);
 
 const PLAYER_SIZE: f32 = 128.0;
 const KNOCK_BACK_X: f32 = 400.0;
 const KNOCK_BACK_Y: f32 = 1500.0;
-const RESPAWN_POSITION: Vec3 = Vec3::new(0.0, PLAYER_SIZE * 2.0, CHARACTER_Z);
 
 fn spawn_player(mut commands: Commands) {
     commands
@@ -40,7 +40,7 @@ fn spawn_player(mut commands: Commands) {
                     custom_size: Some(Vec2::splat(PLAYER_SIZE)),
                     ..default()
                 },
-                transform: Transform::from_translation(RESPAWN_POSITION),
+                transform: Transform::from_translation(PLAYER_RESPAWN_POSITION),
                 ..default()
             },
             Player,
@@ -157,7 +157,7 @@ fn player_respawn(
 ) {
     for (entity, mut transform, mut health, max_health) in &mut query {
         health.0 = max_health.0;
-        transform.translation = RESPAWN_POSITION;
+        transform.translation = PLAYER_RESPAWN_POSITION;
         commands.entity(entity).remove::<PlayerDead>();
     }
     // TODO you dead

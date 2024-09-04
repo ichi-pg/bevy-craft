@@ -15,7 +15,12 @@ const CHUNK_SIZE: f32 = 1280.0;
 const INNER_SHAPE: Shape = Shape::Rect(Vec2::splat(CHUNK_SIZE));
 const OUTER_SHAPE: Shape = Shape::Rect(Vec2::splat(CHUNK_SIZE * 2.0));
 
-fn start_chunk(mut event_writer: EventWriter<ChunkChanged>) {
+fn start_chunk(
+    mut chunk_position: ResMut<ChunkPosition>,
+    mut event_writer: EventWriter<ChunkChanged>,
+) {
+    chunk_position.x = PLAYER_RESPAWN_POSITION.x;
+    chunk_position.y = PLAYER_RESPAWN_POSITION.y;
     event_writer.send(ChunkChanged);
 }
 
@@ -66,6 +71,6 @@ impl Plugin for ChunkPlugin {
     }
     // TODO render
     // TODO spawn
+    // TODO projectile
     // TODO sweep or tree?
-    // TODO check in chunk when spawn
 }
