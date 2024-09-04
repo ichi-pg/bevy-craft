@@ -1,4 +1,5 @@
 use crate::atlas::*;
+use crate::chunk::*;
 use crate::collision::*;
 use crate::hit_test::*;
 use crate::item_attribute::*;
@@ -67,6 +68,7 @@ fn spawn_item(
             Item,
             ItemID(event.item_id),
             ItemAmount(event.amount),
+            InChunk,
         ));
     }
 }

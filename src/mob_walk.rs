@@ -1,3 +1,4 @@
+use crate::chunk::*;
 use crate::collision::*;
 use crate::gravity::*;
 use crate::stats::*;
@@ -10,7 +11,7 @@ pub struct MobWalk;
 fn mob_walk(
     mut query: Query<
         (&mut Velocity2, &Direction2, &MoveSpeed),
-        (With<MobWalk>, Without<KnockBack>),
+        (With<InChunk>, With<MobWalk>, Without<KnockBack>),
     >,
 ) {
     for (mut velocity, direction, move_speed) in &mut query {
@@ -21,7 +22,12 @@ fn mob_walk(
 fn mob_jump(
     mut query: Query<
         (&mut Velocity2, &BlockCollided, &JumpPower),
-        (With<MobWalk>, With<Grounded>, Without<KnockBack>),
+        (
+            With<InChunk>,
+            With<MobWalk>,
+            With<Grounded>,
+            Without<KnockBack>,
+        ),
     >,
 ) {
     for (mut velocity, collided, jump_power) in &mut query {

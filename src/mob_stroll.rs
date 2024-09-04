@@ -1,3 +1,4 @@
+use crate::chunk::*;
 use crate::math::*;
 use crate::random::*;
 use crate::velocity::*;
@@ -20,12 +21,15 @@ const STACK_SECONDS: f32 = 0.1;
 const RANDOM_FLIP: u32 = 1000;
 
 fn mob_stack_filp(
-    mut query: Query<(
-        &mut Direction2,
-        &Transform,
-        &mut PrevPosition,
-        &mut MobStroll,
-    )>,
+    mut query: Query<
+        (
+            &mut Direction2,
+            &Transform,
+            &mut PrevPosition,
+            &mut MobStroll,
+        ),
+        With<InChunk>,
+    >,
     time: Res<Time>,
 ) {
     for (mut direction, transform, mut prev_position, mut timer) in &mut query {
@@ -45,7 +49,10 @@ fn mob_stack_filp(
     // TODO find hole
 }
 
-fn mob_random_flip(mut query: Query<&mut Direction2, With<MobStroll>>, mut random: ResMut<Random>) {
+fn mob_random_flip(
+    mut query: Query<&mut Direction2, (With<InChunk>, With<MobStroll>)>,
+    mut random: ResMut<Random>,
+) {
     for mut direction in &mut query {
         if random.next_u32() % RANDOM_FLIP == 0 {
             direction.x = -direction.x;
@@ -61,7 +68,7 @@ fn mob_home_area(
             &HomePosition,
             &HomeDistanceSquared,
         ),
-        With<MobStroll>,
+        (With<InChunk>, With<MobStroll>),
     >,
 ) {
     for (mut direction, transform, position, distance) in &mut query {

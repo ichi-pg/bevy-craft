@@ -66,4 +66,6 @@ impl Plugin for ChunkPlugin {
     }
     // TODO render
     // TODO spawn
+    // TODO sweep or tree?
+    // TODO check in chunk when spawn
 }

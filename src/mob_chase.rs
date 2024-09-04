@@ -1,3 +1,4 @@
+use crate::chunk::*;
 use crate::gravity::*;
 use crate::math::*;
 use crate::mob_jump_attack::*;
@@ -18,7 +19,10 @@ pub struct LostDistanceSquared(pub f32);
 pub struct AttackDistanceSquared(pub f32);
 
 fn mob_chase(
-    mut query: Query<(&mut Direction2, &Transform), (With<MobChase>, Without<Player>)>,
+    mut query: Query<
+        (&mut Direction2, &Transform),
+        (With<InChunk>, With<MobChase>, Without<Player>),
+    >,
     player_query: Query<&Transform, With<Player>>,
 ) {
     for (mut direction, transform) in &mut query {
@@ -34,7 +38,12 @@ fn mob_chase(
 fn mob_chase_lost(
     mut query: Query<
         (Entity, &Transform, &LostDistanceSquared, &mut HomePosition),
-        (With<MobChase>, Without<Player>, With<Grounded>),
+        (
+            With<InChunk>,
+            With<MobChase>,
+            Without<Player>,
+            With<Grounded>,
+        ),
     >,
     player_query: Query<&Transform, With<Player>>,
     mut commands: Commands,
@@ -56,7 +65,12 @@ fn mob_chase_lost(
 fn mob_chase_attack(
     query: Query<
         (Entity, &Transform, &AttackDistanceSquared),
-        (With<MobChase>, Without<Player>, With<Grounded>),
+        (
+            With<InChunk>,
+            With<MobChase>,
+            Without<Player>,
+            With<Grounded>,
+        ),
     >,
     player_query: Query<&Transform, With<Player>>,
     mut commands: Commands,

@@ -127,7 +127,6 @@ fn collision<T: Component, U: Component, V: Component + Collided>(
         }
     }
     // FIXME jump out when placement block to player position
-    // TODO sweep or tree?
     // TODO dynamics gizmo
     // TODO optimize grounded and heading
 }

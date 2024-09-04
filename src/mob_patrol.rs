@@ -1,3 +1,4 @@
+use crate::chunk::*;
 use crate::math::*;
 use crate::mob_chase::*;
 use crate::mob_stroll::*;
@@ -11,7 +12,10 @@ pub struct MobPatrol;
 pub struct FindDistanceSquared(pub f32);
 
 fn mob_patrol(
-    query: Query<(Entity, &Transform, &FindDistanceSquared), (With<MobPatrol>, Without<Player>)>,
+    query: Query<
+        (Entity, &Transform, &FindDistanceSquared),
+        (With<InChunk>, With<MobPatrol>, Without<Player>),
+    >,
     player_query: Query<&Transform, With<Player>>,
     mut commands: Commands,
 ) {
@@ -26,7 +30,6 @@ fn mob_patrol(
             }
         }
     }
-    // TODO chunk or sweep or tree
 }
 
 pub struct MobPatrolPlugin;

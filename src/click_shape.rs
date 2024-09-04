@@ -32,7 +32,6 @@ fn left_click(
             break;
         }
     }
-    // TODO sweep or tree?
 }
 
 fn right_click(

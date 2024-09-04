@@ -1,3 +1,4 @@
+use crate::chunk::*;
 use crate::gravity::*;
 use crate::math::*;
 use crate::mob_chase::*;
@@ -29,7 +30,7 @@ fn mob_jump_attack(
             &AttackSpeed,
             &JumpPower,
         ),
-        (Without<Player>, Without<KnockBack>),
+        (With<InChunk>, Without<Player>, Without<KnockBack>),
     >,
     player_query: Query<&Transform, With<Player>>,
     mut commands: Commands,
@@ -65,7 +66,7 @@ fn mob_jump_attack(
 fn mob_jump_attacked(
     mut query: Query<
         (Entity, &mut Velocity2, &mut MobJumpAttacked, &AttackSpeed),
-        (With<Grounded>, Without<KnockBack>),
+        (With<InChunk>, With<Grounded>, Without<KnockBack>),
     >,
     mut commands: Commands,
     time: Res<Time>,
