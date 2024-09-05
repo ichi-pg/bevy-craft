@@ -17,38 +17,29 @@ pub const MINIMAP_ALPHA: f32 = 0.5;
 const MINIMAP_ORDER: usize = 1;
 const WORLD_WIDTH: f32 = 1000000.0;
 const WORLD_HEIGHT: f32 = 1000000.0;
-const MAP_WIDTH: u32 = 1600;
-const MAP_HEIGHT: u32 = 900;
-const MINIMAP_WIDTH: u32 = MAP_WIDTH / 4;
-const MINIMAP_HEIGHT: u32 = MAP_HEIGHT / 4;
+const MAP_WIDTH: u32 = 1440;
+const MAP_HEIGHT: u32 = 810;
+const MINIMAP_WIDTH: u32 = 400;
+const MINIMAP_HEIGHT: u32 = 225;
 
 const INIT_ZOOM: f32 = 10.0;
 const ZOOM_RATE: f32 = 1.25;
 const MAX_ZOOM_COUNT: f32 = 10.0;
 const DRAGGING_RATE: f32 = 1.0;
 
-fn spawn_minimap(query: Query<&Window, With<PrimaryWindow>>, mut commands: Commands) {
-    for window in &query {
-        commands.spawn((
-            Camera2dBundle {
-                camera: Camera {
-                    viewport: Some(Viewport {
-                        physical_position: UVec2::new(
-                            (window.width() as u32 - MAP_WIDTH) / 2,
-                            (window.height() as u32 - MAP_HEIGHT) / 2,
-                        ),
-                        physical_size: UVec2::new(MINIMAP_WIDTH, MINIMAP_HEIGHT),
-                        ..default()
-                    }),
-                    order: MINIMAP_ORDER as isize,
-                    ..default()
-                },
+fn spawn_minimap(mut commands: Commands) {
+    commands.spawn((
+        Camera2dBundle {
+            camera: Camera {
+                viewport: Some(Viewport::default()),
+                order: MINIMAP_ORDER as isize,
                 ..default()
             },
-            MINIMAP_LAYER,
-            MinimapCamera,
-        ));
-    }
+            ..default()
+        },
+        MINIMAP_LAYER,
+        MinimapCamera,
+    ));
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
@@ -62,7 +53,6 @@ fn spawn_minimap(query: Query<&Window, With<PrimaryWindow>>, mut commands: Comma
         MINIMAP_LAYER,
     ));
     // TODO background trace camera or clear color
-    // TODO always small map
 }
 
 fn init_zoom(mut query: Query<&mut OrthographicProjection, With<MinimapCamera>>) {
@@ -106,27 +96,52 @@ fn zoom_minimap(
 }
 
 fn toggle_minimap(
-    width: u32,
-    height: u32,
-) -> impl FnMut(Query<(&mut Camera, &mut OrthographicProjection), With<MinimapCamera>>) {
-    move |mut query| {
-        for (mut camera, mut projection) in &mut query {
-            let Some(viewport) = camera.viewport.as_mut() else {
-                continue;
-            };
-            viewport.physical_size.x = width;
-            viewport.physical_size.y = height;
-            projection.scale = INIT_ZOOM;
+    mut query: Query<(&mut Camera, &mut OrthographicProjection), With<MinimapCamera>>,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+) {
+    for (mut camera, mut projection) in &mut query {
+        let Some(viewport) = camera.viewport.as_mut() else {
+            continue;
+        };
+        for window in &window_query {
+            viewport.physical_position.x = window.width() as u32 - MINIMAP_WIDTH - UI_MARGIN as u32;
+            viewport.physical_position.y = UI_MARGIN as u32;
         }
+        viewport.physical_size.x = MINIMAP_WIDTH;
+        viewport.physical_size.y = MINIMAP_HEIGHT;
+        projection.scale = INIT_ZOOM;
     }
-    // TODO minimap position
+}
+
+fn toggle_map(
+    mut query: Query<(&mut Camera, &mut OrthographicProjection), With<MinimapCamera>>,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+) {
+    for (mut camera, mut projection) in &mut query {
+        let Some(viewport) = camera.viewport.as_mut() else {
+            continue;
+        };
+        for window in &window_query {
+            viewport.physical_position.x = (window.width() as u32 - MAP_WIDTH) / 2;
+            viewport.physical_position.y = (window.height() as u32 - MAP_HEIGHT) / 2;
+        }
+        viewport.physical_size.x = MAP_WIDTH;
+        viewport.physical_size.y = MAP_HEIGHT;
+        projection.scale = INIT_ZOOM;
+    }
 }
 
 pub struct MinimapPlugin;
 
 impl Plugin for MinimapPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (spawn_minimap, init_zoom).chain());
+        app.add_systems(
+            Startup,
+            (
+                spawn_minimap,
+                (toggle_minimap, init_zoom).after(spawn_minimap),
+            ),
+        );
         app.add_systems(
             Update,
             (
@@ -143,14 +158,8 @@ impl Plugin for MinimapPlugin {
                     .run_if(in_state(UIStates::Map)),
             ),
         );
-        app.add_systems(
-            OnEnter(UIStates::Map),
-            toggle_minimap(MAP_WIDTH, MAP_HEIGHT),
-        );
-        app.add_systems(
-            OnExit(UIStates::Map),
-            toggle_minimap(MINIMAP_WIDTH, MINIMAP_HEIGHT),
-        );
+        app.add_systems(OnEnter(UIStates::Map), toggle_map);
+        app.add_systems(OnExit(UIStates::Map), toggle_minimap);
     }
     // TODO fast travel
 }
