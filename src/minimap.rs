@@ -12,6 +12,9 @@ use bevy::window::*;
 #[derive(Component)]
 struct MinimapCamera;
 
+#[derive(Component)]
+struct MinimapParent;
+
 pub const MINIMAP_LAYER: RenderLayers = RenderLayers::layer(MINIMAP_ORDER);
 pub const MINIMAP_ALPHA: f32 = 0.5;
 
@@ -29,18 +32,22 @@ const MAX_ZOOM_COUNT: f32 = 10.0;
 const DRAGGING_RATE: f32 = 1.0;
 
 fn spawn_minimap(mut commands: Commands) {
-    commands.spawn((
-        Camera2dBundle {
-            camera: Camera {
-                viewport: Some(Viewport::default()),
-                order: MINIMAP_ORDER as isize,
-                ..default()
-            },
-            ..default()
-        },
-        MINIMAP_LAYER,
-        MinimapCamera,
-    ));
+    commands
+        .spawn((SpatialBundle::default(), MinimapParent))
+        .with_children(|parent| {
+            parent.spawn((
+                Camera2dBundle {
+                    camera: Camera {
+                        viewport: Some(Viewport::default()),
+                        order: MINIMAP_ORDER as isize,
+                        ..default()
+                    },
+                    ..default()
+                },
+                MINIMAP_LAYER,
+                MinimapCamera,
+            ));
+        });
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
@@ -63,16 +70,19 @@ fn init_zoom(mut query: Query<&mut OrthographicProjection, With<MinimapCamera>>)
 }
 
 fn drag_fullmap(
-    mut query: Query<(&mut Transform, &OrthographicProjection), With<MinimapCamera>>,
+    mut query: Query<&mut Transform, With<MinimapParent>>,
+    camera_query: Query<&OrthographicProjection, With<MinimapCamera>>,
     left_click: Res<LeftClick>,
     window_cursor: Res<WindowCursor>,
 ) {
     if !left_click.pressed {
         return;
     }
-    for (mut transform, projection) in &mut query {
-        transform.translation.x -= window_cursor.delta.x * projection.scale * DRAGGING_RATE;
-        transform.translation.y += window_cursor.delta.y * projection.scale * DRAGGING_RATE;
+    for projection in &camera_query {
+        for mut transform in &mut query {
+            transform.translation.x -= window_cursor.delta.x * projection.scale * DRAGGING_RATE;
+            transform.translation.y += window_cursor.delta.y * projection.scale * DRAGGING_RATE;
+        }
     }
 }
 
@@ -97,10 +107,15 @@ fn zoom_fullmap(
 }
 
 fn switch_minimap(
-    mut query: Query<(&mut Camera, &mut OrthographicProjection), With<MinimapCamera>>,
+    mut query: Query<&mut Transform, With<MinimapParent>>,
+    mut camera_query: Query<(&mut Camera, &mut OrthographicProjection), With<MinimapCamera>>,
     window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
-    for (mut camera, mut projection) in &mut query {
+    for mut transform in &mut query {
+        transform.translation.x = 0.0;
+        transform.translation.y = 0.0;
+    }
+    for (mut camera, mut projection) in &mut camera_query {
         let Some(viewport) = camera.viewport.as_mut() else {
             continue;
         };
@@ -117,10 +132,15 @@ fn switch_minimap(
 }
 
 fn switch_fullmap(
-    mut query: Query<(&mut Camera, &mut OrthographicProjection), With<MinimapCamera>>,
+    mut query: Query<&mut Transform, With<MinimapParent>>,
+    mut camera_query: Query<(&mut Camera, &mut OrthographicProjection), With<MinimapCamera>>,
     window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
-    for (mut camera, mut projection) in &mut query {
+    for mut transform in &mut query {
+        transform.translation.x = 0.0;
+        transform.translation.y = 0.0;
+    }
+    for (mut camera, mut projection) in &mut camera_query {
         let Some(viewport) = camera.viewport.as_mut() else {
             continue;
         };
@@ -150,11 +170,8 @@ impl Plugin for MinimapPlugin {
         app.add_systems(
             Update,
             (
-                (
-                    change_ui_state::<KeyM>(UIStates::Map),
-                    trace_player::<MinimapCamera>,
-                )
-                    .run_if(not(in_state(UIStates::Map))),
+                trace_player::<MinimapCamera>,
+                change_ui_state::<KeyM>(UIStates::Map).run_if(not(in_state(UIStates::Map))),
                 (
                     change_ui_state::<KeyM>(UIStates::None),
                     zoom_fullmap,
