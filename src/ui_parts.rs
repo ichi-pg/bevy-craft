@@ -6,7 +6,7 @@ use bevy::prelude::*;
 #[derive(Component)]
 pub struct GridNode;
 
-pub const UI_MARGIN: u16 = 10;
+pub const UI_MARGIN: f32 = 10.0;
 pub const BACKGROUND_COLOR: Color = Color::srgb(0.2, 0.2, 0.2);
 
 pub trait BuildScreen {
@@ -31,8 +31,12 @@ impl<'w, 's> BuildScreen for Commands<'w, 's> {
         align_items: AlignItems,
         build_children: impl FnOnce(&mut ChildBuilder),
     ) {
-        let padding =
-            Val::Px((UI_MARGIN + grids * UI_MARGIN * 2 + y * UI_MARGIN + y * ITEM_SIZE) as f32);
+        let padding = Val::Px(
+            UI_MARGIN
+                + grids as f32 * UI_MARGIN * 2.0
+                + y as f32 * UI_MARGIN
+                + y as f32 * ITEM_SIZE,
+        );
         self.spawn((
             NodeBundle {
                 style: Style {
@@ -41,19 +45,19 @@ impl<'w, 's> BuildScreen for Commands<'w, 's> {
                     flex_direction: FlexDirection::Column,
                     justify_content,
                     align_items,
-                    row_gap: Val::Px(UI_MARGIN as f32),
+                    row_gap: Val::Px(UI_MARGIN),
                     padding: match justify_content {
                         JustifyContent::Default => todo!(),
                         JustifyContent::Start => UiRect::new(
-                            Val::Px(UI_MARGIN as f32),
-                            Val::Px(UI_MARGIN as f32),
+                            Val::Px(UI_MARGIN),
+                            Val::Px(UI_MARGIN),
                             padding,
-                            Val::Px(UI_MARGIN as f32),
+                            Val::Px(UI_MARGIN),
                         ),
                         JustifyContent::End => UiRect::new(
-                            Val::Px(UI_MARGIN as f32),
-                            Val::Px(UI_MARGIN as f32),
-                            Val::Px(UI_MARGIN as f32),
+                            Val::Px(UI_MARGIN),
+                            Val::Px(UI_MARGIN),
+                            Val::Px(UI_MARGIN),
                             padding,
                         ),
                         JustifyContent::FlexStart => todo!(),
@@ -86,8 +90,8 @@ pub fn build_space(
     parent
         .spawn(NodeBundle {
             style: Style {
-                width: Val::Px((x * (ITEM_SIZE + UI_MARGIN) + UI_MARGIN) as f32),
-                height: Val::Px((y * (ITEM_SIZE + UI_MARGIN) + UI_MARGIN) as f32),
+                width: Val::Px(x as f32 * (ITEM_SIZE + UI_MARGIN) + UI_MARGIN),
+                height: Val::Px(y as f32 * (ITEM_SIZE + UI_MARGIN) + UI_MARGIN),
                 flex_direction: FlexDirection::Row,
                 justify_content,
                 align_items: AlignItems::Center,
@@ -111,9 +115,9 @@ pub fn build_panel<T: Component + Default>(
         .spawn((
             NodeBundle {
                 style: Style {
-                    width: Val::Px((x * (ITEM_SIZE + UI_MARGIN) + UI_MARGIN) as f32),
-                    height: Val::Px((y * (ITEM_SIZE + UI_MARGIN) + UI_MARGIN) as f32),
-                    padding: UiRect::all(Val::Px(UI_MARGIN as f32)),
+                    width: Val::Px(x as f32 * (ITEM_SIZE + UI_MARGIN) + UI_MARGIN),
+                    height: Val::Px(y as f32 * (ITEM_SIZE + UI_MARGIN) + UI_MARGIN),
+                    padding: UiRect::all(Val::Px(UI_MARGIN)),
                     flex_direction: FlexDirection::Column,
                     justify_content: JustifyContent::Start,
                     align_items: AlignItems::Start,
@@ -142,12 +146,12 @@ pub fn build_grid(
     parent
         .spawn(NodeBundle {
             style: Style {
-                width: Val::Px((x * ITEM_SIZE + (x - 1) * UI_MARGIN) as f32),
-                height: Val::Px((y * ITEM_SIZE + (y - 1) * UI_MARGIN) as f32),
+                width: Val::Px(x as f32 * ITEM_SIZE + (x - 1) as f32 * UI_MARGIN),
+                height: Val::Px(y as f32 * ITEM_SIZE + (y - 1) as f32 * UI_MARGIN),
                 display: Display::Grid,
                 grid_template_columns: RepeatedGridTrack::flex(x, 1.0),
-                row_gap: Val::Px(UI_MARGIN as f32),
-                column_gap: Val::Px(UI_MARGIN as f32),
+                row_gap: Val::Px(UI_MARGIN),
+                column_gap: Val::Px(UI_MARGIN),
                 ..default()
             },
             ..default()

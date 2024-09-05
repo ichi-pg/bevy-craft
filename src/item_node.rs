@@ -12,7 +12,7 @@ pub struct ItemSelector;
 #[derive(Component)]
 pub struct ItemIndex(pub u8);
 
-pub const ITEM_SIZE: u16 = 80;
+pub const ITEM_SIZE: f32 = 80.0;
 
 fn item_node<T: Component + Default>(
     item_id: u16,
@@ -33,8 +33,8 @@ fn item_node<T: Component + Default>(
     (
         ImageBundle {
             style: Style {
-                width: Val::Px(ITEM_SIZE as f32),
-                height: Val::Px(ITEM_SIZE as f32),
+                width: Val::Px(ITEM_SIZE),
+                height: Val::Px(ITEM_SIZE),
                 flex_direction: FlexDirection::Column,
                 justify_content: JustifyContent::End,
                 align_items: AlignItems::End,
@@ -77,8 +77,8 @@ fn item_selector(
     (
         ImageBundle {
             style: Style {
-                width: Val::Px(ITEM_SIZE as f32),
-                height: Val::Px(ITEM_SIZE as f32),
+                width: Val::Px(ITEM_SIZE),
+                height: Val::Px(ITEM_SIZE),
                 position_type: PositionType::Absolute,
                 ..default()
             },

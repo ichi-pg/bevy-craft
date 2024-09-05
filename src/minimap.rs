@@ -2,6 +2,7 @@ use crate::input::*;
 use crate::player::*;
 use crate::ui_parts::*;
 use crate::ui_states::*;
+use crate::window::ScreenMode;
 use crate::z_sort::*;
 use bevy::prelude::*;
 use bevy::render::camera::*;
@@ -17,10 +18,10 @@ pub const MINIMAP_ALPHA: f32 = 0.5;
 const MINIMAP_ORDER: usize = 1;
 const WORLD_WIDTH: f32 = 1000000.0;
 const WORLD_HEIGHT: f32 = 1000000.0;
-const MAP_WIDTH: u32 = 1440;
-const MAP_HEIGHT: u32 = 810;
-const MINIMAP_WIDTH: u32 = 400;
-const MINIMAP_HEIGHT: u32 = 225;
+const FULLMAP_WIDTH: f32 = 1440.0;
+const FULLMAP_HEIGHT: f32 = 810.0;
+const MINIMAP_WIDTH: f32 = 400.0;
+const MINIMAP_HEIGHT: f32 = 225.0;
 
 const INIT_ZOOM: f32 = 10.0;
 const ZOOM_RATE: f32 = 1.25;
@@ -61,7 +62,7 @@ fn init_zoom(mut query: Query<&mut OrthographicProjection, With<MinimapCamera>>)
     }
 }
 
-fn drag_minimap(
+fn drag_fullmap(
     mut query: Query<(&mut Transform, &OrthographicProjection), With<MinimapCamera>>,
     left_click: Res<LeftClick>,
     window_cursor: Res<WindowCursor>,
@@ -75,7 +76,7 @@ fn drag_minimap(
     }
 }
 
-fn zoom_minimap(
+fn zoom_fullmap(
     mut query: Query<&mut OrthographicProjection, With<MinimapCamera>>,
     wheel: Res<Wheel>,
 ) {
@@ -95,7 +96,7 @@ fn zoom_minimap(
     }
 }
 
-fn toggle_minimap(
+fn switch_minimap(
     mut query: Query<(&mut Camera, &mut OrthographicProjection), With<MinimapCamera>>,
     window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
@@ -104,17 +105,18 @@ fn toggle_minimap(
             continue;
         };
         for window in &window_query {
-            viewport.physical_position.x = window.width() as u32 - MINIMAP_WIDTH - UI_MARGIN as u32;
-            viewport.physical_position.y = UI_MARGIN as u32;
+            let scale = window.scale_factor();
+            viewport.physical_position.x =
+                ((window.width() - MINIMAP_WIDTH - UI_MARGIN) * scale) as u32;
+            viewport.physical_position.y = (UI_MARGIN * scale) as u32;
+            viewport.physical_size.x = (MINIMAP_WIDTH * scale) as u32;
+            viewport.physical_size.y = (MINIMAP_HEIGHT * scale) as u32;
         }
-        viewport.physical_size.x = MINIMAP_WIDTH;
-        viewport.physical_size.y = MINIMAP_HEIGHT;
         projection.scale = INIT_ZOOM;
     }
-    // TODO window size changed
 }
 
-fn toggle_map(
+fn switch_fullmap(
     mut query: Query<(&mut Camera, &mut OrthographicProjection), With<MinimapCamera>>,
     window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
@@ -123,11 +125,13 @@ fn toggle_map(
             continue;
         };
         for window in &window_query {
-            viewport.physical_position.x = (window.width() as u32 - MAP_WIDTH) / 2;
-            viewport.physical_position.y = (window.height() as u32 - MAP_HEIGHT) / 2;
+            let scale = window.scale_factor();
+            viewport.physical_position.x = ((window.width() - FULLMAP_WIDTH) * 0.5 * scale) as u32;
+            viewport.physical_position.y =
+                ((window.height() - FULLMAP_HEIGHT) * 0.5 * scale) as u32;
+            viewport.physical_size.x = (FULLMAP_WIDTH * scale) as u32;
+            viewport.physical_size.y = (FULLMAP_HEIGHT * scale) as u32;
         }
-        viewport.physical_size.x = MAP_WIDTH;
-        viewport.physical_size.y = MAP_HEIGHT;
         projection.scale = INIT_ZOOM;
     }
 }
@@ -140,7 +144,7 @@ impl Plugin for MinimapPlugin {
             Startup,
             (
                 spawn_minimap,
-                (toggle_minimap, init_zoom).after(spawn_minimap),
+                (switch_minimap, init_zoom).after(spawn_minimap),
             ),
         );
         app.add_systems(
@@ -153,14 +157,28 @@ impl Plugin for MinimapPlugin {
                     .run_if(not(in_state(UIStates::Map))),
                 (
                     change_ui_state::<KeyM>(UIStates::None),
-                    zoom_minimap,
-                    drag_minimap,
+                    zoom_fullmap,
+                    drag_fullmap,
                 )
                     .run_if(in_state(UIStates::Map)),
             ),
         );
-        app.add_systems(OnEnter(UIStates::Map), toggle_map);
-        app.add_systems(OnExit(UIStates::Map), toggle_minimap);
+        app.add_systems(OnEnter(UIStates::Map), switch_fullmap);
+        app.add_systems(OnExit(UIStates::Map), switch_minimap);
+        app.add_systems(
+            OnEnter(ScreenMode::Windowed),
+            (
+                switch_fullmap.run_if(in_state(UIStates::Map)),
+                switch_minimap.run_if(not(in_state(UIStates::Map))),
+            ),
+        );
+        app.add_systems(
+            OnEnter(ScreenMode::Fullscreen),
+            (
+                switch_fullmap.run_if(in_state(UIStates::Map)),
+                switch_minimap.run_if(not(in_state(UIStates::Map))),
+            ),
+        );
     }
     // TODO fast travel
 }

@@ -3,11 +3,18 @@ use bevy::prelude::*;
 use bevy::window::*;
 use bevy::winit::*;
 
+#[derive(States, Debug, Clone, PartialEq, Eq, Hash, Copy)]
+pub enum ScreenMode {
+    Windowed,
+    Fullscreen,
+}
+
 fn toggle_fullscreen(
     mut query: Query<(Entity, &mut Window), With<PrimaryWindow>>,
     winit_windows: NonSend<WinitWindows>,
     alt: Res<AltRight>,
     enter: Res<Enter>,
+    mut next_state: ResMut<NextState<ScreenMode>>,
 ) {
     if !alt.pressed {
         return;
@@ -31,10 +38,12 @@ fn toggle_fullscreen(
                     },
                     None => todo!(),
                 }
+                next_state.set(ScreenMode::Fullscreen);
             }
             _ => {
                 window.mode = WindowMode::Windowed;
                 window.resolution.set_scale_factor(1.0);
+                next_state.set(ScreenMode::Windowed);
             }
         }
     }
@@ -45,6 +54,7 @@ pub struct WindowPlugin;
 
 impl Plugin for WindowPlugin {
     fn build(&self, app: &mut App) {
+        app.insert_state(ScreenMode::Windowed);
         app.add_systems(Update, toggle_fullscreen);
     }
 }
