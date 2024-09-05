@@ -111,6 +111,7 @@ fn toggle_minimap(
         viewport.physical_size.y = MINIMAP_HEIGHT;
         projection.scale = INIT_ZOOM;
     }
+    // TODO window size changed
 }
 
 fn toggle_map(

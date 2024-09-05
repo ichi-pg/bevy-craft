@@ -50,8 +50,8 @@ fn drag_item<T: Component>(
     mut query: Query<(&Interaction, &mut ItemID, &mut ItemAmount), (With<T>, Changed<Interaction>)>,
     mut next_state: ResMut<NextState<ItemDragged>>,
     mut commands: Commands,
-    shift: Res<Shift>,
-    control: Res<Control>,
+    shift: Res<ShiftLeft>,
+    control: Res<ControlLeft>,
     attribute_map: Res<ItemAttributeMap>,
     atlas_map: Res<AtlasMap>,
 ) {

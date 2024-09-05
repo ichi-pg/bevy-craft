@@ -84,7 +84,7 @@ fn click_recipe(
             Without<InventoryItem>,
         ),
     >,
-    control: Res<Control>,
+    control: Res<ControlLeft>,
     recipe_map: Res<CraftRecipeMap>,
     attribute_map: Res<ItemAttributeMap>,
     atlas_map: Res<AtlasMap>,

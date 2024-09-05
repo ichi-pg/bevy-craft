@@ -17,8 +17,26 @@ macro_rules! define_pressed {
 }
 
 define_pressed!(
-    Digit, LeftClick, RightClick, Escape, Tab, Enter, Space, Alt, Shift, Control, KeyQ, KeyE, KeyR,
-    KeyT, KeyF, KeyG, KeyC, KeyV, KeyB, KeyM
+    Digit,
+    LeftClick,
+    RightClick,
+    Escape,
+    Tab,
+    Enter,
+    Space,
+    AltRight,
+    ShiftLeft,
+    ControlLeft,
+    KeyQ,
+    KeyE,
+    KeyR,
+    KeyT,
+    KeyF,
+    KeyG,
+    KeyC,
+    KeyV,
+    KeyB,
+    KeyM
 );
 
 macro_rules! define_cursor {
@@ -160,9 +178,9 @@ impl Plugin for InputPlugin {
             (Tab, Tab),
             (Enter, Enter),
             (Space, Space),
-            (Alt, AltLeft),
-            (Shift, ShiftLeft),
-            (Control, ControlLeft),
+            (AltRight, AltRight),
+            (ShiftLeft, ShiftLeft),
+            (ControlLeft, ControlLeft),
             (KeyQ, KeyQ),
             (KeyE, KeyE),
             (KeyR, KeyR),
@@ -198,4 +216,5 @@ impl Plugin for InputPlugin {
     // TODO abstract names
     // TODO flexible key codes
     // TODO using states?
+    // TODO merge left right keys?
 }

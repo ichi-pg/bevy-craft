@@ -50,7 +50,7 @@ fn put_in_item<T: Event + ItemAndAmount, U: Component, V: Event + ItemAndAmount>
 
 fn push_out_item<T: Component, U: Event + ItemAndAmount>(
     mut query: Query<(&Interaction, &mut ItemID, &mut ItemAmount), (With<T>, Changed<Interaction>)>,
-    shift: Res<Shift>,
+    shift: Res<ShiftLeft>,
     mut event_writer: EventWriter<U>,
 ) {
     if !shift.pressed {
@@ -76,7 +76,7 @@ fn bulk_push_out<T: Component, U: Event + ItemAndAmount, V: Component, W: Resour
     mut query: Query<(&mut ItemID, &mut ItemAmount), With<T>>,
     filter_query: Query<&ItemID, (With<V>, Without<T>)>,
     pressed: Res<W>,
-    shift: Res<Shift>,
+    shift: Res<ShiftLeft>,
     mut event_writer: EventWriter<U>,
 ) {
     if !pressed.just_pressed() {
