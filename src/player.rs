@@ -164,6 +164,18 @@ fn player_respawn(
     // TODO respawn point
 }
 
+pub fn trace_player<T: Component>(
+    mut query: Query<&mut Transform, With<T>>,
+    player_query: Query<&Transform, (With<PlayerController>, Without<T>, Changed<Transform>)>,
+) {
+    for player_transform in &player_query {
+        for mut transform in &mut query {
+            transform.translation.x = player_transform.translation.x;
+            transform.translation.y = player_transform.translation.y;
+        }
+    }
+}
+
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {

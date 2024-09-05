@@ -17,8 +17,10 @@ pub const MINIMAP_ALPHA: f32 = 0.5;
 const MINIMAP_ORDER: usize = 1;
 const WORLD_WIDTH: f32 = 1000000.0;
 const WORLD_HEIGHT: f32 = 1000000.0;
-const MINIMAP_WIDTH: u32 = 1600;
-const MINIMAP_HEIGHT: u32 = 900;
+const MAP_WIDTH: u32 = 1600;
+const MAP_HEIGHT: u32 = 900;
+const MINIMAP_WIDTH: u32 = MAP_WIDTH / 4;
+const MINIMAP_HEIGHT: u32 = MAP_HEIGHT / 4;
 
 const INIT_ZOOM: f32 = 10.0;
 const ZOOM_RATE: f32 = 1.25;
@@ -32,14 +34,13 @@ fn spawn_minimap(query: Query<&Window, With<PrimaryWindow>>, mut commands: Comma
                 camera: Camera {
                     viewport: Some(Viewport {
                         physical_position: UVec2::new(
-                            (window.width() as u32 - MINIMAP_WIDTH) / 2,
-                            (window.height() as u32 - MINIMAP_HEIGHT) / 2,
+                            (window.width() as u32 - MAP_WIDTH) / 2,
+                            (window.height() as u32 - MAP_HEIGHT) / 2,
                         ),
                         physical_size: UVec2::new(MINIMAP_WIDTH, MINIMAP_HEIGHT),
                         ..default()
                     }),
                     order: MINIMAP_ORDER as isize,
-                    is_active: false,
                     ..default()
                 },
                 ..default()
@@ -79,8 +80,8 @@ fn drag_minimap(
         return;
     }
     for (mut transform, projection) in &mut query {
-        transform.translation.x += window_cursor.delta.x * projection.scale * DRAGGING_RATE;
-        transform.translation.y -= window_cursor.delta.y * projection.scale * DRAGGING_RATE;
+        transform.translation.x -= window_cursor.delta.x * projection.scale * DRAGGING_RATE;
+        transform.translation.y += window_cursor.delta.y * projection.scale * DRAGGING_RATE;
     }
 }
 
@@ -104,21 +105,21 @@ fn zoom_minimap(
     }
 }
 
-fn activate_minimap(
-    is_active: bool,
-) -> impl FnMut(
-    Query<(&mut Camera, &mut Transform), With<MinimapCamera>>,
-    Query<&Transform, (With<PlayerController>, Without<MinimapCamera>)>,
-) {
-    move |mut query, player_query| {
-        for player_transform in &player_query {
-            for (mut camera, mut transform) in &mut query {
-                camera.is_active = is_active;
-                transform.translation.x = player_transform.translation.x;
-                transform.translation.y = player_transform.translation.y;
-            }
+fn toggle_minimap(
+    width: u32,
+    height: u32,
+) -> impl FnMut(Query<(&mut Camera, &mut OrthographicProjection), With<MinimapCamera>>) {
+    move |mut query| {
+        for (mut camera, mut projection) in &mut query {
+            let Some(viewport) = camera.viewport.as_mut() else {
+                continue;
+            };
+            viewport.physical_size.x = width;
+            viewport.physical_size.y = height;
+            projection.scale = INIT_ZOOM;
         }
     }
+    // TODO minimap position
 }
 
 pub struct MinimapPlugin;
@@ -129,14 +130,27 @@ impl Plugin for MinimapPlugin {
         app.add_systems(
             Update,
             (
-                change_ui_state::<KeyM>(UIStates::Minimap).run_if(not(in_state(UIStates::Minimap))),
-                change_ui_state::<KeyM>(UIStates::None).run_if(in_state(UIStates::Minimap)),
-                zoom_minimap,
-                drag_minimap,
+                (
+                    change_ui_state::<KeyM>(UIStates::Map),
+                    trace_player::<MinimapCamera>,
+                )
+                    .run_if(not(in_state(UIStates::Map))),
+                (
+                    change_ui_state::<KeyM>(UIStates::None),
+                    zoom_minimap,
+                    drag_minimap,
+                )
+                    .run_if(in_state(UIStates::Map)),
             ),
         );
-        app.add_systems(OnEnter(UIStates::Minimap), activate_minimap(true));
-        app.add_systems(OnExit(UIStates::Minimap), activate_minimap(false));
+        app.add_systems(
+            OnEnter(UIStates::Map),
+            toggle_minimap(MAP_WIDTH, MAP_HEIGHT),
+        );
+        app.add_systems(
+            OnExit(UIStates::Map),
+            toggle_minimap(MINIMAP_WIDTH, MINIMAP_HEIGHT),
+        );
     }
     // TODO fast travel
 }

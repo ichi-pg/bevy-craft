@@ -148,7 +148,7 @@ fn spawn_blocks(
                 });
         }
     }
-    // TODO texture
+    // TODO color on minimap
     // TODO can merge shapes? ex. first horizontal, next vertical
 }
 

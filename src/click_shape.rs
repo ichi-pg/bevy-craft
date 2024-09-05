@@ -68,7 +68,7 @@ impl Plugin for ClickShapePlugin {
         app.add_systems(
             Update,
             (left_click, right_click)
-                .run_if(not(in_state(UIStates::Minimap)))
+                .run_if(not(in_state(UIStates::Map)))
                 .run_if(in_state(ItemDragged::None))
                 .run_if(in_state(UIHovered::None)),
         );

@@ -8,7 +8,7 @@ pub enum UIStates {
     Inventory,
     Storage,
     Workbench,
-    Minimap,
+    Map,
 }
 
 pub fn change_ui_state<T: Resource + Pressed>(

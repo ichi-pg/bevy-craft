@@ -80,7 +80,7 @@ impl Plugin for ItemSelectingPlugin {
         app.add_systems(
             Update,
             (
-                select_wheel.run_if(not(in_state(UIStates::Minimap))),
+                select_wheel.run_if(not(in_state(UIStates::Map))),
                 select_digit,
                 sync_visibility,
                 sync_item,

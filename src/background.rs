@@ -73,33 +73,25 @@ fn spawn_background(mut commands: Commands, random: Res<Random>) {
         });
 }
 
-fn trace_player(
-    mut query: Query<&mut Transform, With<Background>>,
-    mut layer_query: Query<&mut Transform, (With<BackgroundLayer>, Without<Background>)>,
+fn scroll_layers(
+    mut query: Query<&mut Transform, With<BackgroundLayer>>,
     player_query: Query<
         &Transform,
         (
             With<PlayerController>,
-            Without<Background>,
             Without<BackgroundLayer>,
-            Without<BackgroundCloud>,
             Changed<Transform>,
         ),
     >,
 ) {
     for player_transform in &player_query {
         for mut transform in &mut query {
-            transform.translation.x = player_transform.translation.x;
-            transform.translation.y = player_transform.translation.y;
-        }
-        for mut transform in &mut layer_query {
             transform.translation.x =
                 -player_transform.translation.x * transform.translation.z * SCROLL_SPEED;
             transform.translation.y =
                 -player_transform.translation.y * transform.translation.z * SCROLL_SPEED;
         }
     }
-    // TODO common trace system
     // TODO change texture with environment
 }
 
@@ -115,6 +107,9 @@ pub struct BackgroundPlugin;
 impl Plugin for BackgroundPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_background);
-        app.add_systems(Update, (trace_player, move_clouds));
+        app.add_systems(
+            Update,
+            (trace_player::<Background>, scroll_layers, move_clouds),
+        );
     }
 }
