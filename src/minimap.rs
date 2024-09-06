@@ -15,6 +15,11 @@ struct MinimapCamera;
 #[derive(Component)]
 struct MinimapParent;
 
+enum MapMode {
+    Minimap,
+    Fullmap,
+}
+
 pub const MINIMAP_LAYER: RenderLayers = RenderLayers::layer(MINIMAP_ORDER);
 pub const MINIMAP_ALPHA: f32 = 0.5;
 
@@ -110,20 +115,33 @@ fn zoom_fullmap(
     }
 }
 
-fn switch_minimap(
-    mut query: Query<&mut Transform, With<MinimapParent>>,
-    mut camera_query: Query<(&mut Camera, &mut OrthographicProjection), With<MinimapCamera>>,
-    window_query: Query<&Window, With<PrimaryWindow>>,
+fn switch_mode(
+    mode: MapMode,
+) -> impl FnMut(
+    Query<&mut Transform, With<MinimapParent>>,
+    Query<(&mut Camera, &mut OrthographicProjection), With<MinimapCamera>>,
+    Query<&Window, With<PrimaryWindow>>,
 ) {
-    for mut transform in &mut query {
-        transform.translation.x = 0.0;
-        transform.translation.y = 0.0;
+    move |mut query, mut camera_query, window_query| {
+        for mut transform in &mut query {
+            transform.translation.x = 0.0;
+            transform.translation.y = 0.0;
+        }
+        for (mut camera, mut projection) in &mut camera_query {
+            for window in &window_query {
+                update_mode(&mode, window, &mut camera);
+            }
+            projection.scale = INIT_ZOOM;
+        }
     }
-    for (mut camera, mut projection) in &mut camera_query {
-        let Some(viewport) = camera.viewport.as_mut() else {
-            continue;
-        };
-        for window in &window_query {
+}
+
+fn update_mode(mode: &MapMode, window: &Window, camera: &mut Camera) {
+    let Some(viewport) = camera.viewport.as_mut() else {
+        return;
+    };
+    match mode {
+        MapMode::Minimap => {
             let scale = window.physical_height() as f32 / WINDOWED_HEIGHT;
             let width = MINIMAP_WIDTH * scale;
             let height = MINIMAP_HEIGHT * scale;
@@ -133,24 +151,7 @@ fn switch_minimap(
             viewport.physical_size.x = width as u32;
             viewport.physical_size.y = height as u32;
         }
-        projection.scale = INIT_ZOOM;
-    }
-}
-
-fn switch_fullmap(
-    mut query: Query<&mut Transform, With<MinimapParent>>,
-    mut camera_query: Query<(&mut Camera, &mut OrthographicProjection), With<MinimapCamera>>,
-    window_query: Query<&Window, With<PrimaryWindow>>,
-) {
-    for mut transform in &mut query {
-        transform.translation.x = 0.0;
-        transform.translation.y = 0.0;
-    }
-    for (mut camera, mut projection) in &mut camera_query {
-        let Some(viewport) = camera.viewport.as_mut() else {
-            continue;
-        };
-        for window in &window_query {
+        MapMode::Fullmap => {
             let scale = window.physical_height() as f32 / WINDOWED_HEIGHT;
             let width = FULLMAP_WIDTH * scale;
             let height = FULLMAP_HEIGHT * scale;
@@ -160,12 +161,11 @@ fn switch_fullmap(
             viewport.physical_size.x = width as u32;
             viewport.physical_size.y = height as u32;
         }
-        projection.scale = INIT_ZOOM;
     }
 }
 
 fn window_resized(
-    mut camera_query: Query<(&mut Camera, &mut OrthographicProjection), With<MinimapCamera>>,
+    mut camera_query: Query<&mut Camera, With<MinimapCamera>>,
     window_query: Query<&Window, With<PrimaryWindow>>,
     event_reader: EventReader<WindowResized>,
     state: Res<State<UIStates>>,
@@ -173,39 +173,15 @@ fn window_resized(
     if event_reader.is_empty() {
         return;
     }
-    for (mut camera, mut projection) in &mut camera_query {
-        let Some(viewport) = camera.viewport.as_mut() else {
-            continue;
-        };
+    for mut camera in &mut camera_query {
         for window in &window_query {
             match state.get() {
-                UIStates::Map => {
-                    let scale = window.physical_height() as f32 / WINDOWED_HEIGHT;
-                    let width = FULLMAP_WIDTH * scale;
-                    let height = FULLMAP_HEIGHT * scale;
-                    viewport.physical_position.x =
-                        ((window.physical_width() as f32 - width) * 0.5) as u32;
-                    viewport.physical_position.y =
-                        ((window.physical_height() as f32 - height) * 0.5) as u32;
-                    viewport.physical_size.x = width as u32;
-                    viewport.physical_size.y = height as u32;
-                }
-                _ => {
-                    let scale = window.physical_height() as f32 / WINDOWED_HEIGHT;
-                    let width = MINIMAP_WIDTH * scale;
-                    let height = MINIMAP_HEIGHT * scale;
-                    let margin = UI_MARGIN * scale;
-                    viewport.physical_position.x =
-                        (window.physical_width() as f32 - width - margin) as u32;
-                    viewport.physical_position.y = margin as u32;
-                    viewport.physical_size.x = width as u32;
-                    viewport.physical_size.y = height as u32;
-                }
+                UIStates::Map => update_mode(&MapMode::Fullmap, window, &mut camera),
+                _ => update_mode(&MapMode::Minimap, window, &mut camera),
             }
         }
-        projection.scale = INIT_ZOOM;
     }
-    // TODO merge functions
+    // FIXME if smaller than window
 }
 
 pub struct MinimapPlugin;
@@ -216,7 +192,7 @@ impl Plugin for MinimapPlugin {
             Startup,
             (
                 spawn_minimap,
-                (switch_minimap, init_zoom).after(spawn_minimap),
+                (switch_mode(MapMode::Minimap), init_zoom).after(spawn_minimap),
             ),
         );
         app.add_systems(
@@ -233,8 +209,8 @@ impl Plugin for MinimapPlugin {
                     .run_if(in_state(UIStates::Map)),
             ),
         );
-        app.add_systems(OnEnter(UIStates::Map), switch_fullmap);
-        app.add_systems(OnExit(UIStates::Map), switch_minimap);
+        app.add_systems(OnEnter(UIStates::Map), switch_mode(MapMode::Fullmap));
+        app.add_systems(OnExit(UIStates::Map), switch_mode(MapMode::Minimap));
     }
     // TODO fast travel
 }
