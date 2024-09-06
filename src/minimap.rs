@@ -19,8 +19,6 @@ pub const MINIMAP_LAYER: RenderLayers = RenderLayers::layer(MINIMAP_ORDER);
 pub const MINIMAP_ALPHA: f32 = 0.5;
 
 const MINIMAP_ORDER: usize = 1;
-const WORLD_WIDTH: f32 = 1000000.0;
-const WORLD_HEIGHT: f32 = 1000000.0;
 const FULLMAP_WIDTH: f32 = 1440.0;
 const FULLMAP_HEIGHT: f32 = 810.0;
 const MINIMAP_WIDTH: f32 = 400.0;
@@ -32,35 +30,41 @@ const MAX_ZOOM_COUNT: f32 = 10.0;
 const DRAGGING_RATE: f32 = 1.0;
 
 fn spawn_minimap(mut commands: Commands) {
+    let scale = INIT_ZOOM * ZOOM_RATE.powf(MAX_ZOOM_COUNT);
     commands
         .spawn((SpatialBundle::default(), MinimapParent))
         .with_children(|parent| {
-            parent.spawn((
-                Camera2dBundle {
-                    camera: Camera {
-                        viewport: Some(Viewport::default()),
-                        order: MINIMAP_ORDER as isize,
+            parent
+                .spawn((
+                    Camera2dBundle {
+                        camera: Camera {
+                            viewport: Some(Viewport::default()),
+                            order: MINIMAP_ORDER as isize,
+                            ..default()
+                        },
                         ..default()
                     },
-                    ..default()
-                },
-                MINIMAP_LAYER,
-                MinimapCamera,
-            ));
+                    MINIMAP_LAYER,
+                    MinimapCamera,
+                ))
+                .with_children(|parent| {
+                    parent.spawn((
+                        SpriteBundle {
+                            sprite: Sprite {
+                                color: BACKGROUND_COLOR.with_alpha(MINIMAP_ALPHA),
+                                custom_size: Some(Vec2::new(
+                                    FULLMAP_WIDTH * scale,
+                                    FULLMAP_HEIGHT * scale,
+                                )),
+                                ..default()
+                            },
+                            transform: Transform::from_xyz(0.0, 0.0, BACKGROUND_Z),
+                            ..default()
+                        },
+                        MINIMAP_LAYER,
+                    ));
+                });
         });
-    commands.spawn((
-        SpriteBundle {
-            sprite: Sprite {
-                color: BACKGROUND_COLOR.with_alpha(MINIMAP_ALPHA),
-                custom_size: Some(Vec2::new(WORLD_WIDTH, WORLD_HEIGHT)),
-                ..default()
-            },
-            transform: Transform::from_xyz(0.0, 0.0, BACKGROUND_Z),
-            ..default()
-        },
-        MINIMAP_LAYER,
-    ));
-    // TODO background trace camera or clear color
 }
 
 fn init_zoom(mut query: Query<&mut OrthographicProjection, With<MinimapCamera>>) {
