@@ -143,8 +143,8 @@ fn update_mode(mode: &MapMode, window: &Window, camera: &mut Camera) {
     match mode {
         MapMode::Minimap => {
             let scale = window.physical_height() as f32 / WINDOWED_HEIGHT;
-            let width = MINIMAP_WIDTH * scale;
-            let height = MINIMAP_HEIGHT * scale;
+            let width = (MINIMAP_WIDTH * scale).min(window.physical_width() as f32);
+            let height = (MINIMAP_HEIGHT * scale).min(window.physical_height() as f32);
             let margin = UI_MARGIN * scale;
             viewport.physical_position.x = (window.physical_width() as f32 - width - margin) as u32;
             viewport.physical_position.y = margin as u32;
@@ -153,8 +153,8 @@ fn update_mode(mode: &MapMode, window: &Window, camera: &mut Camera) {
         }
         MapMode::Fullmap => {
             let scale = window.physical_height() as f32 / WINDOWED_HEIGHT;
-            let width = FULLMAP_WIDTH * scale;
-            let height = FULLMAP_HEIGHT * scale;
+            let width = (FULLMAP_WIDTH * scale).min(window.physical_width() as f32);
+            let height = (FULLMAP_HEIGHT * scale).min(window.physical_height() as f32);
             viewport.physical_position.x = ((window.physical_width() as f32 - width) * 0.5) as u32;
             viewport.physical_position.y =
                 ((window.physical_height() as f32 - height) * 0.5) as u32;
@@ -181,7 +181,6 @@ fn window_resized(
             }
         }
     }
-    // FIXME if smaller than window
 }
 
 pub struct MinimapPlugin;
