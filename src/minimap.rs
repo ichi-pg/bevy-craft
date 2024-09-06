@@ -2,7 +2,7 @@ use crate::input::*;
 use crate::player::*;
 use crate::ui_parts::*;
 use crate::ui_states::*;
-use crate::window::ScreenMode;
+use crate::window::WINDOWED_HEIGHT;
 use crate::z_sort::*;
 use bevy::prelude::*;
 use bevy::render::camera::*;
@@ -124,12 +124,14 @@ fn switch_minimap(
             continue;
         };
         for window in &window_query {
-            let scale = window.scale_factor();
-            viewport.physical_position.x =
-                ((window.width() - MINIMAP_WIDTH - UI_MARGIN) * scale) as u32;
-            viewport.physical_position.y = (UI_MARGIN * scale) as u32;
-            viewport.physical_size.x = (MINIMAP_WIDTH * scale) as u32;
-            viewport.physical_size.y = (MINIMAP_HEIGHT * scale) as u32;
+            let scale = window.physical_height() as f32 / WINDOWED_HEIGHT;
+            let width = MINIMAP_WIDTH * scale;
+            let height = MINIMAP_HEIGHT * scale;
+            let margin = UI_MARGIN * scale;
+            viewport.physical_position.x = (window.physical_width() as f32 - width - margin) as u32;
+            viewport.physical_position.y = margin as u32;
+            viewport.physical_size.x = width as u32;
+            viewport.physical_size.y = height as u32;
         }
         projection.scale = INIT_ZOOM;
     }
@@ -149,15 +151,61 @@ fn switch_fullmap(
             continue;
         };
         for window in &window_query {
-            let scale = window.scale_factor();
-            viewport.physical_position.x = ((window.width() - FULLMAP_WIDTH) * 0.5 * scale) as u32;
+            let scale = window.physical_height() as f32 / WINDOWED_HEIGHT;
+            let width = FULLMAP_WIDTH * scale;
+            let height = FULLMAP_HEIGHT * scale;
+            viewport.physical_position.x = ((window.physical_width() as f32 - width) * 0.5) as u32;
             viewport.physical_position.y =
-                ((window.height() - FULLMAP_HEIGHT) * 0.5 * scale) as u32;
-            viewport.physical_size.x = (FULLMAP_WIDTH * scale) as u32;
-            viewport.physical_size.y = (FULLMAP_HEIGHT * scale) as u32;
+                ((window.physical_height() as f32 - height) * 0.5) as u32;
+            viewport.physical_size.x = width as u32;
+            viewport.physical_size.y = height as u32;
         }
         projection.scale = INIT_ZOOM;
     }
+}
+
+fn window_resized(
+    mut camera_query: Query<(&mut Camera, &mut OrthographicProjection), With<MinimapCamera>>,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+    event_reader: EventReader<WindowResized>,
+    state: Res<State<UIStates>>,
+) {
+    if event_reader.is_empty() {
+        return;
+    }
+    for (mut camera, mut projection) in &mut camera_query {
+        let Some(viewport) = camera.viewport.as_mut() else {
+            continue;
+        };
+        for window in &window_query {
+            match state.get() {
+                UIStates::Map => {
+                    let scale = window.physical_height() as f32 / WINDOWED_HEIGHT;
+                    let width = FULLMAP_WIDTH * scale;
+                    let height = FULLMAP_HEIGHT * scale;
+                    viewport.physical_position.x =
+                        ((window.physical_width() as f32 - width) * 0.5) as u32;
+                    viewport.physical_position.y =
+                        ((window.physical_height() as f32 - height) * 0.5) as u32;
+                    viewport.physical_size.x = width as u32;
+                    viewport.physical_size.y = height as u32;
+                }
+                _ => {
+                    let scale = window.physical_height() as f32 / WINDOWED_HEIGHT;
+                    let width = MINIMAP_WIDTH * scale;
+                    let height = MINIMAP_HEIGHT * scale;
+                    let margin = UI_MARGIN * scale;
+                    viewport.physical_position.x =
+                        (window.physical_width() as f32 - width - margin) as u32;
+                    viewport.physical_position.y = margin as u32;
+                    viewport.physical_size.x = width as u32;
+                    viewport.physical_size.y = height as u32;
+                }
+            }
+        }
+        projection.scale = INIT_ZOOM;
+    }
+    // TODO merge functions
 }
 
 pub struct MinimapPlugin;
@@ -174,6 +222,7 @@ impl Plugin for MinimapPlugin {
         app.add_systems(
             Update,
             (
+                window_resized,
                 trace_player::<MinimapCamera>,
                 change_ui_state::<KeyM>(UIStates::Map).run_if(not(in_state(UIStates::Map))),
                 (
@@ -186,20 +235,6 @@ impl Plugin for MinimapPlugin {
         );
         app.add_systems(OnEnter(UIStates::Map), switch_fullmap);
         app.add_systems(OnExit(UIStates::Map), switch_minimap);
-        app.add_systems(
-            OnEnter(ScreenMode::Windowed),
-            (
-                switch_fullmap.run_if(in_state(UIStates::Map)),
-                switch_minimap.run_if(not(in_state(UIStates::Map))),
-            ),
-        );
-        app.add_systems(
-            OnEnter(ScreenMode::Fullscreen),
-            (
-                switch_fullmap.run_if(in_state(UIStates::Map)),
-                switch_minimap.run_if(not(in_state(UIStates::Map))),
-            ),
-        );
     }
     // TODO fast travel
 }

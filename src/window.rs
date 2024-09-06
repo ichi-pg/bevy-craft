@@ -1,20 +1,14 @@
 use crate::input::*;
 use bevy::prelude::*;
 use bevy::window::*;
-use bevy::winit::*;
 
-#[derive(States, Debug, Clone, PartialEq, Eq, Hash, Copy)]
-pub enum ScreenMode {
-    Windowed,
-    Fullscreen,
-}
+pub const WINDOWED_WIDTH: f32 = 1920.0;
+pub const WINDOWED_HEIGHT: f32 = 1080.0;
 
 fn toggle_fullscreen(
-    mut query: Query<(Entity, &mut Window), With<PrimaryWindow>>,
-    winit_windows: NonSend<WinitWindows>,
+    mut query: Query<&mut Window, With<PrimaryWindow>>,
     alt: Res<AltRight>,
     enter: Res<Enter>,
-    mut next_state: ResMut<NextState<ScreenMode>>,
 ) {
     if !alt.pressed {
         return;
@@ -22,39 +16,33 @@ fn toggle_fullscreen(
     if !enter.just_pressed {
         return;
     }
-    for (entity, mut window) in &mut query {
-        match window.mode {
-            WindowMode::Windowed => {
-                window.mode = WindowMode::BorderlessFullscreen;
-                match winit_windows.get_window(entity) {
-                    Some(winit_window) => match winit_window.current_monitor() {
-                        Some(monitor) => {
-                            let height = window.height();
-                            window
-                                .resolution
-                                .set_scale_factor(monitor.size().height as f32 / height);
-                        }
-                        None => todo!(),
-                    },
-                    None => todo!(),
-                }
-                next_state.set(ScreenMode::Fullscreen);
-            }
-            _ => {
-                window.mode = WindowMode::Windowed;
-                window.resolution.set_scale_factor(1.0);
-                next_state.set(ScreenMode::Windowed);
-            }
+    for mut window in &mut query {
+        window.mode = match window.mode {
+            WindowMode::Windowed => WindowMode::BorderlessFullscreen,
+            _ => WindowMode::Windowed,
         }
     }
-    // TODO web flex
+}
+
+fn window_resized(mut query: Query<&mut Window>, mut event_reader: EventReader<WindowResized>) {
+    for event in event_reader.read() {
+        let Ok(mut window) = query.get_mut(event.window) else {
+            continue;
+        };
+        let height = window.physical_height();
+        window
+            .resolution
+            .set_scale_factor(height as f32 / WINDOWED_HEIGHT);
+    }
 }
 
 pub struct WindowPlugin;
 
 impl Plugin for WindowPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_state(ScreenMode::Windowed);
-        app.add_systems(Update, toggle_fullscreen);
+        app.add_systems(
+            Update,
+            (toggle_fullscreen, window_resized.after(toggle_fullscreen)),
+        );
     }
 }

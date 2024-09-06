@@ -54,9 +54,9 @@ fn main() {
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 title: "Bevy Craft".into(),
-                resolution: (1920.0, 1080.0).into(),
+                resolution: (window::WINDOWED_WIDTH, window::WINDOWED_HEIGHT).into(),
                 position: WindowPosition::Centered(MonitorSelection::Primary),
-                resizable: false,
+                resizable: true,
                 #[cfg(target_arch = "wasm32")]
                 canvas: Some("#bevy-canvas".into()),
                 ..default()
