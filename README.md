@@ -15,7 +15,7 @@ wasm-bindgen --no-typescript --target web --out-dir ../bevy-craft-web/ --out-nam
 
 ## Web
 
-* <https://ichi-pg.github.io/bevy-craft-web>
+* <https://ichi-pg.github.io/bevy-craft-web/>
 
 ## Assets
 
