@@ -54,7 +54,10 @@ fn main() {
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 title: "Bevy Craft".into(),
+                #[cfg(not(target_arch = "wasm32"))]
                 resolution: (window::WINDOWED_WIDTH, window::WINDOWED_HEIGHT).into(),
+                #[cfg(target_arch = "wasm32")]
+                resolution: (1280.0, 720.0).into(),
                 position: WindowPosition::Centered(MonitorSelection::Primary),
                 resizable: true,
                 #[cfg(target_arch = "wasm32")]
