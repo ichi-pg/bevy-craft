@@ -28,8 +28,8 @@ fn build_clouds(parent: &mut ChildBuilder, mut random: ChaCha8Rng, z: f32, y1: u
             BackgroundLayer,
         ))
         .with_children(|parent| {
-            for x in -20..20 {
-                for y in y1..y2 {
+            for x in -20..=20 {
+                for y in y1..=y2 {
                     if (y + 5).pow2() > random.next_u32() % 500 {
                         let x = x + random.next_u32() as i32 % 7 - 3;
                         let y = y + random.next_u32() % 3;
@@ -71,6 +71,7 @@ fn spawn_background(mut commands: Commands, random: Res<Random>) {
             build_clouds(parent, random.0.clone(), 2.0, 5, 8);
             build_clouds(parent, random.0.clone(), 3.0, 9, 12);
         });
+    // TODO flex background width
 }
 
 fn scroll_layers(

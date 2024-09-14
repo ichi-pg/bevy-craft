@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 mod atlas;
 mod background;
+mod biome;
+mod biome_id;
 mod block;
 mod camera;
 mod chunk;
@@ -47,6 +49,7 @@ mod ui_states;
 mod velocity;
 mod window;
 mod workbench;
+mod world_generator;
 mod z_sort;
 
 fn main() {
@@ -106,6 +109,8 @@ fn main() {
             velocity::VelocityPlugin,
             gravity::GravityPlugin,
             chunk::ChunkPlugin,
+            biome::BiomePlugin,
+            world_generator::WorldGeneratorPlugin,
         ))
         .add_plugins((
             player::PlayerPlugin,
@@ -143,8 +148,9 @@ fn main() {
     // forest and ruins, submerged city,
     // magic fantasy or cyber punk or post apocalypse
 
-    // TODO master data
-    // TODO save and load
+    // TODO master data with csv serde
+    // TODO save and load with json serde
+
     // TODO multiplayer
     // TODO sound
     // TODO config (framerate, resolution, key bind, ...)

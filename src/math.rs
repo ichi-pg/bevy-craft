@@ -81,3 +81,23 @@ impl WithZ for Vec2 {
         }
     }
 }
+
+pub trait Normalize01 {
+    fn normalize_0_1(&self) -> f64;
+}
+
+impl Normalize01 for f64 {
+    fn normalize_0_1(&self) -> f64 {
+        (self + 1.0) * 0.5
+    }
+}
+
+pub trait Interpolate {
+    fn interpolate(&self, base: f64, liner: f64) -> f64;
+}
+
+impl Interpolate for f64 {
+    fn interpolate(&self, base: f64, liner: f64) -> f64 {
+        base + self * liner
+    }
+}

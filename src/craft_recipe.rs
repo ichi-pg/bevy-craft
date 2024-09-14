@@ -18,8 +18,8 @@ pub struct CraftRecipeMap(HashMap<u16, CraftRecipe>);
 fn create_recipes() -> CraftRecipeMap {
     let mut recipes = HashMap::new();
     for (item_id, amount, materials) in [
-        (WOOD_PICKAXE_ID, 1, vec![(WOOD_ID, 1)]),
-        (WOOD_SWORD_ID, 1, vec![(WOOD_ID, 1)]),
+        (WOOD_PICKAXE_ITEM_ID, 1, vec![(WOOD_ITEM_ID, 1)]),
+        (WOOD_SWORD_ITEM_ID, 1, vec![(WOOD_ITEM_ID, 1)]),
     ] {
         recipes.insert(
             item_id,
