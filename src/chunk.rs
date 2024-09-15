@@ -1,3 +1,4 @@
+use crate::block::*;
 use crate::hit_test::*;
 use crate::player::*;
 use bevy::prelude::*;
@@ -11,7 +12,7 @@ struct ChunkPosition(Vec2);
 #[derive(Event)]
 struct ChunkChanged;
 
-const CHUNK_SIZE: f32 = 1280.0;
+const CHUNK_SIZE: f32 = BLOCK_SIZE * 20.0;
 const INNER_SHAPE: Shape = Shape::Rect(Vec2::splat(CHUNK_SIZE));
 const OUTER_SHAPE: Shape = Shape::Rect(Vec2::splat(CHUNK_SIZE * 2.0));
 
@@ -25,7 +26,7 @@ fn start_chunk(
 }
 
 fn update_chunk(
-    player_query: Query<&Transform, With<PlayerController>>,
+    player_query: Query<&Transform, (With<PlayerController>, Changed<Transform>)>,
     mut chunk_position: ResMut<ChunkPosition>,
     mut event_writer: EventWriter<ChunkChanged>,
 ) {

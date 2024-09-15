@@ -62,7 +62,7 @@ fn spawn_world(
             );
         }
     }
-    // TODO high load 
+    // TODO high load
 }
 
 pub struct WorldGeneratorPlugin;
