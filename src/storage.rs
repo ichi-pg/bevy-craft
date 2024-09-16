@@ -11,7 +11,7 @@ use bevy::prelude::*;
 use bevy_craft::*;
 
 #[derive(Component)]
-struct BackgroundItem;
+struct UnloadItem;
 
 #[derive(Component, Default)]
 pub struct Storage;
@@ -35,9 +35,9 @@ pub struct StorageOverflowed {
 
 fn spawn_storage(
     camera_query: Query<Entity, With<PlayerCamera>>,
-    mut commands: Commands,
     attribute_map: Res<ItemAttributeMap>,
     atlas_map: Res<AtlasMap>,
+    mut commands: Commands,
 ) {
     let Some(attribute) = attribute_map.get(&0) else {
         return;
@@ -64,11 +64,11 @@ fn spawn_storage(
 }
 
 fn open_storage(
-    mut item_query: Query<(&mut ItemID, &mut ItemAmount, &ItemIndex), With<StorageItem>>,
-    background_query: Query<
+    unload_query: Query<
         (&ItemID, &ItemAmount, &ItemIndex, &BlockID),
-        (With<BackgroundItem>, Without<StorageItem>),
+        (With<UnloadItem>, Without<StorageItem>),
     >,
+    mut item_query: Query<(&mut ItemID, &mut ItemAmount, &ItemIndex), With<StorageItem>>,
     mut event_reader: EventReader<StorageClicked>,
     mut storage_block_id: ResMut<StorageBlockID>,
     mut next_state: ResMut<NextState<UIStates>>,
@@ -78,17 +78,15 @@ fn open_storage(
         for (mut item_id, mut amount, index) in &mut item_query {
             item_id.0 = 0;
             amount.0 = 0;
-            for (background_item_id, background_amount, background_index, block_id) in
-                &background_query
-            {
+            for (unload_item_id, unload_amount, unload_index, block_id) in &unload_query {
                 if block_id.0 != event.block_id {
                     continue;
                 }
-                if index.0 != background_index.0 {
+                if index.0 != unload_index.0 {
                     continue;
                 }
-                item_id.0 = background_item_id.0;
-                amount.0 = background_amount.0;
+                item_id.0 = unload_item_id.0;
+                amount.0 = unload_amount.0;
                 break;
             }
         }
@@ -96,7 +94,7 @@ fn open_storage(
         storage_block_id.0 = event.block_id;
         next_state.set(UIStates::Storage);
     }
-    // TODO optimize search background item
+    // TODO optimize search unload item
     // TODO spawn when world initialized
     // TODO hash map with block id?
     // TODO enable distance
@@ -104,6 +102,7 @@ fn open_storage(
 }
 
 fn sync_items(
+    storage_block_id: Res<StorageBlockID>,
     item_query: Query<
         (&ItemID, &ItemAmount, &ItemIndex),
         (
@@ -111,29 +110,28 @@ fn sync_items(
             Or<(Changed<ItemID>, Changed<ItemAmount>)>,
         ),
     >,
-    mut background_query: Query<
+    mut unload_query: Query<
         (Entity, &mut ItemID, &mut ItemAmount, &ItemIndex, &BlockID),
-        (With<BackgroundItem>, Without<StorageItem>),
+        (With<UnloadItem>, Without<StorageItem>),
     >,
     mut commands: Commands,
-    storage_block_id: Res<StorageBlockID>,
 ) {
     for (item_id, amount, index) in &item_query {
         let mut found = false;
-        for (entity, mut background_item_id, mut background_amount, background_index, block_id) in
-            &mut background_query
+        for (entity, mut unload_item_id, mut unload_amount, unload_index, block_id) in
+            &mut unload_query
         {
             if block_id.0 != storage_block_id.0 {
                 continue;
             }
-            if index.0 != background_index.0 {
+            if index.0 != unload_index.0 {
                 continue;
             }
             if item_id.0 == 0 {
                 commands.entity(entity).despawn_recursive();
             } else {
-                background_item_id.0 = item_id.0;
-                background_amount.0 = amount.0;
+                unload_item_id.0 = item_id.0;
+                unload_amount.0 = amount.0;
             }
             found = true;
             break;
@@ -145,7 +143,7 @@ fn sync_items(
             continue;
         }
         commands.spawn((
-            BackgroundItem,
+            UnloadItem,
             BlockID(storage_block_id.0),
             ItemID(item_id.0),
             ItemAmount(amount.0),
@@ -155,13 +153,13 @@ fn sync_items(
 }
 
 fn destroy_items(
-    background_query: Query<(Entity, &ItemID, &ItemAmount, &BlockID), With<BackgroundItem>>,
+    unload_query: Query<(Entity, &ItemID, &ItemAmount, &BlockID), With<UnloadItem>>,
     mut event_reader: EventReader<BlockDestroied>,
     mut event_writer: EventWriter<ItemDropped>,
     mut commands: Commands,
 ) {
     for event in event_reader.read() {
-        for (entity, item_id, amount, block_id) in &background_query {
+        for (entity, item_id, amount, block_id) in &unload_query {
             if block_id.0 != event.block_id {
                 continue;
             }

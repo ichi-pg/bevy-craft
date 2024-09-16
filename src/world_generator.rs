@@ -1,8 +1,7 @@
-use crate::atlas::*;
 // use crate::biome::*;
 // use crate::biome_id::*;
-use crate::block::*;
-use crate::item_attribute::*;
+use crate::chunk::UnloadBlock;
+use crate::chunk::UnloadBlocks;
 use crate::item_id::*;
 use crate::math::*;
 use crate::random::*;
@@ -15,10 +14,8 @@ const WORLD_HEIGHT: i32 = 100;
 
 fn spawn_world(
     // biome_map: Res<BiomeMap>,
-    attribute_map: Res<ItemAttributeMap>,
-    atlas_map: Res<AtlasMap>,
     mut random: ResMut<Random>,
-    mut commands: Commands,
+    mut unload_blocks: ResMut<UnloadBlocks>,
 ) {
     // let order = [
     //     vec![vec![(FOREST_BIOME_ID, CAVE_BIOME_ID)]],
@@ -52,17 +49,12 @@ fn spawn_world(
             if y > height {
                 continue;
             }
-            commands.build_block(
-                SOIL_ITEM_ID,
-                (x - half_width) as f32,
-                (y - WORLD_HEIGHT) as f32,
-                &attribute_map,
-                &atlas_map,
-                &mut random,
-            );
+            unload_blocks.push(UnloadBlock {
+                item_id: SOIL_ITEM_ID,
+                position: Vec2::new((x - half_width) as f32, (y - WORLD_HEIGHT) as f32),
+            });
         }
     }
-    // TODO high load
 }
 
 pub struct WorldGeneratorPlugin;

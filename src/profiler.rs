@@ -1,4 +1,5 @@
 use crate::camera::*;
+use crate::chunk::*;
 use crate::math::*;
 use crate::player::*;
 use crate::velocity::*;
@@ -69,14 +70,16 @@ fn sync_collision(
 fn sync_player(
     mut query: Query<&mut Text, With<PlayerInfo>>,
     player_query: Query<(&Transform, &Velocity2), With<PlayerController>>,
+    chunk_point: Res<ChunkPoint>,
 ) {
     for (transform, velocity) in &player_query {
         for mut text in &mut query {
             for section in &mut text.sections {
                 section.value = format!(
-                    "Position:{} Velocity:{}",
-                    transform.translation.to_vec2i(),
-                    velocity.to_vec2i(),
+                    "Position:{} Velocity:{} Chunk:{}",
+                    transform.translation.to_i32vec2(),
+                    velocity.to_i32vec2(),
+                    chunk_point.to_i32vec2(),
                 );
             }
         }

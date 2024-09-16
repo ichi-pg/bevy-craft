@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::math::*;
 
 pub trait Repeat<T> {
     fn repeat(&self, min: T, max: T) -> T;
@@ -46,12 +46,12 @@ impl LookAt<f32> for f32 {
     }
 }
 
-pub trait ToVec2i<T> {
-    fn to_vec2i(&self) -> IVec2;
+pub trait ToI32Vec2 {
+    fn to_i32vec2(&self) -> IVec2;
 }
 
-impl ToVec2i<Vec3> for Vec3 {
-    fn to_vec2i(&self) -> IVec2 {
+impl ToI32Vec2 for Vec3 {
+    fn to_i32vec2(&self) -> IVec2 {
         IVec2 {
             x: self.x as i32,
             y: self.y as i32,
@@ -59,11 +59,46 @@ impl ToVec2i<Vec3> for Vec3 {
     }
 }
 
-impl ToVec2i<Vec2> for Vec2 {
-    fn to_vec2i(&self) -> IVec2 {
+impl ToI32Vec2 for Vec2 {
+    fn to_i32vec2(&self) -> IVec2 {
         IVec2 {
             x: self.x as i32,
             y: self.y as i32,
+        }
+    }
+}
+
+impl ToI32Vec2 for I16Vec2 {
+    fn to_i32vec2(&self) -> IVec2 {
+        IVec2 {
+            x: self.x as i32,
+            y: self.y as i32,
+        }
+    }
+}
+
+pub trait ToF32Vec2 {
+    fn to_f32vec2(&self) -> Vec2;
+}
+
+impl ToF32Vec2 for I16Vec2 {
+    fn to_f32vec2(&self) -> Vec2 {
+        Vec2 {
+            x: self.x as f32,
+            y: self.y as f32,
+        }
+    }
+}
+
+pub trait ToI16Vec2 {
+    fn to_i16vec2(&self) -> I16Vec2;
+}
+
+impl ToI16Vec2 for Vec3 {
+    fn to_i16vec2(&self) -> I16Vec2 {
+        I16Vec2 {
+            x: self.x as i16,
+            y: self.y as i16,
         }
     }
 }

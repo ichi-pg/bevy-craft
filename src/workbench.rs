@@ -42,12 +42,13 @@ fn spawn_items(camera_query: Query<Entity, With<PlayerCamera>>, mut commands: Co
 }
 
 fn open_workbench(
-    mut event_reader: EventReader<WorkbenchClicked>,
+    event_reader: EventReader<WorkbenchClicked>,
     mut next_state: ResMut<NextState<UIStates>>,
 ) {
-    for _ in event_reader.read() {
-        next_state.set(UIStates::Workbench);
+    if event_reader.is_empty() {
+        return;
     }
+    next_state.set(UIStates::Workbench);
     // TODO replace item_id and amount by workbench id
     // TODO enable distance
 }
