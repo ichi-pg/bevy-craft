@@ -93,7 +93,7 @@ fn with_block(
         }
         unload_blocks.push(UnloadBlock {
             item_id: item_id.0,
-            point: transform.translation.to_i16vec2(),
+            point: (transform.translation / BLOCK_SIZE).to_i16vec2(),
         });
         commands.entity(entity).despawn_recursive();
     }
