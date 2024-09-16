@@ -52,7 +52,7 @@ fn spawn_world(
             }
             unload_blocks.push(UnloadBlock {
                 item_id: SOIL_ITEM_ID,
-                point: I16Vec2::new((x - half_width), (y - WORLD_HEIGHT)),
+                point: I16Vec2::new(x - half_width, y - WORLD_HEIGHT),
             });
         }
     }
