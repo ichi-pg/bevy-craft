@@ -7,12 +7,14 @@ use crate::item::*;
 use crate::item_attribute::*;
 use crate::item_node::*;
 use crate::item_selecting::*;
+use crate::math::*;
 use crate::minimap::*;
 use crate::player::*;
 use crate::random::*;
 use crate::stats::*;
 use crate::storage::*;
 use crate::workbench::*;
+use bevy::math::I16Vec2;
 use bevy::prelude::*;
 use rand::RngCore;
 
@@ -38,8 +40,7 @@ pub trait BuildBlock {
     fn build_block(
         &mut self,
         item_id: u16,
-        x: f32,
-        y: f32,
+        point: I16Vec2,
         attribute_map: &ItemAttributeMap,
         atlas_map: &AtlasMap,
         random: &mut Random,
@@ -50,8 +51,7 @@ impl<'w, 's> BuildBlock for Commands<'w, 's> {
     fn build_block(
         &mut self,
         item_id: u16,
-        x: f32,
-        y: f32,
+        point: I16Vec2,
         attribute_map: &ItemAttributeMap,
         atlas_map: &AtlasMap,
         random: &mut Random,
@@ -69,7 +69,11 @@ impl<'w, 's> BuildBlock for Commands<'w, 's> {
                     ..default()
                 },
                 texture: atlas.texture.clone(),
-                transform: Transform::from_xyz(x * BLOCK_SIZE, y * BLOCK_SIZE, 0.0),
+                transform: Transform::from_xyz(
+                    point.x as f32 * BLOCK_SIZE,
+                    point.y as f32 * BLOCK_SIZE,
+                    0.0,
+                ),
                 ..default()
             },
             TextureAtlas {
@@ -227,11 +231,12 @@ fn placement_block(
             }
             if item_id.0 == 0 {
                 continue;
-            }
+            };
             commands.build_block(
                 item_id.0,
-                ((event.pos.x + BLOCK_SIZE * 0.5) / BLOCK_SIZE).floor(),
-                ((event.pos.y + BLOCK_SIZE * 0.5) / BLOCK_SIZE).floor(),
+                ((event.pos + BLOCK_SIZE * 0.5) / BLOCK_SIZE)
+                    .floor()
+                    .to_i16vec2(),
                 &attribute_map,
                 &atlas_map,
                 &mut random,

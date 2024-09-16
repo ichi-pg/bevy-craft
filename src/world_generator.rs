@@ -5,12 +5,13 @@ use crate::chunk::UnloadBlocks;
 use crate::item_id::*;
 use crate::math::*;
 use crate::random::*;
+use bevy::math::I16Vec2;
 use bevy::prelude::*;
 use noise::*;
 use rand::RngCore;
 
-const WORLD_WIDTH: i32 = 200;
-const WORLD_HEIGHT: i32 = 100;
+const WORLD_WIDTH: i16 = 200;
+const WORLD_HEIGHT: i16 = 100;
 
 fn spawn_world(
     // biome_map: Res<BiomeMap>,
@@ -44,14 +45,14 @@ fn spawn_world(
             .get([x as f64 * 0.01])
             .normalize_0_1()
             .interpolate(half_height as f64, half_height as f64);
-        let height: i32 = (wavelength * amplitude) as i32;
+        let height = (wavelength * amplitude) as i16;
         for y in 0..WORLD_HEIGHT {
             if y > height {
                 continue;
             }
             unload_blocks.push(UnloadBlock {
                 item_id: SOIL_ITEM_ID,
-                position: Vec2::new((x - half_width) as f32, (y - WORLD_HEIGHT) as f32),
+                point: I16Vec2::new((x - half_width), (y - WORLD_HEIGHT)),
             });
         }
     }

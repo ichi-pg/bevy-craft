@@ -20,7 +20,7 @@ struct ChunkChanged;
 
 pub struct UnloadBlock {
     pub item_id: u16,
-    pub position: Vec2,
+    pub point: I16Vec2,
 }
 
 #[derive(Resource, Deref, DerefMut, Default)]
@@ -93,24 +93,33 @@ fn with_block(
         }
         unload_blocks.push(UnloadBlock {
             item_id: item_id.0,
-            position: transform.translation.xy(),
+            point: transform.translation.to_i16vec2(),
         });
         commands.entity(entity).despawn_recursive();
     }
     for block in unload_blocks.iter() {
-        if !point_test(block.position, chunk_position, OUTER_SHAPE) {
+        if !point_test(
+            block.point.to_f32vec2() * BLOCK_SIZE,
+            chunk_position,
+            OUTER_SHAPE,
+        ) {
             continue;
         }
         commands.build_block(
             block.item_id,
-            block.position.x,
-            block.position.y,
+            block.point,
             &attribute_map,
             &atlas_map,
             &mut random,
         );
     }
-    unload_blocks.retain(|block| !point_test(block.position, chunk_position, OUTER_SHAPE));
+    unload_blocks.retain(|block| {
+        !point_test(
+            block.point.to_f32vec2() * BLOCK_SIZE,
+            chunk_position,
+            OUTER_SHAPE,
+        )
+    });
     // TODO chunk map
 }
 

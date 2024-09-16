@@ -94,6 +94,15 @@ pub trait ToI16Vec2 {
     fn to_i16vec2(&self) -> I16Vec2;
 }
 
+impl ToI16Vec2 for Vec2 {
+    fn to_i16vec2(&self) -> I16Vec2 {
+        I16Vec2 {
+            x: self.x as i16,
+            y: self.y as i16,
+        }
+    }
+}
+
 impl ToI16Vec2 for Vec3 {
     fn to_i16vec2(&self) -> I16Vec2 {
         I16Vec2 {
