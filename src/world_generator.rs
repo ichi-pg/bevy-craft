@@ -1,7 +1,6 @@
 // use crate::biome::*;
 // use crate::biome_id::*;
-use crate::chunk::UnloadBlock;
-use crate::chunk::UnloadBlocks;
+use crate::chunk::*;
 use crate::item_id::*;
 use crate::math::*;
 use crate::random::*;
@@ -10,13 +9,13 @@ use bevy::prelude::*;
 use noise::*;
 use rand::RngCore;
 
-const WORLD_WIDTH: i16 = 200;
-const WORLD_HEIGHT: i16 = 100;
+const WORLD_WIDTH: i16 = 10000;
+const WORLD_HEIGHT: i16 = 3000;
 
 fn spawn_world(
     // biome_map: Res<BiomeMap>,
     mut random: ResMut<Random>,
-    mut unload_blocks: ResMut<UnloadBlocks>,
+    mut unload_blocks_map: ResMut<UnloadBlocksMap>,
 ) {
     // let order = [
     //     vec![vec![(FOREST_BIOME_ID, CAVE_BIOME_ID)]],
@@ -50,9 +49,17 @@ fn spawn_world(
             if y > height {
                 continue;
             }
+            let point = I16Vec2::new(x - half_width, y - WORLD_HEIGHT);
+            let chunk_point = point / CHUKN_LENGTH;
+            if !unload_blocks_map.contains_key(&chunk_point) {
+                unload_blocks_map.insert(chunk_point, Vec::new());
+            }
+            let Some(unload_blocks) = unload_blocks_map.get_mut(&chunk_point) else {
+                continue;
+            };
             unload_blocks.push(UnloadBlock {
                 item_id: SOIL_ITEM_ID,
-                point: I16Vec2::new(x - half_width, y - WORLD_HEIGHT),
+                point,
             });
         }
     }
