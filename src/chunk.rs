@@ -119,13 +119,6 @@ fn with_block(
             let chunk_point = chunk_point.0 + I16Vec2::new(x, y);
             let unload_blocks = unload_blocks_map.get_or_insert(&chunk_point);
             for block in unload_blocks.iter() {
-                if !point_test(
-                    block.point.to_f32vec2() * BLOCK_SIZE,
-                    chunk_position,
-                    OUTER_SHAPE,
-                ) {
-                    continue;
-                }
                 commands.build_block(
                     block.item_id,
                     block.point,
@@ -134,13 +127,7 @@ fn with_block(
                     &mut random,
                 );
             }
-            unload_blocks.retain(|block| {
-                !point_test(
-                    block.point.to_f32vec2() * BLOCK_SIZE,
-                    chunk_position,
-                    OUTER_SHAPE,
-                )
-            });
+            unload_blocks.clear();
         }
     }
 }
