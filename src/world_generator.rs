@@ -51,12 +51,7 @@ fn spawn_world(
             }
             let point = I16Vec2::new(x - half_width, y - WORLD_HEIGHT);
             let chunk_point = point / CHUKN_LENGTH;
-            if !unload_blocks_map.contains_key(&chunk_point) {
-                unload_blocks_map.insert(chunk_point, Vec::new());
-            }
-            let Some(unload_blocks) = unload_blocks_map.get_mut(&chunk_point) else {
-                continue;
-            };
+            let unload_blocks = unload_blocks_map.get_or_insert(&chunk_point);
             unload_blocks.push(UnloadBlock {
                 item_id: SOIL_ITEM_ID,
                 point,

@@ -28,6 +28,18 @@ pub struct UnloadBlock {
 #[derive(Resource, Deref, DerefMut, Default)]
 pub struct UnloadBlocksMap(pub HashMap<I16Vec2, Vec<UnloadBlock>>);
 
+impl GetOrInsert<I16Vec2, Vec<UnloadBlock>> for HashMap<I16Vec2, Vec<UnloadBlock>> {
+    fn get_or_insert(&mut self, key: &I16Vec2) -> &mut Vec<UnloadBlock> {
+        if !self.contains_key(key) {
+            self.insert(*key, Vec::new());
+        }
+        let Some(unload_blocks) = self.get_mut(key) else {
+            todo!();
+        };
+        unload_blocks
+    }
+}
+
 pub const CHUKN_LENGTH: i16 = 20;
 const CHUNK_SIZE: f32 = BLOCK_SIZE * CHUKN_LENGTH as f32;
 const INNER_SHAPE: Shape = Shape::Rect(Vec2::splat(CHUNK_SIZE));
@@ -95,12 +107,7 @@ fn with_block(
             continue;
         }
         let chunk_point = (transform.translation / CHUNK_SIZE).to_i16vec2();
-        if !unload_blocks_map.contains_key(&chunk_point) {
-            unload_blocks_map.insert(chunk_point, Vec::new());
-        }
-        let Some(unload_blocks) = unload_blocks_map.get_mut(&chunk_point) else {
-            return;
-        };
+        let unload_blocks = unload_blocks_map.get_or_insert(&chunk_point);
         unload_blocks.push(UnloadBlock {
             item_id: item_id.0,
             point: (transform.translation / BLOCK_SIZE).to_i16vec2(),
@@ -110,12 +117,7 @@ fn with_block(
     for x in -1..=1 {
         for y in -1..=1 {
             let chunk_point = chunk_point.0 + I16Vec2::new(x, y);
-            if !unload_blocks_map.contains_key(&chunk_point) {
-                unload_blocks_map.insert(chunk_point, Vec::new());
-            }
-            let Some(unload_blocks) = unload_blocks_map.get_mut(&chunk_point) else {
-                return;
-            };
+            let unload_blocks = unload_blocks_map.get_or_insert(&chunk_point);
             for block in unload_blocks.iter() {
                 if !point_test(
                     block.point.to_f32vec2() * BLOCK_SIZE,

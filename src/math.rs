@@ -1,4 +1,5 @@
 use bevy::math::*;
+use std::hash::RandomState;
 
 pub trait Repeat<T> {
     fn repeat(&self, min: T, max: T) -> T;
@@ -144,4 +145,8 @@ impl Interpolate for f64 {
     fn interpolate(&self, base: f64, liner: f64) -> f64 {
         base + self * liner
     }
+}
+
+pub trait GetOrInsert<K, V, S = RandomState> {
+    fn get_or_insert(&mut self, key: &K) -> &mut V;
 }
