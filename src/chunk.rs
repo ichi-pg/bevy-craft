@@ -107,37 +107,39 @@ fn with_block(
         });
         commands.entity(entity).despawn_recursive();
     }
-    for (chunk_point, unload_blocks) in unload_blocks_map.iter_mut() {
-        if !point_test(
-            chunk_point.to_f32vec2() * CHUNK_SIZE,
-            chunk_position,
-            OUTER_SHAPE,
-        ) {
-            continue;
-        }
-        for block in unload_blocks.iter() {
-            if !point_test(
-                block.point.to_f32vec2() * BLOCK_SIZE,
-                chunk_position,
-                OUTER_SHAPE,
-            ) {
-                continue;
+    for x in -1..=1 {
+        for y in -1..=1 {
+            let chunk_point = chunk_point.0 + I16Vec2::new(x, y);
+            if !unload_blocks_map.contains_key(&chunk_point) {
+                unload_blocks_map.insert(chunk_point, Vec::new());
             }
-            commands.build_block(
-                block.item_id,
-                block.point,
-                &attribute_map,
-                &atlas_map,
-                &mut random,
-            );
+            let Some(unload_blocks) = unload_blocks_map.get_mut(&chunk_point) else {
+                return;
+            };
+            for block in unload_blocks.iter() {
+                if !point_test(
+                    block.point.to_f32vec2() * BLOCK_SIZE,
+                    chunk_position,
+                    OUTER_SHAPE,
+                ) {
+                    continue;
+                }
+                commands.build_block(
+                    block.item_id,
+                    block.point,
+                    &attribute_map,
+                    &atlas_map,
+                    &mut random,
+                );
+            }
+            unload_blocks.retain(|block| {
+                !point_test(
+                    block.point.to_f32vec2() * BLOCK_SIZE,
+                    chunk_position,
+                    OUTER_SHAPE,
+                )
+            });
         }
-        unload_blocks.retain(|block| {
-            !point_test(
-                block.point.to_f32vec2() * BLOCK_SIZE,
-                chunk_position,
-                OUTER_SHAPE,
-            )
-        });
     }
 }
 

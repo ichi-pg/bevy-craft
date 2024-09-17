@@ -9,8 +9,8 @@ use bevy::prelude::*;
 use noise::*;
 use rand::RngCore;
 
-const WORLD_WIDTH: i16 = 10000;
-const WORLD_HEIGHT: i16 = 3000;
+const WORLD_WIDTH: i16 = 200;
+const WORLD_HEIGHT: i16 = 100;
 
 fn spawn_world(
     // biome_map: Res<BiomeMap>,
