@@ -1,9 +1,11 @@
+use crate::block::*;
 use crate::gravity::*;
 use crate::hit_test::*;
 use crate::input::*;
 use crate::minimap::*;
 use crate::stats::*;
 use crate::velocity::*;
+use crate::world_generator::*;
 use crate::z_sort::*;
 use bevy::prelude::*;
 
@@ -25,7 +27,8 @@ pub const PLAYER_ATTACK_POWER: f32 = 0.0;
 pub const PLAYER_ATTACK_SPEED: f32 = 1.0;
 pub const PLAYER_MOVE_SPEED: f32 = 400.0;
 pub const PLAYER_JUMP_POWER: f32 = 1500.0;
-pub const PLAYER_RESPAWN_POSITION: Vec3 = Vec3::new(0.0, PLAYER_SIZE * 2.0, CHARACTER_Z);
+pub const PLAYER_RESPAWN_POSITION: Vec3 =
+    Vec3::new(0.0, BLOCK_SIZE * SURFACE_HEIGHT as f32, CHARACTER_Z);
 
 const PLAYER_SIZE: f32 = 128.0;
 const KNOCK_BACK_X: f32 = 400.0;

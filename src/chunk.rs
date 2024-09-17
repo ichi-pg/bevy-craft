@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::atlas::*;
 use crate::block::*;
 use crate::hit_test::*;
@@ -10,6 +8,7 @@ use crate::player::*;
 use crate::random::*;
 use bevy::math::I16Vec2;
 use bevy::prelude::*;
+use std::collections::HashMap;
 
 #[derive(Component)]
 pub struct InChunk;

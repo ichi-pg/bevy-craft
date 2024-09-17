@@ -9,8 +9,9 @@ use bevy::prelude::*;
 use noise::*;
 use rand::RngCore;
 
-const WORLD_WIDTH: i16 = 200;
-const WORLD_HEIGHT: i16 = 100;
+const WORLD_WIDTH: i16 = 8000;
+const UNDERGROUND_HEIGHT: i16 = 1600;
+pub const SURFACE_HEIGHT: i16 = 200;
 
 fn spawn_world(
     // biome_map: Res<BiomeMap>,
@@ -31,22 +32,18 @@ fn spawn_world(
     // ];
     let perlin = Perlin::new(random.next_u32());
     let half_width = WORLD_WIDTH / 2;
-    let half_height = WORLD_HEIGHT / 2;
     for x in 0..WORLD_WIDTH {
-        let wavelength = perlin
-            .get([x as f64
-                * perlin
-                    .get([x as f64 * 0.01])
-                    .normalize_0_1()
-                    .interpolate(0.01, 0.005)])
-            .normalize_0_1();
-        let amplitude = perlin
-            .get([x as f64 * 0.01])
-            .normalize_0_1()
-            .interpolate(half_height as f64, half_height as f64);
-        let height = (wavelength * amplitude) as i16;
-        for y in 0..height {
-            let point = I16Vec2::new(x - half_width, y - WORLD_HEIGHT);
+        let surface_height = SURFACE_HEIGHT as f64
+            * perlin
+                .get([x as f64
+                    * perlin
+                        .get([x as f64 * 0.01])
+                        .normalize_0_1()
+                        .interpolate(0.001, 0.001)])
+                .normalize_0_1();
+        let x = x - half_width;
+        for y in -UNDERGROUND_HEIGHT..surface_height as i16 {
+            let point = I16Vec2::new(x, y);
             let chunk_point = point / CHUKN_LENGTH;
             let unload_blocks = unload_blocks_map.get_or_insert(&chunk_point);
             unload_blocks.push(UnloadBlock {
