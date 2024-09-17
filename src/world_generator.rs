@@ -45,10 +45,7 @@ fn spawn_world(
             .normalize_0_1()
             .interpolate(half_height as f64, half_height as f64);
         let height = (wavelength * amplitude) as i16;
-        for y in 0..WORLD_HEIGHT {
-            if y > height {
-                continue;
-            }
+        for y in 0..height {
             let point = I16Vec2::new(x - half_width, y - WORLD_HEIGHT);
             let chunk_point = point / CHUKN_LENGTH;
             let unload_blocks = unload_blocks_map.get_or_insert(&chunk_point);
