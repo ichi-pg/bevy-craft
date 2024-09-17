@@ -41,8 +41,8 @@ impl GetOrInsert<I16Vec2, Vec<UnloadBlock>> for HashMap<I16Vec2, Vec<UnloadBlock
 
 pub const CHUKN_LENGTH: i16 = 20;
 const CHUNK_SIZE: f32 = BLOCK_SIZE * CHUKN_LENGTH as f32;
-const INNER_SHAPE: Shape = Shape::Rect(Vec2::splat(CHUNK_SIZE));
-const OUTER_SHAPE: Shape = Shape::Rect(Vec2::splat(CHUNK_SIZE * 2.0));
+const INNER_SHAPE: Shape = Shape::Rect(Vec2::splat(CHUNK_SIZE * 0.5));
+const OUTER_SHAPE: Shape = Shape::Rect(Vec2::splat(CHUNK_SIZE));
 
 fn start_chunk(mut chunk_point: ResMut<ChunkPoint>, mut event_writer: EventWriter<ChunkChanged>) {
     chunk_point.0 = (PLAYER_RESPAWN_POSITION / CHUNK_SIZE).to_i16vec2();
@@ -139,7 +139,8 @@ impl Plugin for ChunkPlugin {
         app.insert_resource(UnloadBlocksMap::default());
         app.add_event::<ChunkChanged>();
         app.add_systems(Startup, start_chunk);
-        app.add_systems(Update, (player_moved, without_block, with_block));
+        app.add_systems(Update, (player_moved, without_block));
+        app.add_systems(PostUpdate, with_block);
     }
     // TODO render
     // TODO spawn

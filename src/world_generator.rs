@@ -39,8 +39,9 @@ fn spawn_world(
                     * perlin
                         .get([x as f64 * 0.01])
                         .normalize_0_1()
-                        .interpolate(0.001, 0.001)])
-                .normalize_0_1();
+                        .interpolate(0.0005, 0.0005)])
+                .normalize_0_1()
+            * perlin.get([x as f64 * 0.01]).normalize_0_1();
         let x = x - half_width;
         for y in -UNDERGROUND_HEIGHT..surface_height as i16 {
             let point = I16Vec2::new(x, y);
