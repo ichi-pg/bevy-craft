@@ -42,7 +42,8 @@ impl GetOrInsert<I16Vec2, Vec<UnloadBlock>> for HashMap<I16Vec2, Vec<UnloadBlock
 pub const CHUKN_LENGTH: i16 = 20;
 const CHUNK_SIZE: f32 = BLOCK_SIZE * CHUKN_LENGTH as f32;
 const INNER_SHAPE: Shape = Shape::Rect(Vec2::splat(CHUNK_SIZE * 0.5));
-const OUTER_SHAPE: Shape = Shape::Rect(Vec2::splat(CHUNK_SIZE));
+const OUTER_SHAPE: Shape = Shape::Rect(Vec2::splat(CHUNK_SIZE * OUTER_LENGTH as f32));
+const OUTER_LENGTH: i16 = 1;
 
 fn start_chunk(mut chunk_point: ResMut<ChunkPoint>, mut event_writer: EventWriter<ChunkChanged>) {
     chunk_point.0 = (PLAYER_RESPAWN_POSITION / CHUNK_SIZE).to_i16vec2();
@@ -113,8 +114,8 @@ fn with_block(
         });
         commands.entity(entity).despawn_recursive();
     }
-    for x in -1..=1 {
-        for y in -1..=1 {
+    for x in -OUTER_LENGTH..=OUTER_LENGTH {
+        for y in -OUTER_LENGTH..=OUTER_LENGTH {
             let chunk_point = chunk_point.0 + I16Vec2::new(x, y);
             let unload_blocks = unload_blocks_map.get_or_insert(&chunk_point);
             for block in unload_blocks.iter() {
