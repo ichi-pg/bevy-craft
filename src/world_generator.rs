@@ -12,6 +12,7 @@ use rand::RngCore;
 const WORLD_WIDTH: i16 = 8000;
 const UNDERGROUND_HEIGHT: i16 = 1600;
 pub const SURFACE_HEIGHT: i16 = 200;
+const BLOCK_RATE: f64 = 0.7;
 
 fn spawn_world(
     // biome_map: Res<BiomeMap>,
@@ -42,9 +43,12 @@ fn spawn_world(
                         .interpolate(0.0005, 0.0005)])
                 .normalize_0_1()
             * perlin.get([x as f64 * 0.01]).normalize_0_1();
-        let x = x - half_width;
-        for y in -UNDERGROUND_HEIGHT..surface_height as i16 {
-            let point = I16Vec2::new(x, y);
+        for y in 0..UNDERGROUND_HEIGHT + surface_height as i16 {
+            let noise = perlin.get([x as f64 * 0.1, y as f64 * 0.1]).normalize_0_1();
+            if noise > BLOCK_RATE {
+                continue;
+            }
+            let point = I16Vec2::new(x - half_width, y - UNDERGROUND_HEIGHT);
             let chunk_point = point / CHUKN_LENGTH;
             let unload_blocks = unload_blocks_map.get_or_insert(&chunk_point);
             unload_blocks.push(UnloadBlock {
