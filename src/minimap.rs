@@ -1,8 +1,9 @@
+use crate::block::*;
 use crate::input::*;
 use crate::player::*;
 use crate::ui_parts::*;
 use crate::ui_states::*;
-use crate::window::WINDOWED_HEIGHT;
+use crate::window::*;
 use crate::z_sort::*;
 use bevy::prelude::*;
 use bevy::render::camera::*;
@@ -14,6 +15,9 @@ struct MinimapCamera;
 
 #[derive(Component)]
 struct MinimapParent;
+
+#[derive(Component)]
+struct PlayerMarker;
 
 enum MapMode {
     Minimap,
@@ -29,7 +33,7 @@ const FULLMAP_HEIGHT: f32 = 810.0;
 const MINIMAP_WIDTH: f32 = 400.0;
 const MINIMAP_HEIGHT: f32 = 225.0;
 
-const INIT_ZOOM: f32 = 10.0;
+const INIT_ZOOM: f32 = 20.0 / BLOCK_SIZE;
 const ZOOM_RATE: f32 = 1.25;
 const MAX_ZOOM_COUNT: f32 = 10.0;
 const DRAGGING_RATE: f32 = 1.0;
@@ -70,6 +74,18 @@ fn spawn_minimap(mut commands: Commands) {
                     ));
                 });
         });
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                color: Color::srgba(1.0, 0.0, 0.0, MINIMAP_ALPHA),
+                custom_size: Some(Vec2::splat(1.0)),
+                ..default()
+            },
+            ..default()
+        },
+        MINIMAP_LAYER,
+        PlayerMarker,
+    ));
 }
 
 fn init_zoom(mut query: Query<&mut OrthographicProjection, With<MinimapCamera>>) {
@@ -198,7 +214,8 @@ impl Plugin for MinimapPlugin {
             Update,
             (
                 window_resized,
-                trace_player::<MinimapCamera>,
+                trace_player::<MinimapCamera>(1.0 / BLOCK_SIZE),
+                trace_player::<PlayerMarker>(1.0 / BLOCK_SIZE),
                 change_ui_state::<KeyM>(UIStates::Map).run_if(not(in_state(UIStates::Map))),
                 (
                     change_ui_state::<KeyM>(UIStates::None),

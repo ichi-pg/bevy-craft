@@ -3,54 +3,32 @@
 use crate::chunk::*;
 use crate::item_id::*;
 use crate::math::*;
+use crate::minimap::*;
 use crate::random::*;
 use bevy::math::I16Vec2;
 use bevy::prelude::*;
-use image::*;
+use bevy::render::texture::*;
+use image::RgbaImage;
 use noise::*;
 use rand::RngCore;
+use std::path::Path;
 
-const WORLD_WIDTH: i16 = 8000;
+const WORLD_WIDTH: i16 = 3500;
+const UNDERGROUND_HEIGHT: i16 = 1440;
+pub const SURFACE_HEIGHT: i16 = 120;
+const SKY_HEIGHT: i16 = 240;
+
 const HALF_WORLD_WIDTH: i16 = WORLD_WIDTH / 2;
 const WORLD_HEIGHT: i16 = UNDERGROUND_HEIGHT + SURFACE_HEIGHT + SKY_HEIGHT;
-const UNDERGROUND_HEIGHT: i16 = 1600;
-pub const SURFACE_HEIGHT: i16 = 200;
-const SKY_HEIGHT: i16 = 400;
 
-fn octave_noise_1d(perlin: &Perlin, x: f64, t: f64) -> f64 {
-    let mut a = 1.0;
-    let mut f = 1.0;
-    let mut max_value = 0.0;
-    let mut total_value = 0.0;
-    let per = 0.5;
-    for _ in 0..5 {
-        total_value += a * perlin.get([x * f * t]);
-        max_value += a;
-        a *= per;
-        f *= 2.0;
-    }
-    total_value / max_value
-}
-
-fn octave_noise_2d(perlin: &Perlin, x: f64, y: f64, t: f64) -> f64 {
-    let mut a = 1.0;
-    let mut f = 1.0;
-    let mut max_value = 0.0;
-    let mut total_value = 0.0;
-    let per = 0.5;
-    for _ in 0..5 {
-        total_value += a * perlin.get([x * f * t, y * f * t]);
-        max_value += a;
-        a *= per;
-        f *= 2.0;
-    }
-    total_value / max_value
-}
+const MINIMAP_TEXTURE: &str = "generated/minimap.png";
 
 fn spawn_world(
+    asset_server: Res<AssetServer>,
     // biome_map: Res<BiomeMap>,
     mut random: ResMut<Random>,
     mut unload_blocks_map: ResMut<UnloadBlocksMap>,
+    mut commands: Commands,
 ) {
     // let order = [
     //     vec![vec![(FOREST_BIOME_ID, CAVE_BIOME_ID)]],
@@ -64,26 +42,21 @@ fn spawn_world(
     //         (VOLCANO_BIOME_ID, FORTRESS_BIOME_ID),
     //     ]],
     // ];
-    let perlin = Perlin::new(random.next_u32());
+    let seed = random.next_u32();
+    let fbm = Fbm::<Perlin>::new(seed);
     let mut imgbuf = RgbaImage::new(WORLD_WIDTH as u32, WORLD_HEIGHT as u32);
     for x in 0..WORLD_WIDTH {
-        let surface_height = SURFACE_HEIGHT as f64 * octave_noise_1d(&perlin, x as f64, 0.001);
-        // let surface_height = SURFACE_HEIGHT as f64
-        //     * perlin
-        //         .get([x as f64
-        //             * perlin
-        //                 .get([x as f64 * 0.01])
-        //                 .normalize_0_1()
-        //                 .interpolate(0.0005, 0.0005)])
-        //         .normalize_0_1()
-        //     * perlin.get([x as f64 * 0.005]).normalize_0_1();
-        let point_x = x - HALF_WORLD_WIDTH;
-        for y in 0..UNDERGROUND_HEIGHT + surface_height as i16 {
-            let noise = octave_noise_2d(&perlin, x as f64, y as f64, 0.05).normalize_0_1();
-            if noise <= 0.5 {
+        let noise = SURFACE_HEIGHT as f64 * fbm.get([x as f64 * 0.005, 0.0]);
+        for y in 0..UNDERGROUND_HEIGHT + noise as i16 {
+            let noise = fbm.get([x as f64 * 0.05, y as f64 * 0.05]);
+            if noise > 0.0 {
                 continue;
             }
-            let point = I16Vec2::new(point_x, y - UNDERGROUND_HEIGHT);
+            let noise = fbm.get([x as f64 * 0.01, y as f64 * 0.01]);
+            if noise > 0.3 {
+                continue;
+            }
+            let point = I16Vec2::new(x - HALF_WORLD_WIDTH, y - UNDERGROUND_HEIGHT);
             let chunk_point = point / CHUKN_LENGTH;
             let unload_blocks = unload_blocks_map.get_or_insert(&chunk_point);
             unload_blocks.push(UnloadBlock {
@@ -94,9 +67,34 @@ fn spawn_world(
             *pixel = image::Rgba([187, 128, 68, 255]);
         }
     }
-    if let Err(_) = imgbuf.save("assets/generated/minimap.png") {
+    if let Err(_) = imgbuf.save(Path::new("assets").join(MINIMAP_TEXTURE)) {
         todo!()
     }
+    let texture = asset_server.load_with_settings(MINIMAP_TEXTURE, |s: &mut _| {
+        *s = ImageLoaderSettings {
+            sampler: ImageSampler::Descriptor(ImageSamplerDescriptor {
+                mipmap_filter: ImageFilterMode::Linear,
+                ..default()
+            }),
+            ..default()
+        }
+    });
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                color: Color::srgba(1.0, 1.0, 1.0, MINIMAP_ALPHA),
+                ..default()
+            },
+            texture,
+            transform: Transform::from_xyz(
+                -0.5,
+                (WORLD_HEIGHT / 2 - UNDERGROUND_HEIGHT) as f32 - 0.5,
+                0.0,
+            ),
+            ..default()
+        },
+        MINIMAP_LAYER,
+    ));
 }
 
 pub struct WorldGeneratorPlugin;

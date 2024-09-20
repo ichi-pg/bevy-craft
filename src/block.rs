@@ -8,7 +8,6 @@ use crate::item_attribute::*;
 use crate::item_node::*;
 use crate::item_selecting::*;
 use crate::math::*;
-use crate::minimap::*;
 use crate::player::*;
 use crate::random::*;
 use crate::stats::*;
@@ -87,25 +86,7 @@ impl<'w, 's> BuildBlock for Commands<'w, 's> {
             Health(100.0),
             MaxHealth(100.0),
             InChunk,
-        ))
-        .with_children(|parent| {
-            parent.spawn((
-                SpriteBundle {
-                    sprite: Sprite {
-                        color: Color::WHITE.with_alpha(MINIMAP_ALPHA),
-                        custom_size: Some(Vec2::splat(BLOCK_SIZE)),
-                        ..default()
-                    },
-                    texture: atlas.texture.clone(),
-                    ..default()
-                },
-                TextureAtlas {
-                    layout: atlas.layout.clone(),
-                    index: attribute.atlas_index as usize,
-                },
-                MINIMAP_LAYER,
-            ));
-        });
+        ));
         // TODO color on minimap
         // TODO not overlap block id
         // TODO plant growth

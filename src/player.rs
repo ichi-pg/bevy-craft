@@ -2,7 +2,6 @@ use crate::block::*;
 use crate::gravity::*;
 use crate::hit_test::*;
 use crate::input::*;
-use crate::minimap::*;
 use crate::stats::*;
 use crate::velocity::*;
 use crate::world_generator::*;
@@ -35,43 +34,29 @@ const KNOCK_BACK_X: f32 = 400.0;
 const KNOCK_BACK_Y: f32 = 1500.0;
 
 fn spawn_player(mut commands: Commands) {
-    commands
-        .spawn((
-            SpriteBundle {
-                sprite: Sprite {
-                    color: Color::WHITE,
-                    custom_size: Some(Vec2::splat(PLAYER_SIZE)),
-                    ..default()
-                },
-                transform: Transform::from_translation(PLAYER_RESPAWN_POSITION),
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                color: Color::WHITE,
+                custom_size: Some(Vec2::splat(PLAYER_SIZE)),
                 ..default()
             },
-            Player,
-            PlayerController,
-            Health(PLAYER_HEALTH),
-            MaxHealth(PLAYER_HEALTH),
-            PickaxePower(PLAYER_PICKAXE_POWER),
-            AttackPower(PLAYER_ATTACK_POWER),
-            AttackSpeed(PLAYER_ATTACK_SPEED),
-            MoveSpeed(PLAYER_MOVE_SPEED),
-            JumpPower(PLAYER_JUMP_POWER),
-            Velocity2::default(),
-            Direction2(Vec2::X),
-            Shape::Circle(PLAYER_SIZE * 0.5),
-        ))
-        .with_children(|parent| {
-            parent.spawn((
-                SpriteBundle {
-                    sprite: Sprite {
-                        color: Color::srgba(1.0, 0.0, 0.0, MINIMAP_ALPHA),
-                        custom_size: Some(Vec2::splat(PLAYER_SIZE)),
-                        ..default()
-                    },
-                    ..default()
-                },
-                MINIMAP_LAYER,
-            ));
-        });
+            transform: Transform::from_translation(PLAYER_RESPAWN_POSITION),
+            ..default()
+        },
+        Player,
+        PlayerController,
+        Health(PLAYER_HEALTH),
+        MaxHealth(PLAYER_HEALTH),
+        PickaxePower(PLAYER_PICKAXE_POWER),
+        AttackPower(PLAYER_ATTACK_POWER),
+        AttackSpeed(PLAYER_ATTACK_SPEED),
+        MoveSpeed(PLAYER_MOVE_SPEED),
+        JumpPower(PLAYER_JUMP_POWER),
+        Velocity2::default(),
+        Direction2(Vec2::X),
+        Shape::Circle(PLAYER_SIZE * 0.5),
+    ));
     // TODO texture animation
 }
 
@@ -168,13 +153,17 @@ fn player_respawn(
 }
 
 pub fn trace_player<T: Component>(
-    mut query: Query<&mut Transform, With<T>>,
-    player_query: Query<&Transform, (With<PlayerController>, Without<T>, Changed<Transform>)>,
+    scale: f32,
+) -> impl FnMut(
+    Query<&mut Transform, With<T>>,
+    Query<&Transform, (With<PlayerController>, Without<T>, Changed<Transform>)>,
 ) {
-    for player_transform in &player_query {
-        for mut transform in &mut query {
-            transform.translation.x = player_transform.translation.x;
-            transform.translation.y = player_transform.translation.y;
+    move |mut query, player_query| {
+        for player_transform in &player_query {
+            for mut transform in &mut query {
+                transform.translation.x = player_transform.translation.x * scale;
+                transform.translation.y = player_transform.translation.y * scale;
+            }
         }
     }
 }

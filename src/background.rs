@@ -110,7 +110,7 @@ impl Plugin for BackgroundPlugin {
         app.add_systems(Startup, spawn_background);
         app.add_systems(
             Update,
-            (trace_player::<Background>, scroll_layers, move_clouds),
+            (trace_player::<Background>(1.0), scroll_layers, move_clouds),
         );
     }
 }
