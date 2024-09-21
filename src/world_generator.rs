@@ -38,15 +38,15 @@ fn spawn_world(
         let noise = fbm.get([x as f64 * 0.005, 0.0]) * SURFACE_HEIGHT as f64;
         for y in 0..UNDERGROUND_HEIGHT + noise as i16 {
             let border = ((y - HALF_WORLD_HEIGHT) as f64 * INVERTED_WORLD_HEIGHT * 0.5).max(0.0);
-            let noise = fbm.get([x as f64 * 0.05, y as f64 * 0.05]);
-            if noise > border + 0.1 {
-                continue;
-            }
             let noise = fbm.get([x as f64 * 0.01, y as f64 * 0.01]);
             if noise > border + 0.4 {
                 continue;
             }
-            let noise = fbm.get([x as f64 * 0.005, 0.0]) * 0.05 + y as f64 * INVERTED_WORLD_HEIGHT;
+            let noise = fbm.get([x as f64 * 0.05, y as f64 * 0.05]);
+            if noise > border + 0.1 {
+                continue;
+            }
+            let noise = y as f64 * INVERTED_WORLD_HEIGHT - noise.powi(2);
             let item_id = if noise < 0.1 {
                 LAVA_ITEM_ID
             } else if noise < 0.3 {
@@ -57,7 +57,7 @@ fn spawn_world(
                 SOIL_ITEM_ID
             };
             let Some(attribute) = attribute_map.get(&item_id) else {
-                continue;
+                todo!()
             };
             let point = I16Vec2::new(x - HALF_WORLD_WIDTH, y - UNDERGROUND_HEIGHT);
             let chunk_point = point / CHUKN_LENGTH;
