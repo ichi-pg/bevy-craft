@@ -32,26 +32,36 @@ fn spawn_world(
     mut commands: Commands,
 ) {
     let seed = random.next_u32();
-    let fbm = Fbm::<Perlin>::new(seed);
-    let fbm2 = Fbm::<Perlin>::new(seed + 1);
+    let surface_fbm = Fbm::<Perlin>::new(seed).set_frequency(0.005);
+    let cave_fbm: Fbm<Perlin> = Fbm::<Perlin>::new(seed).set_frequency(0.05);
+    let hole_fbm = Fbm::<Perlin>::new(seed).set_frequency(0.01);
+    let water_fbm = Fbm::<Perlin>::new(seed + 1).set_frequency(0.02);
+    let tree_fbm = Fbm::<Perlin>::new(seed + 1).set_frequency(0.05);
     let mut imgbuf = RgbaImage::new(WORLD_WIDTH as u32, WORLD_HEIGHT as u32);
     for x in 0..WORLD_WIDTH {
-        let noise = fbm.get([x as f64 * 0.005, 0.0]) * SURFACE_HEIGHT as f64;
-        for y in 0..UNDERGROUND_HEIGHT + noise as i16 {
-            let distance = (x - HALF_WORLD_WIDTH) as f64 * INVERTED_HALF_WORLD_WIDTH;
-            let depth = y as f64 * INVERTED_UNDERGROUND_HEIGHT;
-            let base_noise = fbm.get([x as f64 * 0.05, y as f64 * 0.05]);
+        let fx = x as f64;
+        let noise = surface_fbm.get([fx, 0.0]) * SURFACE_HEIGHT as f64;
+        let surface = UNDERGROUND_HEIGHT + noise as i16;
+        for y in 0..=surface {
+            let fy = y as f64;
+            let distance = (fx - HALF_WORLD_WIDTH as f64) * INVERTED_HALF_WORLD_WIDTH;
+            let depth = fy * INVERTED_UNDERGROUND_HEIGHT;
+            // cave
+            let base_noise = cave_fbm.get([fx, fy]);
             if base_noise > 0.1 + depth * 0.2 {
                 continue;
             }
-            let noise = fbm.get([x as f64 * 0.01, y as f64 * 0.01]);
+            // hole
+            let noise = hole_fbm.get([fx, fy]);
             if noise > 0.4 + depth * 0.2 {
                 continue;
             }
-            let noise = fbm2.get([x as f64 * 0.02, y as f64 * 0.02]);
+            // water
+            let noise = water_fbm.get([fx, fy]);
             let item_id = if noise > 0.4 - depth * 0.2 {
                 WATER_ITEM_ID
             } else {
+                // biome
                 let noise = depth - base_noise.powi(2);
                 if noise < 0.1 {
                     LAVA_ITEM_ID
@@ -79,6 +89,25 @@ fn spawn_world(
                     }
                 }
             };
+            // tree
+            if y == surface && item_id != WATER_ITEM_ID {
+                let noise = tree_fbm.get([fx, fy]);
+                if noise > 0.2 {
+                    let item_id = WOOD_ITEM_ID;
+                    let Some(attribute) = attribute_map.get(&item_id) else {
+                        todo!()
+                    };
+                    let x = x as i16;
+                    for y in y + 1..y + 8 {
+                        let point = I16Vec2::new(x - HALF_WORLD_WIDTH, y - UNDERGROUND_HEIGHT);
+                        let chunk_point = point / CHUKN_LENGTH;
+                        let unload_blocks = unload_blocks_map.get_or_insert(&chunk_point);
+                        unload_blocks.push(UnloadBlock { item_id, point });
+                        let pixel = imgbuf.get_pixel_mut(x as u32, (WORLD_HEIGHT - y - 1) as u32);
+                        *pixel = attribute.minimap_color;
+                    }
+                }
+            }
             let Some(attribute) = attribute_map.get(&item_id) else {
                 todo!()
             };
@@ -118,9 +147,9 @@ fn spawn_world(
         },
         MINIMAP_LAYER,
     ));
-    // TODO tree
     // TODO ore
     // TODO player spawn point
+    // TODO merge cave and hole
     // TODO scene
 }
 
