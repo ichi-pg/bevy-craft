@@ -41,11 +41,11 @@ fn spawn_world(
     let mut imgbuf = RgbaImage::new(WORLD_WIDTH as u32, WORLD_HEIGHT as u32);
     for x in 0..WORLD_WIDTH {
         let fx: f64 = x as f64;
+        let farness = (fx - HALF_WORLD_WIDTH as f64) * INVERTED_HALF_WORLD_WIDTH;
         let surface_noise = surface_fbm.get([fx, 0.0]) * SURFACE_HEIGHT as f64;
-        let surface = UNDERGROUND_HEIGHT + surface_noise as i16;
+        let surface = UNDERGROUND_HEIGHT + (surface_noise * farness.abs().powf(0.2)) as i16;
         for y in 0..=surface {
             let fy = y as f64;
-            let distance = (fx - HALF_WORLD_WIDTH as f64) * INVERTED_HALF_WORLD_WIDTH;
             let depth = fy * INVERTED_UNDERGROUND_HEIGHT;
             // cave
             let cave_noise = cave_fbm.get([fx, fy]);
@@ -63,7 +63,7 @@ fn spawn_world(
                 WATER_ITEM_ID
             } else {
                 // ore
-                let depth_noise = depth - cave_noise.powi(2);
+                let depth_noise = depth - cave_noise * cave_noise;
                 let ore_noise = ore_fbm.get([fx, fy]);
                 if ore_noise > 0.3 && depth_noise > 0.05 {
                     if depth_noise < 0.3 {
@@ -87,7 +87,7 @@ fn spawn_world(
                         STONE_ITEM_ID
                     } else {
                         // biome
-                        let biome_noise = distance + cave_noise * 0.1;
+                        let biome_noise = farness + cave_noise * 0.1;
                         let biome_noise_abs = biome_noise.abs();
                         if biome_noise_abs < 0.2 {
                             SOIL_ITEM_ID
@@ -165,9 +165,9 @@ fn spawn_world(
         },
         MINIMAP_LAYER,
     ));
-    // TODO player spawn point
     // TODO merge cave and hole
-    // TODO scene
+    // TODO different biomes on left and right
+    // TODO preset structures
 }
 
 pub struct WorldGeneratorPlugin;
