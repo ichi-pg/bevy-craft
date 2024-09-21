@@ -37,11 +37,12 @@ fn spawn_world(
     let hole_fbm = Fbm::<Perlin>::new(seed).set_frequency(0.01);
     let water_fbm = Fbm::<Perlin>::new(seed + 1).set_frequency(0.02);
     let tree_fbm = Fbm::<Perlin>::new(seed + 1).set_frequency(0.05);
+    let ore_fbm = Fbm::<Perlin>::new(seed + 1).set_frequency(0.05);
     let mut imgbuf = RgbaImage::new(WORLD_WIDTH as u32, WORLD_HEIGHT as u32);
     for x in 0..WORLD_WIDTH {
-        let fx = x as f64;
-        let noise = surface_fbm.get([fx, 0.0]) * SURFACE_HEIGHT as f64;
-        let surface = UNDERGROUND_HEIGHT + noise as i16;
+        let fx: f64 = x as f64;
+        let surface_noise = surface_fbm.get([fx, 0.0]) * SURFACE_HEIGHT as f64;
+        let surface = UNDERGROUND_HEIGHT + surface_noise as i16;
         for y in 0..=surface {
             let fy = y as f64;
             let distance = (fx - HALF_WORLD_WIDTH as f64) * INVERTED_HALF_WORLD_WIDTH;
@@ -52,48 +53,64 @@ fn spawn_world(
                 continue;
             }
             // hole
-            let noise = hole_fbm.get([fx, fy]);
-            if noise > 0.4 + depth * 0.2 {
+            let hole_noise = hole_fbm.get([fx, fy]);
+            if hole_noise > 0.4 + depth * 0.2 {
                 continue;
             }
             // water
-            let noise = water_fbm.get([fx, fy]);
-            let item_id = if noise > 0.4 - depth * 0.2 {
+            let water_noise = water_fbm.get([fx, fy]);
+            let item_id = if water_noise > 0.4 - depth * 0.2 {
                 WATER_ITEM_ID
             } else {
-                // underground
-                let noise = depth - cave_noise.powi(2);
-                if noise < 0.1 {
-                    LAVA_ITEM_ID
-                } else if noise < 0.3 {
-                    GRANITE_ITEM_ID
-                } else if noise < 0.55 {
-                    STONE_ITEM_ID
-                } else {
-                    // biome
-                    let noise = distance + cave_noise * 0.1;
-                    let abs = noise.abs();
-                    if abs < 0.2 {
-                        SOIL_ITEM_ID
-                    } else if abs < 0.6 {
-                        if noise < 0.0 {
-                            SAND_ITEM_ID
-                        } else {
-                            SAND_ITEM_ID
-                        }
+                // ore
+                let depth_noise = depth - cave_noise.powi(2);
+                let ore_noise = ore_fbm.get([fx, fy]);
+                if ore_noise > 0.4 && depth_noise > 0.05 {
+                    if depth_noise < 0.3 {
+                        GOLD_ITEM_ID
+                    } else if depth_noise < 0.55 {
+                        IRON_ITEM_ID
+                    } else if depth_noise < 0.8 {
+                        BRONZE_ITEM_ID
                     } else {
-                        if noise < 0.0 {
-                            SNOW_ITEM_ID
+                        COAL_ITEM_ID
+                    }
+                } else {
+                    // underground
+                    if depth_noise < 0.05 {
+                        LAVA_ITEM_ID
+                    } else if depth_noise < 0.3 {
+                        GRANITE_ITEM_ID
+                    } else if depth_noise < 0.55 {
+                        DEEPSLATE_ITEM_ID
+                    } else if depth_noise < 0.8 {
+                        STONE_ITEM_ID
+                    } else {
+                        // biome
+                        let biome_noise = distance + cave_noise * 0.1;
+                        let biome_noise_abs = biome_noise.abs();
+                        if biome_noise_abs < 0.2 {
+                            SOIL_ITEM_ID
+                        } else if biome_noise_abs < 0.6 {
+                            if biome_noise < 0.0 {
+                                SAND_ITEM_ID
+                            } else {
+                                SAND_ITEM_ID
+                            }
                         } else {
-                            SNOW_ITEM_ID
+                            if biome_noise < 0.0 {
+                                SNOW_ITEM_ID
+                            } else {
+                                SNOW_ITEM_ID
+                            }
                         }
                     }
                 }
             };
             // tree
             if y == surface && item_id != WATER_ITEM_ID {
-                let noise = tree_fbm.get([fx * cave_noise, fy * cave_noise]);
-                if noise > 0.2 {
+                let tree_noise = tree_fbm.get([fx * cave_noise, fy * cave_noise]);
+                if tree_noise > 0.2 {
                     let item_id = WOOD_ITEM_ID;
                     let Some(attribute) = attribute_map.get(&item_id) else {
                         todo!()
@@ -148,7 +165,6 @@ fn spawn_world(
         },
         MINIMAP_LAYER,
     ));
-    // TODO ore
     // TODO player spawn point
     // TODO merge cave and hole
     // TODO scene
