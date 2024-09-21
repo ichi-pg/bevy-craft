@@ -23,6 +23,9 @@ fn create_attributes() -> ItemAttributeMap {
         (STONE_ITEM_ID, image::Rgba([137, 164, 166, 255])),
         (GRANITE_ITEM_ID, image::Rgba([187, 94, 68, 255])),
         (LAVA_ITEM_ID, image::Rgba([232, 106, 23, 255])),
+        (SAND_ITEM_ID, image::Rgba([237, 220, 184, 255])),
+        (SNOW_ITEM_ID, image::Rgba([231, 249, 255, 255])),
+        (WATER_ITEM_ID, image::Rgba([47, 149, 208, 255])),
     ]);
     let atlas = [
         (0, 1),
