@@ -7,6 +7,7 @@ pub struct ItemAttribute {
     pub description_id: u16,
     pub atlas_id: u8,
     pub atlas_index: u8,
+    pub minimap_color: image::Rgba<u8>,
 }
 
 #[derive(Resource, Deref, DerefMut)]
@@ -17,6 +18,12 @@ pub trait ItemText {
 }
 
 fn create_attributes() -> ItemAttributeMap {
+    let colors = HashMap::<u16, image::Rgba<u8>>::from_iter([
+        (SOIL_ITEM_ID, image::Rgba([187, 128, 68, 255])),
+        (STONE_ITEM_ID, image::Rgba([137, 164, 166, 255])),
+        (GRANITE_ITEM_ID, image::Rgba([187, 94, 68, 255])),
+        (LAVA_ITEM_ID, image::Rgba([232, 106, 23, 255])),
+    ]);
     let atlas = [
         (0, 1),
         (1, ITEMS_COUNT as usize),
@@ -40,6 +47,10 @@ fn create_attributes() -> ItemAttributeMap {
                 description_id: description_id as u16,
                 atlas_id,
                 atlas_index: atlas_index as u8,
+                minimap_color: match colors.get(&(item_id as u16)) {
+                    Some(color) => *color,
+                    None => image::Rgba([255, 255, 255, 255]),
+                },
             },
         );
     }

@@ -87,7 +87,6 @@ impl<'w, 's> BuildBlock for Commands<'w, 's> {
             MaxHealth(100.0),
             InChunk,
         ));
-        // TODO color on minimap
         // TODO not overlap block id
         // TODO plant growth
 
