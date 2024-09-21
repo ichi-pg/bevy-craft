@@ -37,7 +37,7 @@ fn spawn_world(
     let hole_fbm = Fbm::<Perlin>::new(seed).set_frequency(0.01);
     let water_fbm = Fbm::<Perlin>::new(seed + 1).set_frequency(0.02);
     let tree_fbm = Fbm::<Perlin>::new(seed + 1).set_frequency(0.05);
-    let ore_fbm = Fbm::<Perlin>::new(seed + 1).set_frequency(0.05);
+    let ore_fbm = Fbm::<Perlin>::new(seed + 1).set_frequency(0.2);
     let mut imgbuf = RgbaImage::new(WORLD_WIDTH as u32, WORLD_HEIGHT as u32);
     for x in 0..WORLD_WIDTH {
         let fx: f64 = x as f64;
@@ -65,7 +65,7 @@ fn spawn_world(
                 // ore
                 let depth_noise = depth - cave_noise.powi(2);
                 let ore_noise = ore_fbm.get([fx, fy]);
-                if ore_noise > 0.4 && depth_noise > 0.05 {
+                if ore_noise > 0.3 && depth_noise > 0.05 {
                     if depth_noise < 0.3 {
                         GOLD_ITEM_ID
                     } else if depth_noise < 0.55 {
