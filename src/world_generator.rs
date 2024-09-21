@@ -33,7 +33,7 @@ fn spawn_world(
 ) {
     let seed = random.next_u32();
     let surface_fbm = Fbm::<Perlin>::new(seed).set_frequency(0.005);
-    let cave_fbm: Fbm<Perlin> = Fbm::<Perlin>::new(seed).set_frequency(0.05);
+    let cave_fbm = Fbm::<Perlin>::new(seed).set_frequency(0.05);
     let hole_fbm = Fbm::<Perlin>::new(seed).set_frequency(0.01);
     let water_fbm = Fbm::<Perlin>::new(seed + 1).set_frequency(0.02);
     let tree_fbm = Fbm::<Perlin>::new(seed + 1).set_frequency(0.05);
@@ -47,8 +47,8 @@ fn spawn_world(
             let distance = (fx - HALF_WORLD_WIDTH as f64) * INVERTED_HALF_WORLD_WIDTH;
             let depth = fy * INVERTED_UNDERGROUND_HEIGHT;
             // cave
-            let base_noise = cave_fbm.get([fx, fy]);
-            if base_noise > 0.1 + depth * 0.2 {
+            let cave_noise = cave_fbm.get([fx, fy]);
+            if cave_noise > 0.1 + depth * 0.2 {
                 continue;
             }
             // hole
@@ -61,8 +61,8 @@ fn spawn_world(
             let item_id = if noise > 0.4 - depth * 0.2 {
                 WATER_ITEM_ID
             } else {
-                // biome
-                let noise = depth - base_noise.powi(2);
+                // underground
+                let noise = depth - cave_noise.powi(2);
                 if noise < 0.1 {
                     LAVA_ITEM_ID
                 } else if noise < 0.3 {
@@ -70,7 +70,8 @@ fn spawn_world(
                 } else if noise < 0.55 {
                     STONE_ITEM_ID
                 } else {
-                    let noise = distance + base_noise * 0.1;
+                    // biome
+                    let noise = distance + cave_noise * 0.1;
                     let abs = noise.abs();
                     if abs < 0.2 {
                         SOIL_ITEM_ID
@@ -91,7 +92,7 @@ fn spawn_world(
             };
             // tree
             if y == surface && item_id != WATER_ITEM_ID {
-                let noise = tree_fbm.get([fx, fy]);
+                let noise = tree_fbm.get([fx * cave_noise, fy * cave_noise]);
                 if noise > 0.2 {
                     let item_id = WOOD_ITEM_ID;
                     let Some(attribute) = attribute_map.get(&item_id) else {
