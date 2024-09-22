@@ -1,5 +1,6 @@
+use crate::block::*;
 use crate::chunk::*;
-use crate::item_attribute::ItemAttributeMap;
+use crate::item_attribute::*;
 use crate::item_id::*;
 use crate::math::*;
 use crate::minimap::*;
@@ -30,6 +31,7 @@ fn spawn_world(
     attribute_map: Res<ItemAttributeMap>,
     mut random: ResMut<Random>,
     mut unload_blocks_map: ResMut<UnloadBlocksMap>,
+    mut placed_block_map: ResMut<PlacedBlockMap>,
     mut commands: Commands,
 ) {
     let seed = random.next_u32();
@@ -54,19 +56,19 @@ fn spawn_world(
                 continue;
             }
             // hole
-            let hole_noise = hole_fbm.get([fx, fy]);
-            if hole_noise > 0.4 + deepness * 0.2 {
+            let noise = hole_fbm.get([fx, fy]);
+            if noise > 0.4 + deepness * 0.2 {
                 continue;
             }
             // water
-            let water_noise = water_fbm.get([fx, fy]);
-            let item_id = if water_noise > 0.4 - deepness * 0.2 {
+            let noise = water_fbm.get([fx, fy]);
+            let item_id = if noise > 0.4 - deepness * 0.2 {
                 WATER_ITEM_ID
             } else {
                 // ore
                 let deepness_noise = deepness - cave_noise * cave_noise;
-                let ore_noise = ore_fbm.get([fx, fy]);
-                if ore_noise > 0.3 && deepness_noise > 0.05 {
+                let noise = ore_fbm.get([fx, fy]);
+                if noise > 0.3 && deepness_noise > 0.05 {
                     if deepness_noise < 0.3 {
                         GOLD_ITEM_ID
                     } else if deepness_noise < 0.55 {
@@ -88,14 +90,14 @@ fn spawn_world(
                         STONE_ITEM_ID
                     } else {
                         // biome
-                        let biome_noise = farness + cave_noise * 0.1;
-                        if biome_noise < -0.6 {
+                        let noise = farness + cave_noise * 0.1;
+                        if noise < -0.6 {
                             SNOW_ITEM_ID
-                        } else if biome_noise < -0.2 {
+                        } else if noise < -0.2 {
                             GRASS_ITEM_ID
-                        } else if biome_noise > 0.6 {
+                        } else if noise > 0.6 {
                             LAVA_ITEM_ID
-                        } else if biome_noise > 0.2 {
+                        } else if noise > 0.2 {
                             SAND_ITEM_ID
                         } else {
                             SOIL_ITEM_ID
@@ -105,8 +107,8 @@ fn spawn_world(
             };
             // tree
             if y == surface && item_id != WATER_ITEM_ID {
-                let tree_noise = tree_fbm.get([fx * cave_noise, fy * cave_noise]);
-                if tree_noise > 0.2 {
+                let noise = tree_fbm.get([fx * cave_noise, fy * cave_noise]);
+                if noise > 0.2 {
                     let item_id = WOOD_ITEM_ID;
                     let Some(attribute) = attribute_map.get(&item_id) else {
                         todo!()
@@ -117,6 +119,7 @@ fn spawn_world(
                         let chunk_point = point / CHUKN_LENGTH;
                         let unload_blocks = unload_blocks_map.get_or_insert(&chunk_point);
                         unload_blocks.push(UnloadBlock { item_id, point });
+                        placed_block_map.insert(point, PlacedBlock { item_id });
                         let pixel = imgbuf.get_pixel_mut(x as u32, (WORLD_HEIGHT - y - 1) as u32);
                         *pixel = attribute.minimap_color;
                     }
@@ -129,6 +132,7 @@ fn spawn_world(
             let chunk_point = point / CHUKN_LENGTH;
             let unload_blocks = unload_blocks_map.get_or_insert(&chunk_point);
             unload_blocks.push(UnloadBlock { item_id, point });
+            placed_block_map.insert(point, PlacedBlock { item_id });
             let pixel = imgbuf.get_pixel_mut(x as u32, (WORLD_HEIGHT - y - 1) as u32);
             *pixel = attribute.minimap_color;
         }

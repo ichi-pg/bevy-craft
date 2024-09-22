@@ -47,12 +47,12 @@ impl LookAt<f32> for f32 {
     }
 }
 
-pub trait ToI32Vec2 {
-    fn to_i32vec2(&self) -> IVec2;
+pub trait AsI32Vec2 {
+    fn as_i32vec2(&self) -> IVec2;
 }
 
-impl ToI32Vec2 for Vec3 {
-    fn to_i32vec2(&self) -> IVec2 {
+impl AsI32Vec2 for Vec3 {
+    fn as_i32vec2(&self) -> IVec2 {
         IVec2 {
             x: self.x as i32,
             y: self.y as i32,
@@ -60,8 +60,8 @@ impl ToI32Vec2 for Vec3 {
     }
 }
 
-impl ToI32Vec2 for Vec2 {
-    fn to_i32vec2(&self) -> IVec2 {
+impl AsI32Vec2 for Vec2 {
+    fn as_i32vec2(&self) -> IVec2 {
         IVec2 {
             x: self.x as i32,
             y: self.y as i32,
@@ -69,8 +69,8 @@ impl ToI32Vec2 for Vec2 {
     }
 }
 
-impl ToI32Vec2 for I16Vec2 {
-    fn to_i32vec2(&self) -> IVec2 {
+impl AsI32Vec2 for I16Vec2 {
+    fn as_i32vec2(&self) -> IVec2 {
         IVec2 {
             x: self.x as i32,
             y: self.y as i32,
@@ -78,37 +78,26 @@ impl ToI32Vec2 for I16Vec2 {
     }
 }
 
-pub trait ToF32Vec2 {
-    fn to_f32vec2(&self) -> Vec2;
+pub trait AsIVec3 {
+    fn as_vec3(&self) -> Vec3;
 }
 
-impl ToF32Vec2 for I16Vec2 {
-    fn to_f32vec2(&self) -> Vec2 {
-        Vec2 {
+impl AsIVec3 for Vec2 {
+    fn as_vec3(&self) -> Vec3 {
+        Vec3 {
             x: self.x as f32,
             y: self.y as f32,
+            z: 0.0,
         }
     }
 }
 
-pub trait ToI16Vec2 {
-    fn to_i16vec2(&self) -> I16Vec2;
-}
-
-impl ToI16Vec2 for Vec2 {
-    fn to_i16vec2(&self) -> I16Vec2 {
-        I16Vec2 {
-            x: self.x as i16,
-            y: self.y as i16,
-        }
-    }
-}
-
-impl ToI16Vec2 for Vec3 {
-    fn to_i16vec2(&self) -> I16Vec2 {
-        I16Vec2 {
-            x: self.x as i16,
-            y: self.y as i16,
+impl AsIVec3 for I16Vec2 {
+    fn as_vec3(&self) -> Vec3 {
+        Vec3 {
+            x: self.x as f32,
+            y: self.y as f32,
+            z: 0.0,
         }
     }
 }

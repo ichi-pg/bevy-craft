@@ -78,9 +78,9 @@ fn sync_player(
             for section in &mut text.sections {
                 section.value = format!(
                     "Position:{} Velocity:{} Chunk:{}",
-                    (transform.translation * INVERTED_BLOCK_SIZE).to_i32vec2(),
-                    velocity.to_i32vec2(),
-                    chunk_point.to_i32vec2(),
+                    (transform.translation * INVERTED_BLOCK_SIZE).as_i32vec2(),
+                    velocity.as_i32vec2(),
+                    chunk_point.as_i32vec2(),
                 );
             }
         }

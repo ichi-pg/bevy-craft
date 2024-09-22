@@ -28,6 +28,7 @@ mod item_putting;
 mod item_selecting;
 mod item_sorting;
 mod item_stats;
+mod liquid;
 mod localization;
 mod math;
 mod minimap;
@@ -36,6 +37,7 @@ mod mob_jump_attack;
 mod mob_patrol;
 mod mob_stroll;
 mod mob_walk;
+mod plant;
 mod player;
 mod player_melee;
 mod player_stats;
@@ -43,6 +45,7 @@ mod profiler;
 mod random;
 mod stats;
 mod storage;
+mod tree;
 mod ui_hovered;
 mod ui_parts;
 mod ui_states;
@@ -116,6 +119,9 @@ fn main() {
             player::PlayerPlugin,
             player_melee::PlayerMeleePlugin,
             block::BlockPlugin,
+            liquid::LiquidPlugin,
+            tree::TreePlugin,
+            plant::PlantPlugin,
             item::ItemPlugin,
             enemy::EnemyPlugin,
             mob_walk::MobWalkPlugin,

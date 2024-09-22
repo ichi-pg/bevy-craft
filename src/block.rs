@@ -1,21 +1,25 @@
 use crate::atlas::*;
 use crate::chunk::*;
 use crate::click_shape::*;
+use crate::collision::*;
 use crate::hit_test::*;
 use crate::hotbar::*;
 use crate::item::*;
 use crate::item_attribute::*;
+use crate::item_id::*;
 use crate::item_node::*;
 use crate::item_selecting::*;
-use crate::math::*;
+use crate::liquid::*;
 use crate::player::*;
 use crate::random::*;
 use crate::stats::*;
 use crate::storage::*;
+use crate::tree::Tree;
 use crate::workbench::*;
 use bevy::math::I16Vec2;
 use bevy::prelude::*;
 use rand::RngCore;
+use std::collections::HashMap;
 
 pub const BLOCK_SIZE: f32 = 128.0;
 pub const INVERTED_BLOCK_SIZE: f32 = 1.0 / BLOCK_SIZE;
@@ -36,6 +40,13 @@ pub struct BlockDestroied {
     pub position: Vec2,
     pub block_id: u64,
 }
+
+pub struct PlacedBlock {
+    pub item_id: u16,
+}
+
+#[derive(Resource, Deref, DerefMut, Default)]
+pub struct PlacedBlockMap(pub HashMap<I16Vec2, PlacedBlock>);
 
 pub trait BuildBlock {
     fn build_block(
@@ -63,7 +74,7 @@ impl<'w, 's> BuildBlock for Commands<'w, 's> {
         let Some(atlas) = atlas_map.get(&attribute.atlas_id) else {
             return;
         };
-        self.spawn((
+        let bundle = (
             SpriteBundle {
                 sprite: Sprite {
                     custom_size: Some(Vec2::splat(BLOCK_SIZE)),
@@ -88,24 +99,21 @@ impl<'w, 's> BuildBlock for Commands<'w, 's> {
             Health(100.0),
             MaxHealth(100.0),
             InChunk,
-        ));
+        );
+        match item_id {
+            WATER_ITEM_ID => self.spawn((bundle, Liquid, Uncollide)),
+            MAGMA_ITEM_ID => self.spawn((bundle, Liquid, Uncollide)),
+            WOOD_ITEM_ID => self.spawn((bundle, Tree, Uncollide)),
+            _ => self.spawn(bundle),
+        };
         // TODO not overlap block id
-        // TODO plant growth
-
-        // TODO tree
-        // TODO flower
-        // TODO soil
-        // TODO stone
-        // TODO water
         // TODO torch
-
         // TODO forge
         // TODO enchant table
         // TODO door
         // TODO ladder (rope)
         // TODO scaffold
         // TODO steps
-
         // TODO rail
         // TODO trolley
         // TODO warp gate
@@ -124,6 +132,7 @@ fn destroy_block(
     mut commands: Commands,
     mut item_event_writer: EventWriter<ItemDropped>,
     mut block_event_writer: EventWriter<BlockDestroied>,
+    mut block_map: ResMut<PlacedBlockMap>,
     time: Res<Time>,
 ) {
     for (entity, transform, item_id, block_id, mut health) in &mut query {
@@ -131,13 +140,16 @@ fn destroy_block(
             health.0 -= pickaxe_power.0 * time.delta_seconds() * attack_speed.0;
         }
         if health.0 <= 0.0 {
+            let position = transform.translation.xy();
+            let point = (position * INVERTED_BLOCK_SIZE).as_i16vec2();
             commands.entity(entity).despawn_recursive();
+            block_map.remove(&point);
             block_event_writer.send(BlockDestroied {
-                position: transform.translation.xy(),
+                position,
                 block_id: block_id.0,
             });
             item_event_writer.send(ItemDropped {
-                position: transform.translation.xy(),
+                position,
                 item_id: item_id.0,
                 amount: 1,
             });
@@ -149,7 +161,7 @@ fn destroy_block(
         }
     }
     // TODO pickaxe category
-    // TODO sync minimap block
+    // TODO sync minimap
 }
 
 fn repair_health(
@@ -206,6 +218,7 @@ fn placement_block(
     mut event_reader: EventReader<EmptyClicked>,
     mut commands: Commands,
     mut random: ResMut<Random>,
+    mut block_map: ResMut<PlacedBlockMap>,
 ) {
     for event in event_reader.read() {
         for (mut item_id, mut amount, index) in &mut query {
@@ -215,30 +228,27 @@ fn placement_block(
             if item_id.0 == 0 {
                 continue;
             };
-            commands.build_block(
-                item_id.0,
-                ((event.pos + BLOCK_SIZE * 0.5) * INVERTED_BLOCK_SIZE)
-                    .floor()
-                    .to_i16vec2(),
-                &attribute_map,
-                &atlas_map,
-                &mut random,
-            );
+            let point = ((event.pos + BLOCK_SIZE * 0.5) * INVERTED_BLOCK_SIZE)
+                .floor()
+                .as_i16vec2();
+            commands.build_block(item_id.0, point, &attribute_map, &atlas_map, &mut random);
             amount.0 -= 1;
             if amount.0 == 0 {
                 item_id.0 = 0;
             }
+            block_map.insert(point, PlacedBlock { item_id: item_id.0 });
         }
     }
     // FIXME overlap item
     // TODO using selected item id resource?
-    // TODO sync minimap block
+    // TODO sync minimap
 }
 
 pub struct BlockPlugin;
 
 impl Plugin for BlockPlugin {
     fn build(&self, app: &mut App) {
+        app.insert_resource(PlacedBlockMap::default());
         app.add_event::<BlockDestroied>();
         app.add_systems(
             Update,

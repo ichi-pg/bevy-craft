@@ -46,7 +46,7 @@ const OUTER_SHAPE: Shape = Shape::Rect(Vec2::splat(CHUNK_SIZE * OUTER_LENGTH as 
 const OUTER_LENGTH: i16 = 1;
 
 fn start_chunk(mut chunk_point: ResMut<ChunkPoint>, mut event_writer: EventWriter<ChunkChanged>) {
-    chunk_point.0 = (PLAYER_RESPAWN_POSITION / CHUNK_SIZE).to_i16vec2();
+    chunk_point.0 = (PLAYER_RESPAWN_POSITION.xy() / CHUNK_SIZE).as_i16vec2();
     event_writer.send(ChunkChanged);
 }
 
@@ -56,14 +56,11 @@ fn player_moved(
     mut event_writer: EventWriter<ChunkChanged>,
 ) {
     for transform in &query {
-        if point_test(
-            transform.translation.xy(),
-            chunk_point.to_f32vec2() * CHUNK_SIZE,
-            INNER_SHAPE,
-        ) {
+        let position = transform.translation.xy();
+        if point_test(position, chunk_point.as_vec2() * CHUNK_SIZE, INNER_SHAPE) {
             return;
         }
-        chunk_point.0 = (transform.translation / CHUNK_SIZE).to_i16vec2();
+        chunk_point.0 = (position / CHUNK_SIZE).as_i16vec2();
         event_writer.send(ChunkChanged);
     }
 }
@@ -77,7 +74,7 @@ fn without_block(
     if event_reader.is_empty() {
         return;
     }
-    let chunk_position = chunk_point.to_f32vec2() * CHUNK_SIZE;
+    let chunk_position = chunk_point.as_vec2() * CHUNK_SIZE;
     for (entity, transform) in &query {
         if point_test(transform.translation.xy(), chunk_position, OUTER_SHAPE) {
             commands.entity(entity).insert(InChunk);
@@ -101,16 +98,17 @@ fn with_block(
     if event_reader.is_empty() {
         return;
     }
-    let chunk_position = chunk_point.to_f32vec2() * CHUNK_SIZE;
+    let chunk_position = chunk_point.as_vec2() * CHUNK_SIZE;
     for (entity, transform, item_id) in &query {
-        if point_test(transform.translation.xy(), chunk_position, OUTER_SHAPE) {
+        let position = transform.translation.xy();
+        if point_test(position, chunk_position, OUTER_SHAPE) {
             continue;
         }
-        let chunk_point = (transform.translation / CHUNK_SIZE).to_i16vec2();
+        let chunk_point = (position / CHUNK_SIZE).as_i16vec2();
         let unload_blocks = unload_blocks_map.get_or_insert(&chunk_point);
         unload_blocks.push(UnloadBlock {
             item_id: item_id.0,
-            point: (transform.translation * INVERTED_BLOCK_SIZE).to_i16vec2(),
+            point: (position * INVERTED_BLOCK_SIZE).as_i16vec2(),
         });
         commands.entity(entity).despawn_recursive();
     }
