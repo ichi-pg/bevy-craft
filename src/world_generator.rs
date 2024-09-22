@@ -119,7 +119,13 @@ fn spawn_world(
                         let chunk_point = point / CHUKN_LENGTH;
                         let unload_blocks = unload_blocks_map.get_or_insert(&chunk_point);
                         unload_blocks.push(UnloadBlock { item_id, point });
-                        placed_block_map.insert(point, PlacedBlock { item_id });
+                        placed_block_map.insert(
+                            point,
+                            PlacedBlock {
+                                item_id,
+                                pressure: false,
+                            },
+                        );
                         let pixel = imgbuf.get_pixel_mut(x as u32, (WORLD_HEIGHT - y - 1) as u32);
                         *pixel = attribute.minimap_color;
                     }
@@ -132,7 +138,13 @@ fn spawn_world(
             let chunk_point = point / CHUKN_LENGTH;
             let unload_blocks = unload_blocks_map.get_or_insert(&chunk_point);
             unload_blocks.push(UnloadBlock { item_id, point });
-            placed_block_map.insert(point, PlacedBlock { item_id });
+            placed_block_map.insert(
+                point,
+                PlacedBlock {
+                    item_id,
+                    pressure: false,
+                },
+            );
             let pixel = imgbuf.get_pixel_mut(x as u32, (WORLD_HEIGHT - y - 1) as u32);
             *pixel = attribute.minimap_color;
         }

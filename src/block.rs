@@ -43,6 +43,7 @@ pub struct BlockDestroied {
 
 pub struct PlacedBlock {
     pub item_id: u16,
+    pub pressure: bool,
 }
 
 #[derive(Resource, Deref, DerefMut, Default)]
@@ -236,7 +237,13 @@ fn placement_block(
             if amount.0 == 0 {
                 item_id.0 = 0;
             }
-            block_map.insert(point, PlacedBlock { item_id: item_id.0 });
+            block_map.insert(
+                point,
+                PlacedBlock {
+                    item_id: item_id.0,
+                    pressure: false,
+                },
+            );
         }
     }
     // FIXME overlap item
