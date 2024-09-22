@@ -37,7 +37,7 @@ fn spawn_player(mut commands: Commands) {
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
-                color: Color::WHITE,
+                color: Color::srgb(1.0, 0.5, 0.5),
                 custom_size: Some(Vec2::splat(PLAYER_SIZE)),
                 ..default()
             },

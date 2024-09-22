@@ -110,7 +110,7 @@ fn with_block(
         let unload_blocks = unload_blocks_map.get_or_insert(&chunk_point);
         unload_blocks.push(UnloadBlock {
             item_id: item_id.0,
-            point: (transform.translation / BLOCK_SIZE).to_i16vec2(),
+            point: (transform.translation * INVERTED_BLOCK_SIZE).to_i16vec2(),
         });
         commands.entity(entity).despawn_recursive();
     }

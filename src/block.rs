@@ -18,6 +18,8 @@ use bevy::prelude::*;
 use rand::RngCore;
 
 pub const BLOCK_SIZE: f32 = 128.0;
+pub const INVERTED_BLOCK_SIZE: f32 = 1.0 / BLOCK_SIZE;
+
 const REPAIR_POWER: f32 = 10.0;
 
 #[derive(Component)]
@@ -147,6 +149,7 @@ fn destroy_block(
         }
     }
     // TODO pickaxe category
+    // TODO sync minimap block
 }
 
 fn repair_health(
@@ -214,7 +217,7 @@ fn placement_block(
             };
             commands.build_block(
                 item_id.0,
-                ((event.pos + BLOCK_SIZE * 0.5) / BLOCK_SIZE)
+                ((event.pos + BLOCK_SIZE * 0.5) * INVERTED_BLOCK_SIZE)
                     .floor()
                     .to_i16vec2(),
                 &attribute_map,
@@ -227,9 +230,9 @@ fn placement_block(
             }
         }
     }
-    // FIXME minimap block
     // FIXME overlap item
     // TODO using selected item id resource?
+    // TODO sync minimap block
 }
 
 pub struct BlockPlugin;

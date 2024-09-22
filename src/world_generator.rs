@@ -12,17 +12,18 @@ use noise::*;
 use rand::RngCore;
 use std::path::Path;
 
-const WORLD_WIDTH: i16 = 3500;
-const WORLD_HEIGHT: i16 = 1800;
+pub const WORLD_WIDTH: i16 = 3500;
+pub const WORLD_HEIGHT: i16 = 1800;
 
 const UNDERGROUND_HEIGHT: i16 = WORLD_HEIGHT * 4 / 5;
-pub const SURFACE_HEIGHT: i16 = WORLD_HEIGHT / 3 / 5;
+pub const ABOVE_GROUND_HEIGHT: i16 = WORLD_HEIGHT / 5;
+pub const SURFACE_HEIGHT: i16 = ABOVE_GROUND_HEIGHT / 3;
 
 const HALF_WORLD_WIDTH: i16 = WORLD_WIDTH / 2;
 const INVERTED_HALF_WORLD_WIDTH: f64 = 1.0 / HALF_WORLD_WIDTH as f64;
 const INVERTED_UNDERGROUND_HEIGHT: f64 = 1.0 / (UNDERGROUND_HEIGHT + SURFACE_HEIGHT) as f64;
 
-const MINIMAP_TEXTURE: &str = "minimap.png";
+const MINIMAP_TEXTURE_NAME: &str = "minimap.png";
 
 fn spawn_world(
     asset_server: Res<AssetServer>,
@@ -46,63 +47,58 @@ fn spawn_world(
         let surface = UNDERGROUND_HEIGHT + (surface_noise * farness.abs().powf(0.2)) as i16;
         for y in 0..=surface {
             let fy = y as f64;
-            let depth = fy * INVERTED_UNDERGROUND_HEIGHT;
+            let deepness = fy * INVERTED_UNDERGROUND_HEIGHT;
             // cave
             let cave_noise = cave_fbm.get([fx, fy]);
-            if cave_noise > 0.1 + depth * 0.2 {
+            if cave_noise > 0.1 + deepness * 0.2 {
                 continue;
             }
             // hole
             let hole_noise = hole_fbm.get([fx, fy]);
-            if hole_noise > 0.4 + depth * 0.2 {
+            if hole_noise > 0.4 + deepness * 0.2 {
                 continue;
             }
             // water
             let water_noise = water_fbm.get([fx, fy]);
-            let item_id = if water_noise > 0.4 - depth * 0.2 {
+            let item_id = if water_noise > 0.4 - deepness * 0.2 {
                 WATER_ITEM_ID
             } else {
                 // ore
-                let depth_noise = depth - cave_noise * cave_noise;
+                let deepness_noise = deepness - cave_noise * cave_noise;
                 let ore_noise = ore_fbm.get([fx, fy]);
-                if ore_noise > 0.3 && depth_noise > 0.05 {
-                    if depth_noise < 0.3 {
+                if ore_noise > 0.3 && deepness_noise > 0.05 {
+                    if deepness_noise < 0.3 {
                         GOLD_ITEM_ID
-                    } else if depth_noise < 0.55 {
+                    } else if deepness_noise < 0.55 {
                         IRON_ITEM_ID
-                    } else if depth_noise < 0.8 {
+                    } else if deepness_noise < 0.8 {
                         BRONZE_ITEM_ID
                     } else {
                         COAL_ITEM_ID
                     }
                 } else {
                     // underground
-                    if depth_noise < 0.05 {
-                        LAVA_ITEM_ID
-                    } else if depth_noise < 0.3 {
+                    if deepness_noise < 0.05 {
+                        MAGMA_ITEM_ID
+                    } else if deepness_noise < 0.3 {
                         GRANITE_ITEM_ID
-                    } else if depth_noise < 0.55 {
+                    } else if deepness_noise < 0.55 {
                         DEEPSLATE_ITEM_ID
-                    } else if depth_noise < 0.8 {
+                    } else if deepness_noise < 0.8 {
                         STONE_ITEM_ID
                     } else {
                         // biome
                         let biome_noise = farness + cave_noise * 0.1;
-                        let biome_noise_abs = biome_noise.abs();
-                        if biome_noise_abs < 0.2 {
-                            SOIL_ITEM_ID
-                        } else if biome_noise_abs < 0.6 {
-                            if biome_noise < 0.0 {
-                                SAND_ITEM_ID
-                            } else {
-                                SAND_ITEM_ID
-                            }
+                        if biome_noise < -0.6 {
+                            SNOW_ITEM_ID
+                        } else if biome_noise < -0.2 {
+                            GRASS_ITEM_ID
+                        } else if biome_noise > 0.6 {
+                            LAVA_ITEM_ID
+                        } else if biome_noise > 0.2 {
+                            SAND_ITEM_ID
                         } else {
-                            if biome_noise < 0.0 {
-                                SNOW_ITEM_ID
-                            } else {
-                                SNOW_ITEM_ID
-                            }
+                            SOIL_ITEM_ID
                         }
                     }
                 }
@@ -137,10 +133,10 @@ fn spawn_world(
             *pixel = attribute.minimap_color;
         }
     }
-    if let Err(_) = imgbuf.save(Path::new("assets").join(MINIMAP_TEXTURE)) {
+    if let Err(_) = imgbuf.save(Path::new("assets").join(MINIMAP_TEXTURE_NAME)) {
         todo!()
     }
-    let texture = asset_server.load_with_settings(MINIMAP_TEXTURE, |s: &mut _| {
+    let texture = asset_server.load_with_settings(MINIMAP_TEXTURE_NAME, |s: &mut _| {
         *s = ImageLoaderSettings {
             sampler: ImageSampler::Descriptor(ImageSamplerDescriptor {
                 mipmap_filter: ImageFilterMode::Linear,
@@ -165,8 +161,8 @@ fn spawn_world(
         },
         MINIMAP_LAYER,
     ));
-    // TODO merge cave and hole
-    // TODO different biomes on left and right
+    // TODO high mountain
+    // TODO underground balance
     // TODO preset structures
 }
 

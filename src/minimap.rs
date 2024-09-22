@@ -33,7 +33,7 @@ const FULLMAP_HEIGHT: f32 = 810.0;
 const MINIMAP_WIDTH: f32 = 400.0;
 const MINIMAP_HEIGHT: f32 = 225.0;
 
-const INIT_ZOOM: f32 = 20.0 / BLOCK_SIZE;
+const INIT_ZOOM: f32 = 20.0 * INVERTED_BLOCK_SIZE;
 const ZOOM_RATE: f32 = 1.25;
 const MAX_ZOOM_COUNT: f32 = 10.0;
 const DRAGGING_RATE: f32 = 1.0;
@@ -214,8 +214,8 @@ impl Plugin for MinimapPlugin {
             Update,
             (
                 window_resized,
-                trace_player::<MinimapCamera>(1.0 / BLOCK_SIZE),
-                trace_player::<PlayerMarker>(1.0 / BLOCK_SIZE),
+                trace_player::<MinimapCamera>(INVERTED_BLOCK_SIZE),
+                trace_player::<PlayerMarker>(INVERTED_BLOCK_SIZE),
                 change_ui_state::<KeyM>(UIStates::Map).run_if(not(in_state(UIStates::Map))),
                 (
                     change_ui_state::<KeyM>(UIStates::None),
