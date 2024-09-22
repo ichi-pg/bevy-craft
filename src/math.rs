@@ -1,4 +1,4 @@
-use bevy::{color::Color, math::*};
+use bevy::math::*;
 use std::hash::RandomState;
 
 pub trait Repeat<T> {
