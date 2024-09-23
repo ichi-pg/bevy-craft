@@ -251,6 +251,7 @@ fn placement_block(
     // TODO using selected item id resource?
     // TODO sync minimap
     // TODO can't placement item
+    // TODO can placement in liquid
 }
 
 pub struct BlockPlugin;
