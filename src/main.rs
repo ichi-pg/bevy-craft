@@ -168,4 +168,7 @@ fn main() {
     // TODO search macro
 
     // TODO can split each ecs chunk updating to multi threads or each frames?
+
+    // TODO debug show chunk
+    // TODO debug zoom world
 }

@@ -22,6 +22,7 @@ fn update_liquid(
                     PlacedBlock {
                         item_id: item_id.0,
                         pressure: false,
+                        tree_power: 0,
                     },
                 );
                 continue;
@@ -71,6 +72,7 @@ fn update_liquid(
             PlacedBlock {
                 item_id: item_id.0,
                 pressure,
+                tree_power: 0,
             },
         );
         // slide
@@ -92,6 +94,7 @@ fn update_liquid(
     // TODO waterfall
     // TODO water flow
 
+    // TODO throw tree
     // TODO speed
     // TODO freeze
     // TODO sync minimap

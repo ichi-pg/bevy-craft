@@ -14,7 +14,7 @@ use crate::player::*;
 use crate::random::*;
 use crate::stats::*;
 use crate::storage::*;
-use crate::tree::Tree;
+use crate::tree::*;
 use crate::workbench::*;
 use bevy::math::I16Vec2;
 use bevy::prelude::*;
@@ -44,6 +44,7 @@ pub struct BlockDestroied {
 pub struct PlacedBlock {
     pub item_id: u16,
     pub pressure: bool,
+    pub tree_power: u8,
 }
 
 #[derive(Resource, Deref, DerefMut, Default)]
@@ -70,10 +71,10 @@ impl<'w, 's> BuildBlock for Commands<'w, 's> {
         random: &mut Random,
     ) {
         let Some(attribute) = attribute_map.get(&item_id) else {
-            return;
+            todo!()
         };
         let Some(atlas) = atlas_map.get(&attribute.atlas_id) else {
-            return;
+            todo!()
         };
         let bundle = (
             SpriteBundle {
@@ -243,6 +244,7 @@ fn placement_block(
                 PlacedBlock {
                     item_id: item_id.0,
                     pressure: false,
+                    tree_power: 0,
                 },
             );
         }

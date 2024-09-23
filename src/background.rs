@@ -106,6 +106,7 @@ fn spawn_background(
                     });
             }
         });
+    // TODO scale to horizontal
     // TODO adjust cloud noise
     // TODO flex background width
 }

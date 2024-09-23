@@ -105,9 +105,8 @@ fn spawn_world(
                     }
                 }
             };
-            // tree
             macro_rules! placement_block {
-                ( $item_id:ident, $x:ident, $y:ident ) => {
+                ( $item_id:ident, $x:ident, $y:ident, $tree_power:expr ) => {
                     let Some(attribute) = attribute_map.get(&$item_id) else {
                         todo!()
                     };
@@ -123,22 +122,23 @@ fn spawn_world(
                         PlacedBlock {
                             item_id: $item_id,
                             pressure: false,
+                            tree_power: $tree_power,
                         },
                     );
                     let pixel = imgbuf.get_pixel_mut($x as u32, (WORLD_HEIGHT - $y - 1) as u32);
                     *pixel = attribute.minimap_color;
                 };
             }
+            // tree
             if y == surface && item_id != WATER_ITEM_ID {
                 let noise = tree_fbm.get([fx * cave_noise, fy * cave_noise]);
                 if noise > 0.2 {
                     let x = x as i16;
-                    for y in y + 1..y + 8 {
-                        placement_block!(WOOD_ITEM_ID, x, y);
-                    }
+                    let y = y + 1;
+                    placement_block!(WOOD_ITEM_ID, x, y, 6);
                 }
             }
-            placement_block!(item_id, x, y);
+            placement_block!(item_id, x, y, 0);
         }
     }
     if let Err(_) = imgbuf.save(Path::new("assets").join(MINIMAP_TEXTURE_NAME)) {
@@ -176,6 +176,7 @@ fn spawn_world(
                 PlacedBlock {
                     item_id: 0,
                     pressure: false,
+                    tree_power: 0,
                 },
             );
         };
@@ -188,6 +189,7 @@ fn spawn_world(
             placement_block!(x, y - UNDERGROUND_HEIGHT);
         }
     }
+    // TODO random tree power
     // TODO world end lines
     // TODO high mountain
     // TODO underground balance
