@@ -67,14 +67,9 @@ fn update_liquid(
                 pressure |= side.item_id == item_id.0;
             };
         }
-        block_map.insert(
-            old_point,
-            PlacedBlock {
-                item_id: item_id.0,
-                pressure,
-                tree_power: 0,
-            },
-        );
+        if let Some(block) = block_map.get_mut(&old_point) {
+            block.pressure = pressure;
+        };
         // slide
         if !pressure {
             continue;

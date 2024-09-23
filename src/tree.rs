@@ -27,14 +27,9 @@ fn update_tree(
         if tree_power == 0 {
             continue;
         }
-        block_map.insert(
-            point,
-            PlacedBlock {
-                item_id: item_id.0,
-                pressure: false,
-                tree_power: 0,
-            },
-        );
+        if let Some(block) = block_map.get_mut(&point) {
+            block.tree_power = 0;
+        };
         let top_point = point + I16Vec2::Y;
         if block_map.contains_key(&top_point) {
             continue;
@@ -56,6 +51,7 @@ fn update_tree(
         );
     }
     // TODO freeze
+    // TODO leaf
 }
 
 pub struct TreePlugin;
