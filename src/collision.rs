@@ -132,6 +132,7 @@ fn collision<T: Component, U: Component, V: Component + Collided>(
     // FIXME jump out when placement block to player position
     // TODO dynamics gizmo
     // TODO optimize grounded and heading
+    // TODO float or sink in water
 }
 
 fn clear_collided<T: Component + Collided>(query: Query<Entity, With<T>>, mut commands: Commands) {

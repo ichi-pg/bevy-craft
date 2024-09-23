@@ -14,7 +14,7 @@ use rand::RngCore;
 use std::path::Path;
 
 pub const WORLD_WIDTH: i16 = 3500;
-pub const WORLD_HEIGHT: i16 = 1800;
+const WORLD_HEIGHT: i16 = 1800;
 
 const UNDERGROUND_HEIGHT: i16 = WORLD_HEIGHT * 4 / 5;
 pub const ABOVE_GROUND_HEIGHT: i16 = WORLD_HEIGHT / 5;
@@ -106,47 +106,36 @@ fn spawn_world(
                 }
             };
             // tree
-            if y == surface && item_id != WATER_ITEM_ID {
-                let noise = tree_fbm.get([fx * cave_noise, fy * cave_noise]);
-                if noise > 0.2 {
-                    let item_id = WOOD_ITEM_ID;
+            macro_rules! placement_block {
+                ( $item_id:ident, $x:ident, $y:ident ) => {
                     let Some(attribute) = attribute_map.get(&item_id) else {
                         todo!()
                     };
+                    let point = I16Vec2::new(x - HALF_WORLD_WIDTH, y - UNDERGROUND_HEIGHT);
+                    let chunk_point = point / CHUKN_LENGTH;
+                    let unload_blocks = unload_blocks_map.get_or_insert(&chunk_point);
+                    unload_blocks.push(UnloadBlock { item_id, point });
+                    placed_block_map.insert(
+                        point,
+                        PlacedBlock {
+                            item_id: $item_id,
+                            pressure: false,
+                        },
+                    );
+                    let pixel = imgbuf.get_pixel_mut($x as u32, (WORLD_HEIGHT - $y - 1) as u32);
+                    *pixel = attribute.minimap_color;
+                };
+            }
+            if y == surface && item_id != WATER_ITEM_ID {
+                let noise = tree_fbm.get([fx * cave_noise, fy * cave_noise]);
+                if noise > 0.2 {
                     let x = x as i16;
                     for y in y + 1..y + 8 {
-                        let point = I16Vec2::new(x - HALF_WORLD_WIDTH, y - UNDERGROUND_HEIGHT);
-                        let chunk_point = point / CHUKN_LENGTH;
-                        let unload_blocks = unload_blocks_map.get_or_insert(&chunk_point);
-                        unload_blocks.push(UnloadBlock { item_id, point });
-                        placed_block_map.insert(
-                            point,
-                            PlacedBlock {
-                                item_id,
-                                pressure: false,
-                            },
-                        );
-                        let pixel = imgbuf.get_pixel_mut(x as u32, (WORLD_HEIGHT - y - 1) as u32);
-                        *pixel = attribute.minimap_color;
+                        placement_block!(WOOD_ITEM_ID, x, y);
                     }
                 }
             }
-            let Some(attribute) = attribute_map.get(&item_id) else {
-                todo!()
-            };
-            let point = I16Vec2::new(x - HALF_WORLD_WIDTH, y - UNDERGROUND_HEIGHT);
-            let chunk_point = point / CHUKN_LENGTH;
-            let unload_blocks = unload_blocks_map.get_or_insert(&chunk_point);
-            unload_blocks.push(UnloadBlock { item_id, point });
-            placed_block_map.insert(
-                point,
-                PlacedBlock {
-                    item_id,
-                    pressure: false,
-                },
-            );
-            let pixel = imgbuf.get_pixel_mut(x as u32, (WORLD_HEIGHT - y - 1) as u32);
-            *pixel = attribute.minimap_color;
+            placement_block!(item_id, x, y);
         }
     }
     if let Err(_) = imgbuf.save(Path::new("assets").join(MINIMAP_TEXTURE_NAME)) {
@@ -177,6 +166,26 @@ fn spawn_world(
         },
         MINIMAP_LAYER,
     ));
+    macro_rules! placement_block {
+        ( $x:expr, $y:expr ) => {
+            placed_block_map.insert(
+                I16Vec2::new($x, $y),
+                PlacedBlock {
+                    item_id: 0,
+                    pressure: false,
+                },
+            );
+        };
+    }
+    for x in -1..=WORLD_WIDTH {
+        placement_block!(x - HALF_WORLD_WIDTH, -UNDERGROUND_HEIGHT - 1);
+    }
+    for y in -1..WORLD_HEIGHT {
+        for x in [-HALF_WORLD_WIDTH - 1, HALF_WORLD_WIDTH] {
+            placement_block!(x, y - UNDERGROUND_HEIGHT);
+        }
+    }
+    // TODO world end lines
     // TODO high mountain
     // TODO underground balance
     // TODO preset structures

@@ -163,6 +163,7 @@ fn destroy_block(
     }
     // TODO pickaxe category
     // TODO sync minimap
+    // TODO can't destroy liquid
 }
 
 fn repair_health(
@@ -249,6 +250,7 @@ fn placement_block(
     // FIXME overlap item
     // TODO using selected item id resource?
     // TODO sync minimap
+    // TODO can't placement item
 }
 
 pub struct BlockPlugin;
