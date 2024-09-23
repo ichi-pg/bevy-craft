@@ -166,4 +166,6 @@ fn main() {
     // ui animation, character animation, atlas, tilemap, ...
 
     // TODO search macro
+
+    // TODO can split each ecs chunk updating to multi threads or each frames?
 }

@@ -108,13 +108,16 @@ fn spawn_world(
             // tree
             macro_rules! placement_block {
                 ( $item_id:ident, $x:ident, $y:ident ) => {
-                    let Some(attribute) = attribute_map.get(&item_id) else {
+                    let Some(attribute) = attribute_map.get(&$item_id) else {
                         todo!()
                     };
-                    let point = I16Vec2::new(x - HALF_WORLD_WIDTH, y - UNDERGROUND_HEIGHT);
+                    let point = I16Vec2::new($x - HALF_WORLD_WIDTH, $y - UNDERGROUND_HEIGHT);
                     let chunk_point = point / CHUKN_LENGTH;
                     let unload_blocks = unload_blocks_map.get_or_insert(&chunk_point);
-                    unload_blocks.push(UnloadBlock { item_id, point });
+                    unload_blocks.push(UnloadBlock {
+                        item_id: $item_id,
+                        point,
+                    });
                     placed_block_map.insert(
                         point,
                         PlacedBlock {

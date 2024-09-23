@@ -46,7 +46,8 @@ fn update_liquid(
         };
         // top pressure
         let mut pressure = false;
-        if let Some(top) = block_map.get(&(old_point + I16Vec2::Y)) {
+        let top_point = old_point + I16Vec2::Y;
+        if let Some(top) = block_map.get(&top_point) {
             pressure = top.item_id == item_id.0;
         };
         // side pressure
@@ -56,6 +57,15 @@ fn update_liquid(
         if let Some(side) = block_map.get(&right_point) {
             pressure |= side.pressure && side.item_id == item_id.0;
         };
+        // side top pressure
+        if !block_map.contains_key(&top_point) {
+            if let Some(side) = block_map.get(&(left_point + I16Vec2::Y)) {
+                pressure |= side.item_id == item_id.0;
+            };
+            if let Some(side) = block_map.get(&(right_point + I16Vec2::Y)) {
+                pressure |= side.item_id == item_id.0;
+            };
+        }
         block_map.insert(
             old_point,
             PlacedBlock {
@@ -74,11 +84,16 @@ fn update_liquid(
             move_liquid!(right_point);
         };
     }
-    // TODO side top pressure
+    // TODO liquid level
+
+    // TODO surface tension
+    // TODO quarter block
     // TODO merge extra top
+    // TODO waterfall
+    // TODO water flow
+
     // TODO speed
     // TODO freeze
-    // TODO quarter block
     // TODO sync minimap
 }
 
