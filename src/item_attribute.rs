@@ -18,16 +18,16 @@ pub trait ItemText {
 }
 
 fn create_attributes() -> ItemAttributeMap {
-    let colors = HashMap::<u16, image::Rgba<u8>>::from_iter([
+    let minimap_colors = HashMap::<u16, image::Rgba<u8>>::from_iter([
         (SOIL_ITEM_ID, image::Rgba([187, 128, 68, 255])),
         (SAND_ITEM_ID, image::Rgba([237, 220, 184, 255])),
         (GRASS_ITEM_ID, image::Rgba([39, 174, 96, 255])),
         (SNOW_ITEM_ID, image::Rgba([231, 249, 255, 255])),
-        (LAVA_ITEM_ID, image::Rgba([177, 89, 64, 255])),
+        (GRANITE_ITEM_ID, image::Rgba([177, 89, 64, 255])),
         (STONE_ITEM_ID, image::Rgba([137, 164, 166, 255])),
-        (GRANITE_ITEM_ID, image::Rgba([187, 94, 68, 255])),
+        (OBSIDIAN_ITEM_ID, image::Rgba([187, 94, 68, 255])),
         (DEEPSLATE_ITEM_ID, image::Rgba([103, 124, 126, 255])),
-        (MAGMA_ITEM_ID, image::Rgba([232, 106, 23, 255])),
+        (LAVA_ITEM_ID, image::Rgba([232, 106, 23, 255])),
         (COAL_ITEM_ID, image::Rgba([102, 102, 102, 255])),
         (BRONZE_ITEM_ID, image::Rgba([203, 151, 98, 255])),
         (IRON_ITEM_ID, image::Rgba([203, 216, 217, 255])),
@@ -58,7 +58,7 @@ fn create_attributes() -> ItemAttributeMap {
                 description_id: description_id as u16,
                 atlas_id,
                 atlas_index: atlas_index as u8,
-                minimap_color: match colors.get(&(item_id as u16)) {
+                minimap_color: match minimap_colors.get(&(item_id as u16)) {
                     Some(color) => *color,
                     None => image::Rgba([255, 255, 255, 255]),
                 },

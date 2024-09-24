@@ -81,9 +81,9 @@ fn spawn_world(
                 } else {
                     // underground
                     if deepness_noise < 0.05 {
-                        MAGMA_ITEM_ID
+                        LAVA_ITEM_ID
                     } else if deepness_noise < 0.3 {
-                        GRANITE_ITEM_ID
+                        OBSIDIAN_ITEM_ID
                     } else if deepness_noise < 0.55 {
                         DEEPSLATE_ITEM_ID
                     } else if deepness_noise < 0.8 {
@@ -96,7 +96,7 @@ fn spawn_world(
                         } else if noise < -0.2 {
                             GRASS_ITEM_ID
                         } else if noise > 0.6 {
-                            LAVA_ITEM_ID
+                            GRANITE_ITEM_ID
                         } else if noise > 0.2 {
                             SAND_ITEM_ID
                         } else {

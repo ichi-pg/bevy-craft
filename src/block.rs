@@ -14,6 +14,7 @@ use crate::player::*;
 use crate::random::*;
 use crate::stats::*;
 use crate::storage::*;
+use crate::surface::*;
 use crate::tree::*;
 use crate::workbench::*;
 use bevy::math::I16Vec2;
@@ -104,8 +105,9 @@ impl<'w, 's> BuildBlock for Commands<'w, 's> {
         );
         match item_id {
             WATER_ITEM_ID => self.spawn((bundle, Liquid, Uncollide)),
-            MAGMA_ITEM_ID => self.spawn((bundle, Liquid, Uncollide)),
+            LAVA_ITEM_ID => self.spawn((bundle, Liquid, Uncollide)),
             WOOD_ITEM_ID => self.spawn((bundle, Tree, Uncollide)),
+            SOIL_ITEM_ID => self.spawn((bundle, Surface)),
             _ => self.spawn(bundle),
         };
         // TODO not overlap block id

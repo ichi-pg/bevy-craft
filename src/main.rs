@@ -37,7 +37,6 @@ mod mob_jump_attack;
 mod mob_patrol;
 mod mob_stroll;
 mod mob_walk;
-mod plant;
 mod player;
 mod player_melee;
 mod player_stats;
@@ -45,6 +44,7 @@ mod profiler;
 mod random;
 mod stats;
 mod storage;
+mod surface;
 mod tree;
 mod ui_hovered;
 mod ui_parts;
@@ -121,7 +121,7 @@ fn main() {
             block::BlockPlugin,
             liquid::LiquidPlugin,
             tree::TreePlugin,
-            plant::PlantPlugin,
+            surface::SurfacePlugin,
             item::ItemPlugin,
             enemy::EnemyPlugin,
             mob_walk::MobWalkPlugin,
