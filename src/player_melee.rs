@@ -1,5 +1,6 @@
 use crate::atlas::*;
 use crate::chunk::*;
+use crate::collision::*;
 use crate::hit_test::*;
 use crate::input::*;
 use crate::item_attribute::*;
@@ -94,6 +95,7 @@ fn player_attack(
                 Transform::default(),
                 PlayerProjectile,
                 Shape::Circle(MELEE_SIZE * 0.5),
+                Collider,
                 InChunk,
             ));
         }

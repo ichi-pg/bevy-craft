@@ -64,6 +64,7 @@ fn spawn_item(
                 index: attribute.atlas_index as usize,
             },
             Shape::Circle(32.0),
+            Collider,
             Velocity2::default(),
             Item,
             ItemID(event.item_id),

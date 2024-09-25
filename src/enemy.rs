@@ -8,7 +8,7 @@ use crate::mob_walk::*;
 use crate::player::*;
 use crate::stats::*;
 use crate::velocity::*;
-use crate::z_sort::CHARACTER_Z;
+use crate::z_sort::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -36,6 +36,7 @@ fn spawn_enemies(mut commands: Commands) {
             Velocity2::default(),
             Direction2(Vec2::X),
             Shape::Circle(size * 0.5),
+            Collider,
         ),
         (
             Health(100.0),

@@ -7,6 +7,9 @@ use crate::ui_states::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
+pub struct Clickable;
+
+#[derive(Component)]
 pub struct LeftClicked;
 
 #[derive(Component)]
@@ -18,7 +21,7 @@ pub struct EmptyClicked {
 }
 
 fn left_click(
-    query: Query<(Entity, &Transform, &Shape), With<InChunk>>,
+    query: Query<(Entity, &Transform, &Shape), (With<InChunk>, With<Clickable>)>,
     left_click: Res<LeftClick>,
     world_cursor: Res<WorldCursor>,
     mut commands: Commands,
@@ -35,7 +38,7 @@ fn left_click(
 }
 
 fn right_click(
-    query: Query<(Entity, &Transform, &Shape), With<InChunk>>,
+    query: Query<(Entity, &Transform, &Shape), (With<InChunk>, With<Clickable>)>,
     right_click: Res<RightClick>,
     world_cursor: Res<WorldCursor>,
     mut commands: Commands,
@@ -74,4 +77,5 @@ impl Plugin for ClickShapePlugin {
         );
     }
     // TODO unnecessary in state dragged?
+    // TODO using hash map?
 }

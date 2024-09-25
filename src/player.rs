@@ -1,4 +1,5 @@
 use crate::block::*;
+use crate::collision::*;
 use crate::gravity::*;
 use crate::hit_test::*;
 use crate::input::*;
@@ -56,6 +57,7 @@ fn spawn_player(mut commands: Commands) {
         Velocity2::default(),
         Direction2(Vec2::X),
         Shape::Circle(PLAYER_SIZE * 0.5),
+        Collider,
     ));
     // TODO texture animation
 }

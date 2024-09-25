@@ -96,7 +96,6 @@ impl<'w, 's> BuildBlock for Commands<'w, 's> {
                 layout: atlas.layout.clone(),
                 index: attribute.atlas_index as usize,
             },
-            Shape::Rect(Vec2::new(HALF_BLOCK_SIZE, HALF_BLOCK_SIZE)),
             Block,
             BlockID(random.next_u64()),
             ItemID(item_id),
@@ -104,12 +103,13 @@ impl<'w, 's> BuildBlock for Commands<'w, 's> {
             MaxHealth(100.0),
             InChunk,
         );
+        let shape = Shape::Rect(Vec2::new(HALF_BLOCK_SIZE, HALF_BLOCK_SIZE));
         match item_id {
-            WATER_ITEM_ID => self.spawn((bundle, Liquid, Uncollide)),
-            LAVA_ITEM_ID => self.spawn((bundle, Liquid, Uncollide)),
-            WOOD_ITEM_ID => self.spawn((bundle, Tree, Uncollide)),
-            SOIL_ITEM_ID => self.spawn((bundle, Surface)),
-            _ => self.spawn(bundle),
+            WATER_ITEM_ID => self.spawn((bundle, Liquid)),
+            LAVA_ITEM_ID => self.spawn((bundle, Liquid)),
+            WOOD_ITEM_ID => self.spawn((bundle, shape, Clickable, Tree)),
+            SOIL_ITEM_ID => self.spawn((bundle, shape, Clickable, Collider, Surface)),
+            _ => self.spawn((bundle, shape, Clickable, Collider)),
         };
         // TODO not overlap block id
         // TODO torch
@@ -167,7 +167,6 @@ fn destroy_block(
     }
     // TODO pickaxe category
     // TODO sync minimap
-    // TODO can't destroy liquid
 }
 
 fn repair_health(
@@ -256,7 +255,7 @@ fn placement_block(
     // TODO using selected item id resource?
     // TODO sync minimap
     // TODO can't placement item
-    // TODO can placement in liquid
+    // TODO despawn liquid
 }
 
 pub struct BlockPlugin;
