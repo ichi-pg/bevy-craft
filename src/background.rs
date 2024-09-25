@@ -88,8 +88,8 @@ fn spawn_background(
                             SpriteBundle {
                                 sprite: Sprite {
                                     custom_size: Some(Vec2::new(
-                                        WORLD_WIDTH as f32 * BLOCK_SIZE * 0.5,
-                                        ABOVE_GROUND_HEIGHT as f32 * BLOCK_SIZE * 0.5,
+                                        WORLD_WIDTH as f32 * HALF_BLOCK_SIZE,
+                                        ABOVE_GROUND_HEIGHT as f32 * HALF_BLOCK_SIZE,
                                     )),
                                     ..default()
                                 },

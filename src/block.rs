@@ -23,6 +23,7 @@ use rand::RngCore;
 use std::collections::HashMap;
 
 pub const BLOCK_SIZE: f32 = 128.0;
+pub const HALF_BLOCK_SIZE: f32 = BLOCK_SIZE * 0.5;
 pub const INVERTED_BLOCK_SIZE: f32 = 1.0 / BLOCK_SIZE;
 
 const REPAIR_POWER: f32 = 10.0;
@@ -95,7 +96,7 @@ impl<'w, 's> BuildBlock for Commands<'w, 's> {
                 layout: atlas.layout.clone(),
                 index: attribute.atlas_index as usize,
             },
-            Shape::Rect(Vec2::new(BLOCK_SIZE * 0.5, BLOCK_SIZE * 0.5)),
+            Shape::Rect(Vec2::new(HALF_BLOCK_SIZE, HALF_BLOCK_SIZE)),
             Block,
             BlockID(random.next_u64()),
             ItemID(item_id),
@@ -200,12 +201,12 @@ fn interact_block(
 ) {
     for (entity, item_id, block_id) in &query {
         match item_id.0 {
-            102 => {
+            STORAGE_ITEM_ID => {
                 storage_event_writer.send(StorageClicked {
                     block_id: block_id.0,
                 });
             }
-            103 => {
+            WORKBENCH_ITEM_ID => {
                 workbench_event_writer.send(WorkbenchClicked);
             }
             _ => {}
@@ -233,7 +234,7 @@ fn placement_block(
             if item_id.0 == 0 {
                 continue;
             };
-            let point = ((event.pos + BLOCK_SIZE * 0.5) * INVERTED_BLOCK_SIZE)
+            let point = ((event.pos + HALF_BLOCK_SIZE) * INVERTED_BLOCK_SIZE)
                 .floor()
                 .as_i16vec2();
             commands.build_block(item_id.0, point, &attribute_map, &atlas_map, &mut random);

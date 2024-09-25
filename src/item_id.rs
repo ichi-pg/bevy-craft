@@ -21,6 +21,9 @@ pub const IRON_ITEM_ID: u16 = 83 + ITEMS_COUNT;
 pub const GOLD_ITEM_ID: u16 = 48 + ITEMS_COUNT;
 pub const DIAMOND_ITEM_ID: u16 = 75 + ITEMS_COUNT;
 pub const EMERALD_ITEM_ID: u16 = 21 + ITEMS_COUNT;
+pub const STORAGE_ITEM_ID: u16 = 10 + ITEMS_COUNT;
+pub const WORKBENCH_ITEM_ID: u16 = 65 + ITEMS_COUNT;
+pub const STONE_FORGE_ITEM_ID: u16 = 41 + ITEMS_COUNT;
 pub const BLOCKS_COUNT: u16 = 90;
 
 // TODO split ore and ore block

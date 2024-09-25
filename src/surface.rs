@@ -12,24 +12,29 @@ fn update_soil(
     block_map: Res<PlacedBlockMap>,
 ) {
     for (transform, item_id, mut atlas) in &mut query {
-        let point = (transform.translation.xy() * INVERTED_BLOCK_SIZE).as_i16vec2();
-        let top_point = point + I16Vec2::Y;
-        atlas.index = if block_map.contains_key(&top_point) {
-            match item_id.0 {
-                SOIL_ITEM_ID => 52,
-                _ => todo!(),
+        let top_point =
+            (transform.translation.xy() * INVERTED_BLOCK_SIZE).as_i16vec2() + I16Vec2::Y;
+        let top_index = match item_id.0 {
+            SOIL_ITEM_ID => 43,
+            _ => todo!(),
+        };
+        atlas.index = if let Some(block) = block_map.get(&top_point) {
+            match block.item_id {
+                WOOD_ITEM_ID => top_index,
+                WATER_ITEM_ID => top_index,
+                LAVA_ITEM_ID => top_index,
+                _ => match item_id.0 {
+                    SOIL_ITEM_ID => 52,
+                    _ => todo!(),
+                },
             }
         } else {
-            match item_id.0 {
-                SOIL_ITEM_ID => 43,
-                _ => todo!(),
-            }
+            top_index
         };
     }
-    // TODO when top is tree or liquid
     // TODO freeze
     // TODO flower and grass
-    // TODO plow
+    // TODO farming
 }
 
 pub struct SurfacePlugin;

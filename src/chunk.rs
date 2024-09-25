@@ -41,12 +41,12 @@ impl GetOrInsert<I16Vec2, Vec<UnloadBlock>> for HashMap<I16Vec2, Vec<UnloadBlock
 
 pub const CHUKN_LENGTH: i16 = 20;
 const CHUNK_SIZE: f32 = BLOCK_SIZE * CHUKN_LENGTH as f32;
-const INNER_SHAPE: Shape = Shape::Rect(Vec2::splat(CHUNK_SIZE * 0.5));
+const INVERTED_CHUNK_SIZE: f32 = 1.0 / CHUNK_SIZE;
 const OUTER_SHAPE: Shape = Shape::Rect(Vec2::splat(CHUNK_SIZE * OUTER_LENGTH as f32));
 const OUTER_LENGTH: i16 = 1;
 
 fn start_chunk(mut chunk_point: ResMut<ChunkPoint>, mut event_writer: EventWriter<ChunkChanged>) {
-    chunk_point.0 = (PLAYER_RESPAWN_POSITION.xy() / CHUNK_SIZE).as_i16vec2();
+    chunk_point.0 = (PLAYER_RESPAWN_POSITION.xy() * INVERTED_CHUNK_SIZE).as_i16vec2();
     event_writer.send(ChunkChanged);
 }
 
@@ -56,13 +56,14 @@ fn player_moved(
     mut event_writer: EventWriter<ChunkChanged>,
 ) {
     for transform in &query {
-        let position = transform.translation.xy();
-        if point_test(position, chunk_point.as_vec2() * CHUNK_SIZE, INNER_SHAPE) {
-            return;
+        let new_point = (transform.translation.xy() * INVERTED_CHUNK_SIZE).as_i16vec2();
+        if new_point == chunk_point.0 {
+            continue;
         }
-        chunk_point.0 = (position / CHUNK_SIZE).as_i16vec2();
+        chunk_point.0 = new_point;
         event_writer.send(ChunkChanged);
     }
+    // FIXME blocks respawned even when player moved in same chunk
 }
 
 fn without_block(
@@ -104,7 +105,7 @@ fn with_block(
         if point_test(position, chunk_position, OUTER_SHAPE) {
             continue;
         }
-        let chunk_point = (position / CHUNK_SIZE).as_i16vec2();
+        let chunk_point = (position * INVERTED_CHUNK_SIZE).as_i16vec2();
         let unload_blocks = unload_blocks_map.get_or_insert(&chunk_point);
         unload_blocks.push(UnloadBlock {
             item_id: item_id.0,

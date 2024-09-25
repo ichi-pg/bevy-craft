@@ -20,6 +20,8 @@ fn create_recipes() -> CraftRecipeMap {
     for (item_id, amount, materials) in [
         (WOOD_PICKAXE_ITEM_ID, 1, vec![(WOOD_ITEM_ID, 1)]),
         (WOOD_SWORD_ITEM_ID, 1, vec![(WOOD_ITEM_ID, 1)]),
+        (STORAGE_ITEM_ID, 1, vec![(WOOD_ITEM_ID, 1)]),
+        (WORKBENCH_ITEM_ID, 1, vec![(WOOD_ITEM_ID, 1)]),
     ] {
         recipes.insert(
             item_id,
