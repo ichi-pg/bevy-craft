@@ -219,14 +219,15 @@ fn placement_block(
     selected: Res<SelectedIndex>,
     attribute_map: Res<ItemAttributeMap>,
     atlas_map: Res<AtlasMap>,
-    mut query: Query<(&mut ItemID, &mut ItemAmount, &ItemIndex), With<HotbarItem>>,
+    liquid_query: Query<(Entity, &Transform), With<Liquid>>,
+    mut hotbar_query: Query<(&mut ItemID, &mut ItemAmount, &ItemIndex), With<HotbarItem>>,
     mut event_reader: EventReader<EmptyClicked>,
     mut commands: Commands,
     mut random: ResMut<Random>,
     mut block_map: ResMut<PlacedBlockMap>,
 ) {
     for event in event_reader.read() {
-        for (mut item_id, mut amount, index) in &mut query {
+        for (mut item_id, mut amount, index) in &mut hotbar_query {
             if index.0 != selected.0 {
                 continue;
             }
@@ -236,11 +237,26 @@ fn placement_block(
             let point = ((event.pos + HALF_BLOCK_SIZE) * INVERTED_BLOCK_SIZE)
                 .floor()
                 .as_i16vec2();
-            commands.build_block(item_id.0, point, &attribute_map, &atlas_map, &mut random);
-            amount.0 -= 1;
-            if amount.0 == 0 {
-                item_id.0 = 0;
+            if let Some(block) = block_map.get(&point) {
+                macro_rules! despawn_liquid {
+                    () => {
+                        for (entity, transform) in &liquid_query {
+                            if (transform.translation.xy() * INVERTED_BLOCK_SIZE).as_i16vec2()
+                                == point
+                            {
+                                commands.entity(entity).despawn_recursive();
+                                break;
+                            }
+                        }
+                    };
+                }
+                match block.item_id {
+                    WATER_ITEM_ID => despawn_liquid!(),
+                    LAVA_ITEM_ID => despawn_liquid!(),
+                    _ => todo!(),
+                }
             }
+            commands.build_block(item_id.0, point, &attribute_map, &atlas_map, &mut random);
             block_map.insert(
                 point,
                 PlacedBlock {
@@ -249,13 +265,16 @@ fn placement_block(
                     tree_power: 0,
                 },
             );
+            amount.0 -= 1;
+            if amount.0 == 0 {
+                item_id.0 = 0;
+            }
         }
     }
     // FIXME overlap item
     // TODO using selected item id resource?
     // TODO sync minimap
     // TODO can't placement item
-    // TODO despawn liquid
 }
 
 pub struct BlockPlugin;
@@ -264,10 +283,7 @@ impl Plugin for BlockPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(PlacedBlockMap::default());
         app.add_event::<BlockDestroied>();
-        app.add_systems(
-            Update,
-            (placement_block, interact_block, repair_health, sync_health),
-        );
-        app.add_systems(Last, destroy_block);
+        app.add_systems(Update, (interact_block, repair_health, sync_health));
+        app.add_systems(Last, (destroy_block, placement_block));
     }
 }

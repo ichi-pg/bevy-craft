@@ -34,6 +34,13 @@ fn update_tree(
         if block_map.contains_key(&top_point) {
             continue;
         }
+        commands.build_block(
+            item_id.0,
+            top_point,
+            &attribute_map,
+            &atlas_map,
+            &mut random,
+        );
         block_map.insert(
             top_point,
             PlacedBlock {
@@ -41,13 +48,6 @@ fn update_tree(
                 pressure: false,
                 tree_power: tree_power - 1,
             },
-        );
-        commands.build_block(
-            item_id.0,
-            top_point,
-            &attribute_map,
-            &atlas_map,
-            &mut random,
         );
     }
     // TODO freeze
