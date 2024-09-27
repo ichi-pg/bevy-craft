@@ -15,6 +15,7 @@ pub const OBSIDIAN_ITEM_ID: u16 = 45 + ITEMS_COUNT;
 pub const LAVA_ITEM_ID: u16 = 24 + ITEMS_COUNT;
 pub const WATER_ITEM_ID: u16 = 89 + ITEMS_COUNT;
 pub const WOOD_ITEM_ID: u16 = 11 + ITEMS_COUNT;
+pub const LEAF_ITEM_ID: u16 = 77 + ITEMS_COUNT;
 pub const COAL_ITEM_ID: u16 = 4 + ITEMS_COUNT;
 pub const BRONZE_ITEM_ID: u16 = 22 + ITEMS_COUNT;
 pub const IRON_ITEM_ID: u16 = 83 + ITEMS_COUNT;
