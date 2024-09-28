@@ -17,6 +17,7 @@ use crate::storage::*;
 use crate::surface::*;
 use crate::tree::*;
 use crate::workbench::*;
+use crate::z_sort::*;
 use bevy::math::I16Vec2;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
@@ -87,29 +88,37 @@ impl<'w, 's> BuildBlock for Commands<'w, 's> {
                 transform: Transform::from_xyz(
                     point.x as f32 * BLOCK_SIZE,
                     point.y as f32 * BLOCK_SIZE,
-                    0.0,
+                    match item_id {
+                        WATER_ITEM_ID => LIQUID_Z,
+                        LAVA_ITEM_ID => LIQUID_Z,
+                        _ => BLOCK_Z,
+                    },
                 ),
                 ..default()
             },
             Block,
             BlockID(random.next_u64()),
             ItemID(item_id),
-            Health(100.0),
-            MaxHealth(100.0),
             InChunk,
         );
+        let health = (Health(100.0), MaxHealth(100.0));
         let shape = Shape::Rect(Vec2::new(HALF_BLOCK_SIZE, HALF_BLOCK_SIZE));
         match item_id {
             WATER_ITEM_ID => self.spawn((bundle, Liquid)),
             LAVA_ITEM_ID => self.spawn((bundle, Liquid)),
-            WOOD_ITEM_ID => self.spawn((bundle, shape, Clickable, Tree)),
-            SOIL_ITEM_ID => self.spawn((bundle, shape, Clickable, Collider, Surface)),
-            _ => self.spawn((bundle, shape, Clickable, Collider)),
+            WOOD_ITEM_ID => self.spawn((bundle, health, shape, Clickable, Tree)),
+            SOIL_ITEM_ID => self.spawn((bundle, health, shape, Clickable, Collider, Surface)),
+            _ => self.spawn((bundle, health, shape, Clickable, Collider)),
         }
         .with_children(|parent: &mut ChildBuilder<'_>| {
             parent.spawn((
                 SpriteBundle {
                     sprite: Sprite {
+                        color: match item_id {
+                            WATER_ITEM_ID => Color::srgba(1.0, 1.0, 1.0, 0.5),
+                            LAVA_ITEM_ID => Color::srgba(1.0, 1.0, 1.0, 0.5),
+                            _ => Color::WHITE,
+                        },
                         custom_size: Some(Vec2::splat(BLOCK_SIZE)),
                         anchor: match item_id {
                             WATER_ITEM_ID => Anchor::BottomCenter,
