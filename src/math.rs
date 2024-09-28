@@ -78,30 +78,6 @@ impl AsI32Vec2 for I16Vec2 {
     }
 }
 
-pub trait AsIVec3 {
-    fn as_vec3(&self) -> Vec3;
-}
-
-impl AsIVec3 for Vec2 {
-    fn as_vec3(&self) -> Vec3 {
-        Vec3 {
-            x: self.x as f32,
-            y: self.y as f32,
-            z: 0.0,
-        }
-    }
-}
-
-impl AsIVec3 for I16Vec2 {
-    fn as_vec3(&self) -> Vec3 {
-        Vec3 {
-            x: self.x as f32,
-            y: self.y as f32,
-            z: 0.0,
-        }
-    }
-}
-
 pub trait WithZ {
     fn with_z(&self, z: f32) -> Vec3;
 }

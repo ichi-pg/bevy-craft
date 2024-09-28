@@ -19,6 +19,7 @@ use crate::tree::*;
 use crate::workbench::*;
 use bevy::math::I16Vec2;
 use bevy::prelude::*;
+use bevy::sprite::Anchor;
 use rand::RngCore;
 use std::collections::HashMap;
 
@@ -30,6 +31,9 @@ const REPAIR_POWER: f32 = 10.0;
 
 #[derive(Component)]
 pub struct Block;
+
+#[derive(Component)]
+pub struct BlockSprite;
 
 #[derive(Component)]
 pub struct BlockID(pub u64);
@@ -79,22 +83,13 @@ impl<'w, 's> BuildBlock for Commands<'w, 's> {
             todo!()
         };
         let bundle = (
-            SpriteBundle {
-                sprite: Sprite {
-                    custom_size: Some(Vec2::splat(BLOCK_SIZE)),
-                    ..default()
-                },
-                texture: atlas.texture.clone(),
+            SpatialBundle {
                 transform: Transform::from_xyz(
                     point.x as f32 * BLOCK_SIZE,
                     point.y as f32 * BLOCK_SIZE,
                     0.0,
                 ),
                 ..default()
-            },
-            TextureAtlas {
-                layout: atlas.layout.clone(),
-                index: attribute.atlas_index as usize,
             },
             Block,
             BlockID(random.next_u64()),
@@ -110,7 +105,34 @@ impl<'w, 's> BuildBlock for Commands<'w, 's> {
             WOOD_ITEM_ID => self.spawn((bundle, shape, Clickable, Tree)),
             SOIL_ITEM_ID => self.spawn((bundle, shape, Clickable, Collider, Surface)),
             _ => self.spawn((bundle, shape, Clickable, Collider)),
-        };
+        }
+        .with_children(|parent: &mut ChildBuilder<'_>| {
+            parent.spawn((
+                SpriteBundle {
+                    sprite: Sprite {
+                        custom_size: Some(Vec2::splat(BLOCK_SIZE)),
+                        anchor: match item_id {
+                            WATER_ITEM_ID => Anchor::BottomCenter,
+                            LAVA_ITEM_ID => Anchor::BottomCenter,
+                            _ => Anchor::Center,
+                        },
+                        ..default()
+                    },
+                    transform: match item_id {
+                        WATER_ITEM_ID => Transform::from_xyz(0.0, -HALF_BLOCK_SIZE, 0.0),
+                        LAVA_ITEM_ID => Transform::from_xyz(0.0, -HALF_BLOCK_SIZE, 0.0),
+                        _ => Transform::default(),
+                    },
+                    texture: atlas.texture.clone(),
+                    ..default()
+                },
+                TextureAtlas {
+                    layout: atlas.layout.clone(),
+                    index: attribute.atlas_index as usize,
+                },
+                BlockSprite,
+            ));
+        });
         // TODO not overlap block id
         // TODO torch
         // TODO forge
@@ -184,10 +206,16 @@ fn repair_health(
 }
 
 fn sync_health(
-    mut query: Query<(&Health, &MaxHealth, &mut Sprite), (With<Block>, Changed<Health>)>,
+    query: Query<(&Children, &Health, &MaxHealth), (With<Block>, Changed<Health>)>,
+    mut child_query: Query<&mut Sprite, With<BlockSprite>>,
 ) {
-    for (health, max_health, mut sprite) in &mut query {
-        sprite.color.set_alpha(health.0 / max_health.0);
+    for (children, health, max_health) in &query {
+        for child in children.iter() {
+            let Ok(mut sprite) = child_query.get_mut(*child) else {
+                todo!()
+            };
+            sprite.color.set_alpha(health.0 / max_health.0);
+        }
     }
     // TODO texture
 }

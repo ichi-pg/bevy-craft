@@ -86,21 +86,26 @@ fn move_liquid(
 }
 
 fn sync_liquid(
-    mut query: Query<(&mut Sprite, &Transform), With<Liquid>>,
+    query: Query<(&Children, &Transform), With<Liquid>>,
+    mut child_query: Query<&mut Sprite, With<BlockSprite>>,
     block_map: Res<PlacedBlockMap>,
 ) {
-    for (mut sprite, transform) in &mut query {
+    for (children, transform) in &query {
         let point = (transform.translation.xy() * INVERTED_BLOCK_SIZE).as_i16vec2();
         let Some(block) = block_map.get(&point) else {
             todo!()
         };
-        sprite.custom_size = Some(Vec2::new(
-            BLOCK_SIZE,
-            BLOCK_SIZE * block.liquid_level as f32 * 0.01,
-        ));
+        for child in children.iter() {
+            let Ok(mut sprite) = child_query.get_mut(*child) else {
+                todo!()
+            };
+            sprite.custom_size = Some(Vec2::new(
+                BLOCK_SIZE,
+                BLOCK_SIZE * block.liquid_level as f32 * 0.01,
+            ));
+        }
     }
     // FIXME panic when spawn or despawn block neary liquid level = 1
-    // TODO anchor
 }
 
 pub struct LiquidPlugin;
