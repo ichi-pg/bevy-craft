@@ -121,7 +121,11 @@ fn spawn_world(
                         point,
                         PlacedBlock {
                             item_id: $item_id,
-                            pressure: false,
+                            liquid_level: match $item_id {
+                                WATER_ITEM_ID => 100,
+                                LAVA_ITEM_ID => 100,
+                                _ => 0,
+                            },
                             tree_power: $tree_power,
                         },
                     );
@@ -175,7 +179,7 @@ fn spawn_world(
                 I16Vec2::new($x, $y),
                 PlacedBlock {
                     item_id: 0,
-                    pressure: false,
+                    liquid_level: 0,
                     tree_power: 0,
                 },
             );

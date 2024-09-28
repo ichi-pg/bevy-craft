@@ -45,7 +45,7 @@ pub struct BlockDestroied {
 
 pub struct PlacedBlock {
     pub item_id: u16,
-    pub pressure: bool,
+    pub liquid_level: u8,
     pub tree_power: u8,
 }
 
@@ -261,7 +261,7 @@ fn placement_block(
                 point,
                 PlacedBlock {
                     item_id: item_id.0,
-                    pressure: false,
+                    liquid_level: 0,
                     tree_power: 0,
                 },
             );

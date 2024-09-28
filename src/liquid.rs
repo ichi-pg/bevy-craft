@@ -1,104 +1,113 @@
+use crate::atlas::*;
 use crate::block::*;
 use crate::item::*;
-use crate::math::*;
+use crate::item_attribute::*;
+use crate::random::*;
 use bevy::math::I16Vec2;
 use bevy::prelude::*;
 
 #[derive(Component)]
 pub struct Liquid;
 
-fn update_liquid(
-    mut query: Query<(&mut Transform, &ItemID), With<Liquid>>,
+fn move_liquid(
+    query: Query<(Entity, &Transform, &ItemID), With<Liquid>>,
+    attribute_map: Res<ItemAttributeMap>,
+    atlas_map: Res<AtlasMap>,
     mut block_map: ResMut<PlacedBlockMap>,
+    mut random: ResMut<Random>,
+    mut commands: Commands,
 ) {
-    for (mut transform, item_id) in &mut query {
+    for (entity, transform, item_id) in &query {
         let old_point = (transform.translation.xy() * INVERTED_BLOCK_SIZE).as_i16vec2();
         macro_rules! move_liquid {
-            ( $point:ident ) => {
-                transform.translation = $point.as_vec3() * BLOCK_SIZE;
-                block_map.remove(&old_point);
-                block_map.insert(
-                    $point,
-                    PlacedBlock {
-                        item_id: item_id.0,
-                        pressure: false,
-                        tree_power: 0,
-                    },
-                );
-                continue;
+            ( $new_point:expr, $old_liquid_level:expr ) => {
+                let new_point = $new_point;
+                let new_liquid_level = if let Some(block) = block_map.get(&new_point) {
+                    if block.item_id == item_id.0 {
+                        block.liquid_level
+                    } else {
+                        u8::MAX
+                    }
+                } else {
+                    0
+                };
+                if new_liquid_level < $old_liquid_level {
+                    if new_liquid_level == 0 {
+                        commands.build_block(
+                            item_id.0,
+                            new_point,
+                            &attribute_map,
+                            &atlas_map,
+                            &mut random,
+                        );
+                        block_map.insert(
+                            new_point,
+                            PlacedBlock {
+                                item_id: item_id.0,
+                                liquid_level: 1,
+                                tree_power: 0,
+                            },
+                        );
+                    } else {
+                        if let Some(new_block) = block_map.get_mut(&new_point) {
+                            new_block.liquid_level += 1;
+                        }
+                    }
+                    if let Some(block) = block_map.get_mut(&old_point) {
+                        block.liquid_level -= 1;
+                        if block.liquid_level == 0 {
+                            commands.entity(entity).despawn_recursive();
+                            block_map.remove(&old_point);
+                        }
+                    }
+                }
             };
         }
-        // down
-        let new_point = old_point - I16Vec2::Y;
-        if !block_map.contains_key(&new_point) {
-            move_liquid!(new_point);
-        };
-        // left down
-        let left_point = old_point - I16Vec2::X;
-        let new_point = left_point - I16Vec2::Y;
-        if !block_map.contains_key(&left_point) && !block_map.contains_key(&new_point) {
-            move_liquid!(new_point);
-        };
-        // down right
-        let right_point = old_point + I16Vec2::X;
-        let new_point = right_point - I16Vec2::Y;
-        if !block_map.contains_key(&right_point) && !block_map.contains_key(&new_point) {
-            move_liquid!(new_point);
-        };
-        // top pressure
-        let mut pressure = false;
-        let top_point = old_point + I16Vec2::Y;
-        if let Some(top) = block_map.get(&top_point) {
-            pressure = top.item_id == item_id.0;
-        };
-        // side pressure
-        if let Some(side) = block_map.get(&left_point) {
-            pressure |= side.pressure && side.item_id == item_id.0;
-        };
-        if let Some(side) = block_map.get(&right_point) {
-            pressure |= side.pressure && side.item_id == item_id.0;
-        };
-        // side top pressure
-        if !block_map.contains_key(&top_point) {
-            if let Some(side) = block_map.get(&(left_point + I16Vec2::Y)) {
-                pressure |= side.item_id == item_id.0;
-            };
-            if let Some(side) = block_map.get(&(right_point + I16Vec2::Y)) {
-                pressure |= side.item_id == item_id.0;
+        macro_rules! move_side {
+            ( $new_point:expr ) => {
+                let old_liquid_level = if let Some(block) = block_map.get(&old_point) {
+                    block.liquid_level
+                } else {
+                    0
+                };
+                move_liquid!($new_point, old_liquid_level);
             };
         }
-        if let Some(block) = block_map.get_mut(&old_point) {
-            block.pressure = pressure;
-        };
-        // slide
-        if !pressure {
-            continue;
-        }
-        if !block_map.contains_key(&left_point) {
-            move_liquid!(left_point);
-        };
-        if !block_map.contains_key(&right_point) {
-            move_liquid!(right_point);
-        };
+        move_liquid!(old_point - I16Vec2::Y, 100);
+        move_side!(old_point - I16Vec2::X);
+        move_side!(old_point + I16Vec2::X);
     }
-    // TODO liquid level
-
-    // TODO surface tension
-    // TODO quarter block
-    // TODO merge extra top
     // TODO waterfall
-    // TODO water flow
-
+    // TODO river
     // TODO throw tree
     // TODO speed
     // TODO freeze
     // TODO sync minimap
 }
 
+fn sync_liquid(
+    mut query: Query<(&mut Sprite, &Transform), With<Liquid>>,
+    block_map: Res<PlacedBlockMap>,
+) {
+    for (mut sprite, transform) in &mut query {
+        let point = (transform.translation.xy() * INVERTED_BLOCK_SIZE).as_i16vec2();
+        let Some(block) = block_map.get(&point) else {
+            todo!()
+        };
+        sprite.custom_size = Some(Vec2::new(
+            BLOCK_SIZE,
+            BLOCK_SIZE * block.liquid_level as f32 * 0.01,
+        ));
+    }
+    // FIXME panic when spawn or despawn block neary liquid level = 1
+    // TODO anchor
+}
+
 pub struct LiquidPlugin;
 
 impl Plugin for LiquidPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, update_liquid);
+        app.add_systems(Update, sync_liquid);
+        app.add_systems(Last, move_liquid);
     }
 }

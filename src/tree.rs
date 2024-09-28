@@ -45,7 +45,7 @@ fn update_tree(
             top_point,
             PlacedBlock {
                 item_id: item_id.0,
-                pressure: false,
+                liquid_level: 0,
                 tree_power: tree_power - 1,
             },
         );
