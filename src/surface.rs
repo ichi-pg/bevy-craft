@@ -36,6 +36,7 @@ fn update_soil(
             };
         }
     }
+    // FIXME when chunk updated?
     // TODO freeze
     // TODO flower and grass
     // TODO farming
