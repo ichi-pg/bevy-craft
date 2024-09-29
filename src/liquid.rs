@@ -2,80 +2,65 @@ use crate::atlas::*;
 use crate::block::*;
 use crate::item::*;
 use crate::item_attribute::*;
+use crate::math::*;
 use crate::random::*;
 use bevy::math::I16Vec2;
 use bevy::prelude::*;
+use bevy::utils::HashMap;
 
 #[derive(Component)]
 pub struct Liquid;
+
+#[derive(Resource, Deref, DerefMut, Default)]
+pub struct LiquidMap(pub HashMap<I16Vec2, u8>);
 
 fn move_liquid(
     query: Query<(Entity, &Transform, &ItemID), With<Liquid>>,
     attribute_map: Res<ItemAttributeMap>,
     atlas_map: Res<AtlasMap>,
-    mut block_map: ResMut<PlacedBlockMap>,
+    mut liquid_map: ResMut<LiquidMap>,
     mut random: ResMut<Random>,
     mut commands: Commands,
 ) {
     for (entity, transform, item_id) in &query {
         let old_point = (transform.translation.xy() * INVERTED_BLOCK_SIZE).as_i16vec2();
-        macro_rules! move_liquid {
-            ( $new_point:expr, $old_liquid_level:expr ) => {
-                let new_point = $new_point;
-                let new_liquid_level = if let Some(block) = block_map.get(&new_point) {
-                    if block.item_id == item_id.0 {
-                        block.liquid_level
-                    } else {
-                        u8::MAX
-                    }
+        for (new_point, min_liquid_level) in [
+            (old_point - I16Vec2::Y, 100),
+            (old_point - I16Vec2::X, 0),
+            (old_point + I16Vec2::X, 0),
+        ] {
+            let old_liquid_level = liquid_map.get_or_default(&old_point);
+            let new_liquid_level = liquid_map.get_or_default(&new_point);
+            if new_liquid_level >= old_liquid_level.max(min_liquid_level) {
+                continue;
+            }
+            if new_liquid_level > 0 {
+                if let Some(liquid_level) = liquid_map.get_mut(&new_point) {
+                    *liquid_level += 1;
                 } else {
-                    0
-                };
-                if new_liquid_level < $old_liquid_level {
-                    if new_liquid_level == 0 {
-                        commands.build_block(
-                            item_id.0,
-                            new_point,
-                            &attribute_map,
-                            &atlas_map,
-                            &mut random,
-                        );
-                        block_map.insert(
-                            new_point,
-                            PlacedBlock {
-                                item_id: item_id.0,
-                                liquid_level: 1,
-                                tree_power: 0,
-                            },
-                        );
-                    } else {
-                        if let Some(new_block) = block_map.get_mut(&new_point) {
-                            new_block.liquid_level += 1;
-                        }
-                    }
-                    if let Some(block) = block_map.get_mut(&old_point) {
-                        block.liquid_level -= 1;
-                        if block.liquid_level == 0 {
-                            commands.entity(entity).despawn_recursive();
-                            block_map.remove(&old_point);
-                        }
-                    }
+                    todo!()
                 }
-            };
-        }
-        macro_rules! move_side {
-            ( $new_point:expr ) => {
-                let old_liquid_level = if let Some(block) = block_map.get(&old_point) {
-                    block.liquid_level
+            } else {
+                commands.build_block(
+                    item_id.0,
+                    new_point,
+                    &attribute_map,
+                    &atlas_map,
+                    &mut random,
+                );
+                liquid_map.insert(new_point, 1);
+            }
+            if old_liquid_level > 1 {
+                if let Some(liquid_level) = liquid_map.get_mut(&old_point) {
+                    *liquid_level -= 1;
                 } else {
-                    0
-                };
-                move_liquid!($new_point, old_liquid_level);
-            };
+                    todo!()
+                }
+            } else {
+                commands.entity(entity).despawn_recursive();
+                liquid_map.remove(&old_point);
+            }
         }
-        move_liquid!(old_point - I16Vec2::Y, 100);
-        move_side!(old_point - I16Vec2::X);
-        move_side!(old_point + I16Vec2::X);
     }
     // TODO waterfall
     // TODO river
@@ -88,20 +73,18 @@ fn move_liquid(
 fn sync_liquid(
     query: Query<(&Children, &Transform), With<Liquid>>,
     mut child_query: Query<&mut Sprite, With<BlockSprite>>,
-    block_map: Res<PlacedBlockMap>,
+    liquid_map: Res<LiquidMap>,
 ) {
     for (children, transform) in &query {
         let point = (transform.translation.xy() * INVERTED_BLOCK_SIZE).as_i16vec2();
-        let Some(block) = block_map.get(&point) else {
-            todo!()
-        };
+        let liquid_level = liquid_map.get_or_default(&point);
         for child in children.iter() {
             let Ok(mut sprite) = child_query.get_mut(*child) else {
                 todo!()
             };
             sprite.custom_size = Some(Vec2::new(
                 BLOCK_SIZE,
-                BLOCK_SIZE * block.liquid_level as f32 * 0.01,
+                BLOCK_SIZE * liquid_level as f32 * 0.01,
             ));
         }
     }
@@ -112,6 +95,7 @@ pub struct LiquidPlugin;
 
 impl Plugin for LiquidPlugin {
     fn build(&self, app: &mut App) {
+        app.insert_resource(LiquidMap::default());
         app.add_systems(Update, sync_liquid);
         app.add_systems(Last, move_liquid);
     }

@@ -1,6 +1,6 @@
 use crate::item_id::*;
 use bevy::prelude::*;
-use std::collections::HashMap;
+use bevy::utils::HashMap;
 
 const EMPTY_ITEM_OFFSET: u16 = 1;
 

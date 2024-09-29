@@ -1,6 +1,6 @@
 use crate::item_id::*;
 use bevy::prelude::*;
-use std::collections::HashMap;
+use bevy::utils::HashMap;
 
 pub struct CraftMaterial {
     pub item_id: u16,

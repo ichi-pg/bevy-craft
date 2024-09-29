@@ -1,4 +1,5 @@
 use bevy::math::*;
+use bevy::utils::HashMap;
 use std::hash::RandomState;
 
 pub trait Repeat<T> {
@@ -94,4 +95,18 @@ impl WithZ for Vec2 {
 
 pub trait GetOrInsert<K, V, S = RandomState> {
     fn get_or_insert(&mut self, key: &K) -> &mut V;
+}
+
+pub trait GetOrDefault<K, V, S = RandomState> {
+    fn get_or_default(&self, key: &K) -> V;
+}
+
+impl GetOrDefault<I16Vec2, u8> for HashMap<I16Vec2, u8> {
+    fn get_or_default(&self, key: &I16Vec2) -> u8 {
+        if let Some(value) = self.get(key) {
+            *value
+        } else {
+            0
+        }
+    }
 }

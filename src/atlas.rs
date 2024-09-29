@@ -1,7 +1,7 @@
 use crate::item_id::*;
 use bevy::prelude::*;
 use bevy::render::texture::TRANSPARENT_IMAGE_HANDLE;
-use std::collections::HashMap;
+use bevy::utils::HashMap;
 
 const ITEMS_X: u16 = 7;
 const BLOCKS_X: u16 = 9;

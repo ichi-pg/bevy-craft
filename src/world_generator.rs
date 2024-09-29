@@ -2,9 +2,12 @@ use crate::block::*;
 use crate::chunk::*;
 use crate::item_attribute::*;
 use crate::item_id::*;
+use crate::liquid::*;
 use crate::math::*;
 use crate::minimap::*;
 use crate::random::*;
+use crate::surface::*;
+use crate::tree::*;
 use bevy::math::I16Vec2;
 use bevy::prelude::*;
 use bevy::render::texture::*;
@@ -31,7 +34,10 @@ fn spawn_world(
     attribute_map: Res<ItemAttributeMap>,
     mut random: ResMut<Random>,
     mut unload_blocks_map: ResMut<UnloadBlocksMap>,
-    mut placed_block_map: ResMut<PlacedBlockMap>,
+    mut block_set: ResMut<BlockSet>,
+    mut surface_set: ResMut<SurfaceSet>,
+    mut liquid_map: ResMut<LiquidMap>,
+    mut tree_map: ResMut<TreeMap>,
     mut commands: Commands,
 ) {
     let seed = random.next_u32();
@@ -106,7 +112,7 @@ fn spawn_world(
                 }
             };
             macro_rules! placement_block {
-                ( $item_id:ident, $x:ident, $y:ident, $tree_power:expr ) => {
+                ( $item_id:ident, $x:ident, $y:ident ) => {
                     let Some(attribute) = attribute_map.get(&$item_id) else {
                         todo!()
                     };
@@ -117,18 +123,23 @@ fn spawn_world(
                         item_id: $item_id,
                         point,
                     });
-                    placed_block_map.insert(
-                        point,
-                        PlacedBlock {
-                            item_id: $item_id,
-                            liquid_level: match $item_id {
-                                WATER_ITEM_ID => 100,
-                                LAVA_ITEM_ID => 100,
-                                _ => 0,
-                            },
-                            tree_power: $tree_power,
-                        },
-                    );
+                    match $item_id {
+                        WATER_ITEM_ID => {
+                            liquid_map.insert(point, 100);
+                        }
+                        LAVA_ITEM_ID => {
+                            liquid_map.insert(point, 100);
+                        }
+                        WOOD_ITEM_ID => {
+                            block_set.insert(point);
+                            tree_map.insert(point, 6);
+                        }
+                        _ => {
+                            block_set.insert(point);
+                            surface_set.insert(point);
+                            liquid_map.insert(point, 100);
+                        }
+                    };
                     let pixel = imgbuf.get_pixel_mut($x as u32, (WORLD_HEIGHT - $y - 1) as u32);
                     *pixel = attribute.minimap_color;
                 };
@@ -139,10 +150,10 @@ fn spawn_world(
                 if noise > 0.2 {
                     let x = x as i16;
                     let y = y + 1;
-                    placement_block!(WOOD_ITEM_ID, x, y, 6);
+                    placement_block!(WOOD_ITEM_ID, x, y);
                 }
             }
-            placement_block!(item_id, x, y, 0);
+            placement_block!(item_id, x, y);
         }
     }
     if let Err(_) = imgbuf.save(Path::new("assets").join(MINIMAP_TEXTURE_NAME)) {
@@ -175,14 +186,9 @@ fn spawn_world(
     ));
     macro_rules! placement_block {
         ( $x:expr, $y:expr ) => {
-            placed_block_map.insert(
-                I16Vec2::new($x, $y),
-                PlacedBlock {
-                    item_id: 0,
-                    liquid_level: 0,
-                    tree_power: 0,
-                },
-            );
+            let point = I16Vec2::new($x, $y);
+            block_set.insert(point);
+            liquid_map.insert(point, 100);
         };
     }
     for x in -1..=WORLD_WIDTH {

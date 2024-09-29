@@ -21,8 +21,8 @@ use crate::z_sort::*;
 use bevy::math::I16Vec2;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
+use bevy::utils::HashSet;
 use rand::RngCore;
-use std::collections::HashMap;
 
 pub const BLOCK_SIZE: f32 = 128.0;
 pub const HALF_BLOCK_SIZE: f32 = BLOCK_SIZE * 0.5;
@@ -42,20 +42,14 @@ pub struct BlockID(pub u64);
 #[derive(Component)]
 struct Damaged;
 
+#[derive(Resource, Deref, DerefMut, Default)]
+pub struct BlockSet(pub HashSet<I16Vec2>);
+
 #[derive(Event)]
 pub struct BlockDestroied {
     pub position: Vec2,
     pub block_id: u64,
 }
-
-pub struct PlacedBlock {
-    pub item_id: u16,
-    pub liquid_level: u8,
-    pub tree_power: u8,
-}
-
-#[derive(Resource, Deref, DerefMut, Default)]
-pub struct PlacedBlockMap(pub HashMap<I16Vec2, PlacedBlock>);
 
 pub trait BuildBlock {
     fn build_block(
@@ -165,10 +159,13 @@ fn destroy_block(
         (With<Block>, With<LeftClicked>),
     >,
     player_query: Query<(&PickaxePower, &AttackSpeed), With<PlayerController>>,
-    mut commands: Commands,
     mut item_event_writer: EventWriter<ItemDropped>,
     mut block_event_writer: EventWriter<BlockDestroied>,
-    mut block_map: ResMut<PlacedBlockMap>,
+    mut block_set: ResMut<BlockSet>,
+    mut surface_set: ResMut<SurfaceSet>,
+    mut liquid_map: ResMut<LiquidMap>,
+    mut tree_map: ResMut<TreeMap>,
+    mut commands: Commands,
     time: Res<Time>,
 ) {
     for (entity, transform, item_id, block_id, mut health) in &mut query {
@@ -179,7 +176,16 @@ fn destroy_block(
             let position = transform.translation.xy();
             let point = (position * INVERTED_BLOCK_SIZE).as_i16vec2();
             commands.entity(entity).despawn_recursive();
-            block_map.remove(&point);
+            block_set.remove(&point);
+            match item_id.0 {
+                WOOD_ITEM_ID => {
+                    tree_map.remove(&point);
+                }
+                _ => {
+                    surface_set.remove(&point);
+                    liquid_map.remove(&point);
+                }
+            }
             block_event_writer.send(BlockDestroied {
                 position,
                 block_id: block_id.0,
@@ -231,9 +237,9 @@ fn sync_health(
 
 fn interact_block(
     query: Query<(Entity, &ItemID, &BlockID), (With<Block>, With<RightClicked>)>,
-    mut commands: Commands,
     mut storage_event_writer: EventWriter<StorageClicked>,
     mut workbench_event_writer: EventWriter<WorkbenchClicked>,
+    mut commands: Commands,
 ) {
     for (entity, item_id, block_id) in &query {
         match item_id.0 {
@@ -259,9 +265,11 @@ fn placement_block(
     liquid_query: Query<(Entity, &Transform), With<Liquid>>,
     mut hotbar_query: Query<(&mut ItemID, &mut ItemAmount, &ItemIndex), With<HotbarItem>>,
     mut event_reader: EventReader<EmptyClicked>,
-    mut commands: Commands,
     mut random: ResMut<Random>,
-    mut block_map: ResMut<PlacedBlockMap>,
+    mut block_set: ResMut<BlockSet>,
+    mut surface_set: ResMut<SurfaceSet>,
+    mut liquid_map: ResMut<LiquidMap>,
+    mut commands: Commands,
 ) {
     for event in event_reader.read() {
         for (mut item_id, mut amount, index) in &mut hotbar_query {
@@ -274,34 +282,20 @@ fn placement_block(
             let point = ((event.pos + HALF_BLOCK_SIZE) * INVERTED_BLOCK_SIZE)
                 .floor()
                 .as_i16vec2();
-            if let Some(block) = block_map.get(&point) {
-                macro_rules! despawn_liquid {
-                    () => {
-                        for (entity, transform) in &liquid_query {
-                            if (transform.translation.xy() * INVERTED_BLOCK_SIZE).as_i16vec2()
-                                == point
-                            {
-                                commands.entity(entity).despawn_recursive();
-                                break;
-                            }
-                        }
-                    };
-                }
-                match block.item_id {
-                    WATER_ITEM_ID => despawn_liquid!(),
-                    LAVA_ITEM_ID => despawn_liquid!(),
-                    _ => todo!(),
+            for (entity, transform) in &liquid_query {
+                if (transform.translation.xy() * INVERTED_BLOCK_SIZE).as_i16vec2() == point {
+                    commands.entity(entity).despawn_recursive();
                 }
             }
             commands.build_block(item_id.0, point, &attribute_map, &atlas_map, &mut random);
-            block_map.insert(
-                point,
-                PlacedBlock {
-                    item_id: item_id.0,
-                    liquid_level: 0,
-                    tree_power: 0,
-                },
-            );
+            block_set.insert(point);
+            match item_id.0 {
+                WOOD_ITEM_ID => {}
+                _ => {
+                    surface_set.insert(point);
+                    liquid_map.insert(point, 100);
+                }
+            }
             amount.0 -= 1;
             if amount.0 == 0 {
                 item_id.0 = 0;
@@ -318,7 +312,7 @@ pub struct BlockPlugin;
 
 impl Plugin for BlockPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(PlacedBlockMap::default());
+        app.insert_resource(BlockSet::default());
         app.add_event::<BlockDestroied>();
         app.add_systems(Update, (interact_block, repair_health, sync_health));
         app.add_systems(Last, (destroy_block, placement_block));

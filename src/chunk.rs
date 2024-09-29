@@ -8,7 +8,7 @@ use crate::player::*;
 use crate::random::*;
 use bevy::math::I16Vec2;
 use bevy::prelude::*;
-use std::collections::HashMap;
+use bevy::utils::HashMap;
 
 #[derive(Component)]
 pub struct InChunk;

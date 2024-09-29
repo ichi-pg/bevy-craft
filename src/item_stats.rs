@@ -5,7 +5,7 @@ use crate::item_selecting::*;
 use crate::player::*;
 use crate::stats::*;
 use bevy::prelude::*;
-use std::collections::HashMap;
+use bevy::utils::HashMap;
 
 #[derive(Default, Clone)]
 pub struct ItemStats {
