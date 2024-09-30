@@ -6,15 +6,15 @@ use bevy::prelude::*;
 use bevy::utils::HashSet;
 
 #[derive(Component)]
-pub struct Surface;
+pub struct Floor;
 
 #[derive(Resource, Deref, DerefMut, Default)]
-pub struct SurfaceSet(pub HashSet<I16Vec2>);
+pub struct FloorSet(pub HashSet<I16Vec2>);
 
 fn update_soil(
-    query: Query<(&Children, &Transform, &ItemID), With<Surface>>,
+    query: Query<(&Children, &Transform, &ItemID), With<Floor>>,
     mut child_query: Query<&mut TextureAtlas, With<BlockSprite>>,
-    surface_set: Res<SurfaceSet>,
+    floor_set: Res<FloorSet>,
 ) {
     for (children, transform, item_id) in &query {
         for child in children.iter() {
@@ -23,7 +23,7 @@ fn update_soil(
             };
             let point = (transform.translation.xy() * INVERTED_BLOCK_SIZE).as_i16vec2();
             let top_point = point + I16Vec2::Y;
-            atlas.index = if surface_set.contains(&top_point) {
+            atlas.index = if floor_set.contains(&top_point) {
                 match item_id.0 {
                     SOIL_ITEM_ID => 52,
                     _ => todo!(),
@@ -46,7 +46,7 @@ pub struct SurfacePlugin;
 
 impl Plugin for SurfacePlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(SurfaceSet::default());
+        app.insert_resource(FloorSet::default());
         app.add_systems(Update, update_soil);
     }
 }

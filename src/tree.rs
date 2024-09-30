@@ -18,7 +18,7 @@ fn update_tree(
     query: Query<(&Transform, &ItemID), With<Tree>>,
     atlas_map: Res<AtlasMap>,
     attribute_map: Res<ItemAttributeMap>,
-    mut block_set: ResMut<BlockSet>,
+    mut solid_set: ResMut<SolidSet>,
     mut tree_map: ResMut<TreeMap>,
     mut random: ResMut<Random>,
     mut commands: Commands,
@@ -34,7 +34,7 @@ fn update_tree(
         }
         tree_map.remove(&point);
         let top_point = point + I16Vec2::Y;
-        if block_set.contains(&top_point) {
+        if solid_set.contains(&top_point) {
             continue;
         }
         commands.build_block(
@@ -45,7 +45,7 @@ fn update_tree(
             &mut random,
         );
         tree_map.insert(top_point, tree_power - 1);
-        block_set.insert(top_point);
+        solid_set.insert(top_point);
     }
     // TODO remove filter component
     // TODO freeze

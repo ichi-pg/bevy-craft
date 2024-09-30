@@ -2,6 +2,7 @@ use crate::atlas::*;
 use crate::chunk::*;
 use crate::click_shape::*;
 use crate::collision::*;
+use crate::floor::*;
 use crate::hit_test::*;
 use crate::hotbar::*;
 use crate::item::*;
@@ -14,7 +15,6 @@ use crate::player::*;
 use crate::random::*;
 use crate::stats::*;
 use crate::storage::*;
-use crate::surface::*;
 use crate::tree::*;
 use crate::workbench::*;
 use crate::z_sort::*;
@@ -43,7 +43,7 @@ pub struct BlockID(pub u64);
 struct Damaged;
 
 #[derive(Resource, Deref, DerefMut, Default)]
-pub struct BlockSet(pub HashSet<I16Vec2>);
+pub struct SolidSet(pub HashSet<I16Vec2>);
 
 #[derive(Event)]
 pub struct BlockDestroied {
@@ -101,7 +101,7 @@ impl<'w, 's> BuildBlock for Commands<'w, 's> {
             WATER_ITEM_ID => self.spawn((bundle, Liquid)),
             LAVA_ITEM_ID => self.spawn((bundle, Liquid)),
             WOOD_ITEM_ID => self.spawn((bundle, health, shape, Clickable, Tree)),
-            SOIL_ITEM_ID => self.spawn((bundle, health, shape, Clickable, Collider, Surface)),
+            SOIL_ITEM_ID => self.spawn((bundle, health, shape, Clickable, Collider, Floor)),
             _ => self.spawn((bundle, health, shape, Clickable, Collider)),
         }
         .with_children(|parent: &mut ChildBuilder<'_>| {
@@ -161,8 +161,8 @@ fn destroy_block(
     player_query: Query<(&PickaxePower, &AttackSpeed), With<PlayerController>>,
     mut item_event_writer: EventWriter<ItemDropped>,
     mut block_event_writer: EventWriter<BlockDestroied>,
-    mut block_set: ResMut<BlockSet>,
-    mut surface_set: ResMut<SurfaceSet>,
+    mut solid_set: ResMut<SolidSet>,
+    mut floor_set: ResMut<FloorSet>,
     mut liquid_map: ResMut<LiquidMap>,
     mut tree_map: ResMut<TreeMap>,
     mut commands: Commands,
@@ -176,13 +176,13 @@ fn destroy_block(
             let position = transform.translation.xy();
             let point = (position * INVERTED_BLOCK_SIZE).as_i16vec2();
             commands.entity(entity).despawn_recursive();
-            block_set.remove(&point);
+            solid_set.remove(&point);
             match item_id.0 {
                 WOOD_ITEM_ID => {
                     tree_map.remove(&point);
                 }
                 _ => {
-                    surface_set.remove(&point);
+                    floor_set.remove(&point);
                     liquid_map.remove(&point);
                 }
             }
@@ -266,8 +266,8 @@ fn placement_block(
     mut hotbar_query: Query<(&mut ItemID, &mut ItemAmount, &ItemIndex), With<HotbarItem>>,
     mut event_reader: EventReader<EmptyClicked>,
     mut random: ResMut<Random>,
-    mut block_set: ResMut<BlockSet>,
-    mut surface_set: ResMut<SurfaceSet>,
+    mut solid_set: ResMut<SolidSet>,
+    mut floor_set: ResMut<FloorSet>,
     mut liquid_map: ResMut<LiquidMap>,
     mut commands: Commands,
 ) {
@@ -288,11 +288,11 @@ fn placement_block(
                 }
             }
             commands.build_block(item_id.0, point, &attribute_map, &atlas_map, &mut random);
-            block_set.insert(point);
+            solid_set.insert(point);
             match item_id.0 {
                 WOOD_ITEM_ID => {}
                 _ => {
-                    surface_set.insert(point);
+                    floor_set.insert(point);
                     liquid_map.insert(point, 100);
                 }
             }
@@ -312,7 +312,7 @@ pub struct BlockPlugin;
 
 impl Plugin for BlockPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(BlockSet::default());
+        app.insert_resource(SolidSet::default());
         app.add_event::<BlockDestroied>();
         app.add_systems(Update, (interact_block, repair_health, sync_health));
         app.add_systems(Last, (destroy_block, placement_block));

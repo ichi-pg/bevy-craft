@@ -1,12 +1,12 @@
 use crate::block::*;
 use crate::chunk::*;
+use crate::floor::*;
 use crate::item_attribute::*;
 use crate::item_id::*;
 use crate::liquid::*;
 use crate::math::*;
 use crate::minimap::*;
 use crate::random::*;
-use crate::surface::*;
 use crate::tree::*;
 use bevy::math::I16Vec2;
 use bevy::prelude::*;
@@ -34,8 +34,8 @@ fn spawn_world(
     attribute_map: Res<ItemAttributeMap>,
     mut random: ResMut<Random>,
     mut unload_blocks_map: ResMut<UnloadBlocksMap>,
-    mut block_set: ResMut<BlockSet>,
-    mut surface_set: ResMut<SurfaceSet>,
+    mut solid_set: ResMut<SolidSet>,
+    mut floor_set: ResMut<FloorSet>,
     mut liquid_map: ResMut<LiquidMap>,
     mut tree_map: ResMut<TreeMap>,
     mut commands: Commands,
@@ -131,12 +131,12 @@ fn spawn_world(
                             liquid_map.insert(point, 100);
                         }
                         WOOD_ITEM_ID => {
-                            block_set.insert(point);
+                            solid_set.insert(point);
                             tree_map.insert(point, 6);
                         }
                         _ => {
-                            block_set.insert(point);
-                            surface_set.insert(point);
+                            solid_set.insert(point);
+                            floor_set.insert(point);
                             liquid_map.insert(point, 100);
                         }
                     };
@@ -187,7 +187,7 @@ fn spawn_world(
     macro_rules! placement_block {
         ( $x:expr, $y:expr ) => {
             let point = I16Vec2::new($x, $y);
-            block_set.insert(point);
+            solid_set.insert(point);
             liquid_map.insert(point, 100);
         };
     }

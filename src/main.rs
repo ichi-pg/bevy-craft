@@ -12,6 +12,7 @@ mod craft;
 mod craft_recipe;
 mod enemy;
 mod equipment;
+mod floor;
 mod framerate;
 mod gravity;
 mod hit_test;
@@ -44,7 +45,6 @@ mod profiler;
 mod random;
 mod stats;
 mod storage;
-mod surface;
 mod tree;
 mod ui_hovered;
 mod ui_parts;
@@ -121,7 +121,7 @@ fn main() {
             block::BlockPlugin,
             liquid::LiquidPlugin,
             tree::TreePlugin,
-            surface::SurfacePlugin,
+            floor::SurfacePlugin,
             item::ItemPlugin,
             enemy::EnemyPlugin,
             mob_walk::MobWalkPlugin,
