@@ -46,7 +46,9 @@ const OUTER_SHAPE: Shape = Shape::Rect(Vec2::splat(CHUNK_SIZE * OUTER_LENGTH as 
 const OUTER_LENGTH: i16 = 1;
 
 fn start_chunk(mut chunk_point: ResMut<ChunkPoint>, mut event_writer: EventWriter<ChunkChanged>) {
-    chunk_point.0 = (PLAYER_RESPAWN_POSITION.xy() * INVERTED_CHUNK_SIZE).as_i16vec2();
+    chunk_point.0 = (PLAYER_RESPAWN_POSITION.xy() * INVERTED_CHUNK_SIZE)
+        .round()
+        .as_i16vec2();
     event_writer.send(ChunkChanged);
 }
 
@@ -56,7 +58,9 @@ fn player_moved(
     mut event_writer: EventWriter<ChunkChanged>,
 ) {
     for transform in &query {
-        let new_point = (transform.translation.xy() * INVERTED_CHUNK_SIZE).as_i16vec2();
+        let new_point = (transform.translation.xy() * INVERTED_CHUNK_SIZE)
+            .round()
+            .as_i16vec2();
         if new_point == chunk_point.0 {
             continue;
         }
@@ -105,7 +109,7 @@ fn with_block(
         if point_test(position, chunk_position, OUTER_SHAPE) {
             continue;
         }
-        let chunk_point = (position * INVERTED_CHUNK_SIZE).as_i16vec2();
+        let chunk_point = (position * INVERTED_CHUNK_SIZE).round().as_i16vec2();
         let unload_blocks = unload_blocks_map.get_or_insert(&chunk_point);
         unload_blocks.push(UnloadBlock {
             item_id: item_id.0,
