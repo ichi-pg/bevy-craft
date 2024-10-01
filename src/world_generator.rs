@@ -100,7 +100,7 @@ fn spawn_world(
                         if noise < -0.6 {
                             SNOW_ITEM_ID
                         } else if noise < -0.2 {
-                            GRASS_ITEM_ID
+                            JUNGLE_ITEM_ID
                         } else if noise > 0.6 {
                             GRANITE_ITEM_ID
                         } else if noise > 0.2 {
@@ -132,7 +132,10 @@ fn spawn_world(
                         }
                         WOOD_ITEM_ID => {
                             solid_set.insert(point);
-                            tree_map.insert(point, 6);
+                            tree_map.insert(point, 3 + (random.next_u32() % 3) as u8);
+                        }
+                        GRASS_ITEM_ID => {
+                            solid_set.insert(point);
                         }
                         _ => {
                             solid_set.insert(point);
@@ -147,10 +150,14 @@ fn spawn_world(
             // tree
             if y == surface && item_id != WATER_ITEM_ID {
                 let noise = tree_fbm.get([fx * cave_noise, fy * cave_noise]);
-                if noise > 0.2 {
+                if noise > 0.0 {
                     let x = x as i16;
                     let y = y + 1;
-                    placement_block!(WOOD_ITEM_ID, x, y);
+                    if random.next_u32() % 3 == 0 {
+                        placement_block!(WOOD_ITEM_ID, x, y);
+                    } else {
+                        placement_block!(GRASS_ITEM_ID, x, y);
+                    }
                 }
             }
             placement_block!(item_id, x, y);

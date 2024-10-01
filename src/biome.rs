@@ -13,7 +13,7 @@ pub struct BiomeMap(HashMap<u8, Biome>);
 fn create_biomes() -> BiomeMap {
     let mut biomes = HashMap::new();
     for (biome_id, item_id) in [
-        (FOREST_BIOME_ID, GRASS_ITEM_ID),
+        (FOREST_BIOME_ID, JUNGLE_ITEM_ID),
         (SWAMP_BIOME_ID, SOIL_ITEM_ID),
         (MOUNTAIN_BIOME_ID, SOIL_ITEM_ID),
         (DESERT_BIOME_ID, SAND_ITEM_ID),

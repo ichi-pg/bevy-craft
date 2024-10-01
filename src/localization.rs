@@ -39,9 +39,9 @@ fn create_local_texts() -> LocalTextMap {
             STONE_ITEM_ID + ITEMS_COUNT + BLOCKS_COUNT,
             "Basic material from stone.",
         ),
-        (GRASS_ITEM_ID + ITEMS_COUNT, "Grass"),
+        (JUNGLE_ITEM_ID + ITEMS_COUNT, "Grass"),
         (
-            GRASS_ITEM_ID + ITEMS_COUNT + BLOCKS_COUNT,
+            JUNGLE_ITEM_ID + ITEMS_COUNT + BLOCKS_COUNT,
             "Basic material from grass.",
         ),
     ] {

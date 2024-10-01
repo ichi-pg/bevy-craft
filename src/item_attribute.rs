@@ -21,7 +21,7 @@ fn create_attributes() -> ItemAttributeMap {
     let minimap_colors = HashMap::<u16, image::Rgba<u8>>::from_iter([
         (SOIL_ITEM_ID, image::Rgba([187, 128, 68, 255])),
         (SAND_ITEM_ID, image::Rgba([237, 220, 184, 255])),
-        (GRASS_ITEM_ID, image::Rgba([39, 174, 96, 255])),
+        (JUNGLE_ITEM_ID, image::Rgba([39, 174, 96, 255])),
         (SNOW_ITEM_ID, image::Rgba([231, 249, 255, 255])),
         (GRANITE_ITEM_ID, image::Rgba([177, 89, 64, 255])),
         (STONE_ITEM_ID, image::Rgba([137, 164, 166, 255])),
