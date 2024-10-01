@@ -23,6 +23,7 @@ pub const GOLD_ITEM_ID: u16 = 3 + 5 * 9 + ITEMS_COUNT;
 pub const DIAMOND_ITEM_ID: u16 = 3 + 8 * 9 + ITEMS_COUNT;
 pub const EMERALD_ITEM_ID: u16 = 3 + 2 * 9 + ITEMS_COUNT;
 pub const GRASS_ITEM_ID: u16 = 7 + 6 * 9 + ITEMS_COUNT;
+pub const MUSHROOM_ITEM_ID: u16 = 5 + 6 * 9 + ITEMS_COUNT;
 pub const STORAGE_ITEM_ID: u16 = 1 + 9 * 9 + ITEMS_COUNT;
 pub const WORKBENCH_ITEM_ID: u16 = 2 + 7 * 9 + ITEMS_COUNT;
 pub const FORGE_ITEM_ID: u16 = 5 + 4 * 9 + ITEMS_COUNT;

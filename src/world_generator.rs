@@ -137,6 +137,9 @@ fn spawn_world(
                         GRASS_ITEM_ID => {
                             solid_set.insert(point);
                         }
+                        MUSHROOM_ITEM_ID => {
+                            solid_set.insert(point);
+                        }
                         _ => {
                             solid_set.insert(point);
                             floor_set.insert(point);
@@ -153,11 +156,17 @@ fn spawn_world(
                 if noise > 0.0 {
                     let x = x as i16;
                     let y = y + 1;
-                    if random.next_u32() % 3 == 0 {
-                        placement_block!(WOOD_ITEM_ID, x, y);
-                    } else {
-                        placement_block!(GRASS_ITEM_ID, x, y);
-                    }
+                    match random.next_u32() % 3 {
+                        0 => {
+                            placement_block!(WOOD_ITEM_ID, x, y);
+                        }
+                        1 => {
+                            placement_block!(MUSHROOM_ITEM_ID, x, y);
+                        }
+                        _ => {
+                            placement_block!(GRASS_ITEM_ID, x, y);
+                        }
+                    };
                 }
             }
             placement_block!(item_id, x, y);

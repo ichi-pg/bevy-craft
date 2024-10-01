@@ -34,6 +34,8 @@ fn create_attributes() -> ItemAttributeMap {
         (GOLD_ITEM_ID, image::Rgba([255, 213, 78, 255])),
         (WATER_ITEM_ID, image::Rgba([47, 149, 208, 255])),
         (WOOD_ITEM_ID, image::Rgba([145, 103, 63, 255])),
+        (GRASS_ITEM_ID, image::Rgba([39, 174, 96, 255])),
+        (MUSHROOM_ITEM_ID, image::Rgba([232, 106, 23, 255])),
     ]);
     let atlas = [
         (0, 1),
