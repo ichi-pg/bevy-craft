@@ -26,44 +26,29 @@ fn update_tree(
 ) {
     for (transform, item_id) in &query {
         let point: I16Vec2 = (transform.translation.xy() * INVERTED_BLOCK_SIZE).as_i16vec2();
-        if !tree_map.contains_key(&point) {
-            continue;
-        }
         let tree_power = tree_map.get_or_default(&point);
         if tree_power == 0 {
             continue;
         }
         tree_map.remove(&point);
-        let top_point = point + I16Vec2::Y;
-        if solid_set.contains(&top_point) {
-            continue;
-        }
-        commands.build_block(
-            item_id.0,
-            top_point,
-            &attribute_map,
-            &atlas_map,
-            &mut random,
-        );
-        tree_map.insert(top_point, tree_power - 1);
-        solid_set.insert(top_point);
-        if tree_power != 1 {
-            continue;
+        let mut len = 1;
+        for y in 1..=tree_power as i16 + 1 {
+            let point = point + I16Vec2::new(0, y);
+            if solid_set.contains(&point) {
+                continue;
+            }
+            commands.build_block(item_id.0, point, &attribute_map, &atlas_map, &mut random);
+            solid_set.insert(point);
+            len += 1;
         }
         for x in -1..=1 {
-            for y in 1..=2 {
-                let leaf_point = top_point + I16Vec2::new(x, y);
-                if solid_set.contains(&leaf_point) {
+            for y in len..=len + 1 {
+                let point = point + I16Vec2::new(x, y);
+                if solid_set.contains(&point) {
                     continue;
                 }
-                commands.build_block(
-                    LEAF_ITEM_ID,
-                    leaf_point,
-                    &attribute_map,
-                    &atlas_map,
-                    &mut random,
-                );
-                solid_set.insert(leaf_point);
+                commands.build_block(LEAF_ITEM_ID, point, &attribute_map, &atlas_map, &mut random);
+                solid_set.insert(point);
             }
         }
     }
