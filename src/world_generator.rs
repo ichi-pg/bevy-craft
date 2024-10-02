@@ -132,12 +132,15 @@ fn spawn_world(
                         }
                         WOOD_ITEM_ID => {
                             solid_set.insert(point);
-                            tree_map.insert(point, 3 + (random.next_u32() % 3) as u8);
+                            tree_map.insert(point, 1 + (random.next_u32() % 3) as u8);
                         }
                         GRASS_ITEM_ID => {
                             solid_set.insert(point);
                         }
                         MUSHROOM_ITEM_ID => {
+                            solid_set.insert(point);
+                        }
+                        LEAF_ITEM_ID => {
                             solid_set.insert(point);
                         }
                         _ => {

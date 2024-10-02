@@ -101,8 +101,9 @@ impl<'w, 's> BuildBlock for Commands<'w, 's> {
             WATER_ITEM_ID => self.spawn((bundle, Liquid)),
             LAVA_ITEM_ID => self.spawn((bundle, Liquid)),
             WOOD_ITEM_ID => self.spawn((bundle, health, shape, Clickable, Tree)),
-            GRASS_ITEM_ID => self.spawn((bundle, health, shape, Clickable, Tree)),
-            MUSHROOM_ITEM_ID => self.spawn((bundle, health, shape, Clickable, Tree)),
+            GRASS_ITEM_ID => self.spawn((bundle, health, shape, Clickable)),
+            MUSHROOM_ITEM_ID => self.spawn((bundle, health, shape, Clickable)),
+            LEAF_ITEM_ID => self.spawn((bundle, health, shape, Clickable)),
             SOIL_ITEM_ID => self.spawn((bundle, health, shape, Clickable, Collider, Floor)),
             _ => self.spawn((bundle, health, shape, Clickable, Collider)),
         }
@@ -185,6 +186,7 @@ fn destroy_block(
                 }
                 GRASS_ITEM_ID => {}
                 MUSHROOM_ITEM_ID => {}
+                LEAF_ITEM_ID => {}
                 _ => {
                     floor_set.remove(&point);
                     liquid_map.remove(&point);
@@ -297,6 +299,7 @@ fn placement_block(
                 WOOD_ITEM_ID => {}
                 GRASS_ITEM_ID => {}
                 MUSHROOM_ITEM_ID => {}
+                LEAF_ITEM_ID => {}
                 _ => {
                     floor_set.insert(point);
                     liquid_map.insert(point, 100);

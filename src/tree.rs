@@ -2,7 +2,8 @@ use crate::atlas::*;
 use crate::block::*;
 use crate::item::*;
 use crate::item_attribute::*;
-use crate::math::GetOrDefault;
+use crate::item_id::*;
+use crate::math::*;
 use crate::random::*;
 use bevy::math::I16Vec2;
 use bevy::prelude::*;
@@ -46,10 +47,28 @@ fn update_tree(
         );
         tree_map.insert(top_point, tree_power - 1);
         solid_set.insert(top_point);
+        if tree_power != 1 {
+            continue;
+        }
+        for x in -1..=1 {
+            for y in 1..=2 {
+                let leaf_point = top_point + I16Vec2::new(x, y);
+                if solid_set.contains(&leaf_point) {
+                    continue;
+                }
+                commands.build_block(
+                    LEAF_ITEM_ID,
+                    leaf_point,
+                    &attribute_map,
+                    &atlas_map,
+                    &mut random,
+                );
+                solid_set.insert(leaf_point);
+            }
+        }
     }
     // TODO remove filter component
     // TODO freeze
-    // TODO leaf
 }
 
 pub struct TreePlugin;

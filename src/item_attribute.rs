@@ -36,6 +36,7 @@ fn create_attributes() -> ItemAttributeMap {
         (WOOD_ITEM_ID, image::Rgba([145, 103, 63, 255])),
         (GRASS_ITEM_ID, image::Rgba([39, 174, 96, 255])),
         (MUSHROOM_ITEM_ID, image::Rgba([232, 106, 23, 255])),
+        (LEAF_ITEM_ID, image::Rgba([39, 174, 96, 255])),
     ]);
     let atlas = [
         (0, 1),
